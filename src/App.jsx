@@ -51,6 +51,7 @@ function App() {
   return (
     <main className="relative min-h-screen text-white px-4 sm:px-6 py-6 sm:py-10 font-sans overflow-x-hidden bg-[#0b0f2a]">
 
+
       {/* רקע גרדיאנט עמוק */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0b0f2a] to-black" />
 
@@ -58,11 +59,13 @@ function App() {
       <img
         src="/nba-logo.png"
         alt="NBA Logo"
-        className="hidden sm:block w-20 absolute top-4 right-4 z-50"
+        className="fixed top-4 right-4 w-12 sm:w-20 z-50 opacity-80"
       />
 
 
-      <div className="relative z-10 w-full max-w-4xl mx-auto">
+
+      <div className="relative z-10 w-full max-w-5xl px-4 sm:px-6 mx-auto">
+
         <h1 className="text-4xl font-extrabold mb-10 text-center text-white tracking-wide">
           🏀 NBA Playoff Predictions
         </h1>
@@ -115,8 +118,8 @@ function App() {
                   <Button
                     onClick={() => handlePrediction(g.gameId, g.home)}
                     className={`text-sm px-6 py-2 rounded-full border font-medium ${predictions[g.gameId] === g.home
-                        ? "bg-red-500 text-white"
-                        : "border-red-500 bg-transparent text-white hover:bg-red-600 hover:text-white"
+                      ? "bg-red-500 text-white"
+                      : "border-red-500 bg-transparent text-white hover:bg-red-600 hover:text-white"
                       }`}
                   >
                     {g.home}
@@ -125,8 +128,8 @@ function App() {
                   <Button
                     onClick={() => handlePrediction(g.gameId, g.away)}
                     className={`text-sm px-6 py-2 rounded-full border font-medium ${predictions[g.gameId] === g.away
-                        ? "bg-red-500 text-white"
-                        : "border-red-500 bg-transparent text-white hover:bg-red-600 hover:text-white"
+                      ? "bg-red-500 text-white"
+                      : "border-red-500 bg-transparent text-white hover:bg-red-600 hover:text-white"
                       }`}
                   >
                     {g.away}
