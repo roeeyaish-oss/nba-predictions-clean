@@ -49,7 +49,7 @@ function App() {
   }
 
   return (
-    <main className="relative min-h-screen text-white px-4 sm:px-6 py-6 sm:py-10 font-sans overflow-x-hidden bg-[#0b0f2a]">
+    <main className="relative min-h-screen text-white px-4 sm:px-8 py-6 sm:py-10 font-sans overflow-x-hidden bg-[#0b0f2a]">
 
 
       {/* רקע גרדיאנט עמוק */}
@@ -64,7 +64,8 @@ function App() {
 
 
 
-      <div className="relative z-10 w-full max-w-5xl px-4 sm:px-6 mx-auto">
+      <div className="relative z-10 w-full max-w-[95%] sm:max-w-4xl mx-auto">
+
 
         <h1 className="text-4xl font-extrabold mb-10 text-center text-white tracking-wide">
           🏀 NBA Playoff Predictions
@@ -89,13 +90,14 @@ function App() {
           </Select>
         </div>
 
-        <div className="grid gap-10">
+        <div className="grid gap-14 sm:gap-10">
+
           {games.map((g) => (
             <Card
               key={g.gameId}
               className="bg-black/80 border border-blue-900 text-white rounded-2xl shadow-lg shadow-red-500/30 hover:shadow-red-500/60 transition"
             >
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 {g.gameTimeIL && (
                   <p className="text-center text-sm text-slate-400 mb-3">
                     🕒 Game Time <span className="font-semibold text-white">{g.gameTimeIL}</span> (IL)
