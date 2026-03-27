@@ -29,3 +29,4 @@ Auth: Google OAuth via Supabase Auth.
 - npm run dev
 - npm run build
 - npm run lint
+- NBA data script runs locally via Windows Task Scheduler, not via CI/CD
