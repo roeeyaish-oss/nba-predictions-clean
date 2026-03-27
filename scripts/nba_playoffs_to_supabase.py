@@ -2,12 +2,26 @@
 
 import pandas as pd
 from nba_api.stats.endpoints import scoreboardv2, boxscoretraditionalv2
+from nba_api.library.http import NBAStatsHTTP
 from datetime import datetime, timedelta
 from pytz import timezone
 from supabase import create_client, Client
 import os
 import re
 import time
+
+NBAStatsHTTP.headers = {
+    'Host': 'stats.nba.com',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'x-nba-stats-origin': 'stats',
+    'x-nba-stats-token': 'true',
+    'Connection': 'keep-alive',
+    'Referer': 'https://stats.nba.com/',
+    'Origin': 'https://stats.nba.com',
+}
 
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
