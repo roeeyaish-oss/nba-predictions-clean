@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Write(src/**)",
+      "Write(api/**)",
+      "Write(CLAUDE.md)",
+      "Bash(npm run lint)",
+      "Bash(npm run build)",
+      "Bash(npm run dev)"
+    ],
+    "deny": [
+      "Bash(git push)",
+      "Bash(rm -rf **)"
+    ]
+  }
+}
