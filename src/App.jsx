@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
-import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
 import HomePage from "@/pages/HomePage";
 import LeaderboardPage from "@/pages/LeaderboardPage";
@@ -14,20 +13,13 @@ const supabase = createClient(
 );
 
 const courtBackgroundStyle = {
-  backgroundColor: "#050300",
+  backgroundColor: "#050200",
   backgroundImage: [
-    // Center spotlight — bright cone from above
-    "radial-gradient(ellipse 60% 80% at 50% -10%, rgba(255,215,140,0.35) 0%, rgba(255,200,100,0.12) 30%, transparent 65%)",
-    // Left spotlight — angled god-ray
-    "radial-gradient(ellipse 40% 70% at 20% -8%, rgba(255,200,100,0.30) 0%, rgba(255,190,80,0.08) 35%, transparent 60%)",
-    // Right spotlight — angled god-ray
-    "radial-gradient(ellipse 40% 70% at 80% -8%, rgba(255,190,90,0.28) 0%, rgba(255,180,70,0.07) 35%, transparent 60%)",
-    // Warm center court glow
-    "radial-gradient(circle at 50% 50%, rgba(30,18,0,0.5) 0%, rgba(15,8,0,0.15) 30%, transparent 55%)",
-    // Wood floor planks
-    "repeating-linear-gradient(90deg, rgba(22,12,0,0.85) 0px, rgba(22,12,0,0.85) 54px, rgba(16,8,0,0.85) 54px, rgba(16,8,0,0.85) 108px)",
-    // Base darkness falloff
-    "linear-gradient(180deg, rgba(8,5,1,0.9) 0%, rgba(3,2,0,0.98) 100%)",
+    "repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(255,160,50,0.03) 28px, rgba(255,160,50,0.03) 30px)",
+    "radial-gradient(ellipse 60% 50% at 50% -10%, rgba(255,185,60,0.35) 0%, transparent 70%)",
+    "radial-gradient(ellipse 40% 60% at 15% 0%, rgba(255,200,80,0.22) 0%, transparent 60%)",
+    "radial-gradient(ellipse 40% 60% at 85% 0%, rgba(255,200,80,0.22) 0%, transparent 60%)",
+    "radial-gradient(ellipse 80% 40% at 50% 50%, rgba(180,120,30,0.08) 0%, transparent 70%)",
   ].join(", "),
 };
 
@@ -88,15 +80,39 @@ function App() {
     supabase.auth.signOut();
   }
 
+  const authCardStyle = {
+    background: "rgba(8,5,0,0.82)",
+    border: "1.5px solid rgba(201,176,55,0.65)",
+    borderRadius: "16px",
+    backdropFilter: "blur(16px)",
+    WebkitBackdropFilter: "blur(16px)",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,215,0,0.08)",
+    padding: "32px",
+    textAlign: "center",
+  };
+
+  const signInButtonStyle = {
+    width: "100%",
+    background: "linear-gradient(135deg, #C9B037 0%, #8B6914 100%)",
+    color: "#000",
+    fontWeight: 700,
+    fontSize: "15px",
+    letterSpacing: "0.05em",
+    borderRadius: "12px",
+    padding: "14px",
+    border: "none",
+    boxShadow: "0 4px 20px rgba(201,176,55,0.45)",
+    cursor: "pointer",
+  };
+
   if (accessDenied) {
     return (
       <div className="relative min-h-screen overflow-hidden text-white">
         <div className="absolute inset-0" style={courtBackgroundStyle} />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/85" />
         <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
-          <div className="w-full max-w-md rounded-4 border border-[rgba(201,176,55,0.7)] bg-[rgba(10,8,0,0.75)] p-8 text-center shadow-[0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,215,0,0.15),inset_0_0_20px_rgba(201,176,55,0.05)] backdrop-blur-[12px]">
-            <h1 className="mb-4 text-3xl font-700 text-white">Access Denied</h1>
-            <p className="text-sm leading-6 text-white/65">
+          <div className="w-full max-w-md" style={authCardStyle}>
+            <h1 style={{ marginBottom: "16px", fontSize: "28px", fontWeight: 700, color: "#fff" }}>Access Denied</h1>
+            <p style={{ fontSize: "13px", lineHeight: 1.6, color: "rgba(255,255,255,0.45)" }}>
               Your Google account is not authorized to use this app.
             </p>
           </div>
@@ -109,20 +125,16 @@ function App() {
     return (
       <div className="relative min-h-screen overflow-hidden text-white">
         <div className="absolute inset-0" style={courtBackgroundStyle} />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/85" />
         <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
-          <div className="w-full max-w-md rounded-4 border border-[rgba(201,176,55,0.7)] bg-[rgba(10,8,0,0.75)] p-8 text-center shadow-[0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,215,0,0.15),inset_0_0_20px_rgba(201,176,55,0.05)] backdrop-blur-[12px]">
-            <p className="mb-3 text-xs uppercase tracking-[0.32em] text-[#C9B037]/85">NBA Predictions</p>
-            <h1 className="mb-4 text-4xl font-800 text-white">Court Night</h1>
-            <p className="mx-auto mb-8 max-w-sm text-sm leading-6 text-white/65">
+          <div className="w-full max-w-md" style={authCardStyle}>
+            <p style={{ marginBottom: "12px", fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(201,176,55,0.7)" }}>NBA Predictions</p>
+            <h1 style={{ marginBottom: "16px", fontSize: "28px", fontWeight: 700, color: "#fff" }}>Court Night</h1>
+            <p style={{ marginBottom: "32px", fontSize: "13px", lineHeight: 1.6, color: "rgba(255,255,255,0.45)", maxWidth: "320px", marginLeft: "auto", marginRight: "auto" }}>
               Sign in to make your picks, check the leaderboard, and review prediction history across the group.
             </p>
-            <Button
-              onClick={handleSignIn}
-              className="w-full rounded-3 border border-[#C9B037]/70 bg-gradient-to-br from-[#C9B037] to-[#8B6914] px-6 py-3 text-sm font-700 text-black shadow-[0_4px_16px_rgba(201,176,55,0.4)] hover:from-[#d7be63] hover:to-[#9d7919]"
-            >
+            <button onClick={handleSignIn} style={signInButtonStyle}>
               Sign in with Google
-            </Button>
+            </button>
           </div>
         </main>
       </div>

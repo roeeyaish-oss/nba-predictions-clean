@@ -1,9 +1,59 @@
 import React, { useEffect, useState } from "react";
 import { Clock3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import DailyPredictions from "@/components/DailyPredictions";
 import { getIsraelToday, isGameStarted } from "@/lib/time";
+
+const titleSectionStyle = {
+  background: "rgba(8,5,0,0.82)",
+  border: "1.5px solid rgba(201,176,55,0.65)",
+  borderRadius: "16px",
+  backdropFilter: "blur(16px)",
+  WebkitBackdropFilter: "blur(16px)",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,215,0,0.08)",
+  padding: "20px",
+};
+
+const pickButtonBase = {
+  width: "100%",
+  borderRadius: "10px",
+  padding: "10px 0",
+  fontSize: "13px",
+  cursor: "pointer",
+  transition: "all 0.2s ease",
+  textAlign: "center",
+};
+
+const pickButtonUnselected = {
+  ...pickButtonBase,
+  background: "rgba(201,176,55,0.08)",
+  border: "1.5px solid rgba(201,176,55,0.5)",
+  color: "#fff",
+  fontWeight: 500,
+};
+
+const pickButtonSelected = {
+  ...pickButtonBase,
+  background: "linear-gradient(135deg, #C9B037 0%, #8B6914 100%)",
+  border: "1.5px solid transparent",
+  color: "#000",
+  fontWeight: 700,
+  boxShadow: "0 4px 16px rgba(201,176,55,0.5)",
+};
+
+const submitButtonStyle = {
+  background: "linear-gradient(135deg, #C9B037 0%, #8B6914 100%)",
+  color: "#000",
+  fontWeight: 700,
+  fontSize: "15px",
+  letterSpacing: "0.05em",
+  borderRadius: "12px",
+  padding: "14px",
+  width: "100%",
+  border: "none",
+  boxShadow: "0 4px 20px rgba(201,176,55,0.45)",
+  cursor: "pointer",
+};
 
 export default function HomePage({ user, supabase }) {
   const [games, setGames] = useState([]);
@@ -100,74 +150,66 @@ export default function HomePage({ user, supabase }) {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8">
-      <section className="rounded-4 border border-[rgba(201,176,55,0.7)] bg-[rgba(10,8,0,0.75)] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,215,0,0.15),inset_0_0_20px_rgba(201,176,55,0.05)] backdrop-blur-[12px] sm:p-7">
-        <p className="mb-2 text-[11px] uppercase tracking-[0.35em] text-[#C9B037]/85">Game Night</p>
-        <h1 className="text-3xl font-800 tracking-tight text-white sm:text-5xl">NBA Predictions</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/60 sm:text-base">
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      <section style={titleSectionStyle}>
+        <p style={{ margin: "0 0 8px", fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(201,176,55,0.7)" }}>Game Night</p>
+        <h1 style={{ margin: 0, fontSize: "28px", fontWeight: 700, color: "#fff" }}>NBA Predictions</h1>
+        <p style={{ margin: "12px 0 0", fontSize: "13px", lineHeight: 1.6, color: "rgba(255,255,255,0.45)", maxWidth: "600px" }}>
           Pick winners before tip-off, track the live board, and check how the field is leaning once games begin.
         </p>
       </section>
 
       {!gamesLoaded ? (
-        <p className="text-center text-sm text-white/60">Loading today&apos;s games...</p>
+        <p style={{ textAlign: "center", fontSize: "13px", color: "rgba(255,255,255,0.45)" }}>Loading today&apos;s games...</p>
       ) : games.length === 0 ? (
         <Card>
-          <CardContent className="p-8 text-center text-white/65">
-            No games scheduled for today.
+          <CardContent>
+            <p style={{ textAlign: "center", color: "rgba(255,255,255,0.5)", margin: 0 }}>No games scheduled for today.</p>
           </CardContent>
         </Card>
       ) : (
         <>
-          <div className="grid gap-5 sm:gap-6">
+          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {games.map((game) => {
               const started = isGameStarted(game.gameTimeIL, game.date);
               return (
-                <Card key={game.gameId} className={started ? "opacity-70" : ""}>
-                  <CardContent className="p-5 sm:p-7">
-                    {game.gameTimeIL && (
-                      <div className="mb-5 flex items-center justify-center gap-2 text-sm text-[#C9B037]">
-                        <Clock3 className="h-4 w-4" strokeWidth={2.3} />
-                        <span className="font-600">{game.gameTimeIL}</span>
+                <Card key={game.gameId} style={started ? { opacity: 0.7 } : undefined}>
+                  <CardContent>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", marginBottom: "16px" }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
+                        <img src={game.homeImg} width="56" height="56" alt={game.home} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
+                        <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{game.home}</span>
                       </div>
-                    )}
-
-                    <div className="mb-6 flex items-center justify-center gap-5 sm:gap-8">
-                      <div className="flex min-w-0 flex-1 flex-col items-center">
-                        <img src={game.homeImg} width="72" height="72" className="mb-3 h-18 w-18 object-contain" />
-                        <span className="text-center text-base font-600 text-white">{game.home}</span>
-                      </div>
-                      <span className="text-lg font-700 tracking-[0.25em] text-[#C9B037] sm:text-xl">VS</span>
-                      <div className="flex min-w-0 flex-1 flex-col items-center">
-                        <img src={game.awayImg} width="72" height="72" className="mb-3 h-18 w-18 object-contain" />
-                        <span className="text-center text-base font-600 text-white">{game.away}</span>
+                      <span style={{ fontSize: "18px", fontWeight: 700, color: "#C9B037", letterSpacing: "0.15em" }}>VS</span>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
+                        <img src={game.awayImg} width="56" height="56" alt={game.away} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
+                        <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{game.away}</span>
                       </div>
                     </div>
 
                     {started ? (
-                      <p className="text-center text-sm font-700 text-[#C9B037]">Predictions locked. Game already started.</p>
+                      <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 700, color: "#C9B037", margin: 0 }}>Predictions locked. Game already started.</p>
                     ) : (
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <Button
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+                        <button
                           onClick={() => handlePrediction(game.gameId, game.home)}
-                          className={`rounded-2 border-2 px-5 py-3 text-sm tracking-wide uppercase ${
-                            predictions[game.gameId] === game.home
-                              ? "border-[#C9B037] bg-gradient-to-br from-[#C9B037] to-[#a89430] font-800 text-black shadow-[0_0_12px_rgba(201,176,55,0.4)]"
-                              : "border-[rgba(201,176,55,0.6)] bg-[rgba(201,176,55,0.08)] font-600 text-white hover:bg-[rgba(201,176,55,0.2)] hover:border-[#C9B037]"
-                          }`}
+                          style={predictions[game.gameId] === game.home ? pickButtonSelected : pickButtonUnselected}
                         >
                           {game.home}
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                           onClick={() => handlePrediction(game.gameId, game.away)}
-                          className={`rounded-2 border-2 px-5 py-3 text-sm tracking-wide uppercase ${
-                            predictions[game.gameId] === game.away
-                              ? "border-[#C9B037] bg-gradient-to-br from-[#C9B037] to-[#a89430] font-800 text-black shadow-[0_0_12px_rgba(201,176,55,0.4)]"
-                              : "border-[rgba(201,176,55,0.6)] bg-[rgba(201,176,55,0.08)] font-600 text-white hover:bg-[rgba(201,176,55,0.2)] hover:border-[#C9B037]"
-                          }`}
+                          style={predictions[game.gameId] === game.away ? pickButtonSelected : pickButtonUnselected}
                         >
                           {game.away}
-                        </Button>
+                        </button>
+                      </div>
+                    )}
+
+                    {game.gameTimeIL && (
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginTop: started ? "12px" : "0" }}>
+                        <Clock3 style={{ width: "14px", height: "14px", color: "#C9B037" }} strokeWidth={2.3} />
+                        <span style={{ fontSize: "12px", fontWeight: 600, color: "#C9B037" }}>{game.gameTimeIL}</span>
                       </div>
                     )}
                   </CardContent>
@@ -176,16 +218,19 @@ export default function HomePage({ user, supabase }) {
             })}
           </div>
 
-          <Button
+          <button
             onClick={handleSubmit}
             disabled={submitting}
-            className={`w-full rounded-3 border-none bg-gradient-to-br from-[#C9B037] to-[#8B6914] px-6 py-4 text-sm font-700 text-black shadow-[0_4px_16px_rgba(201,176,55,0.4)] hover:from-[#d6bc60] hover:to-[#9b7717] ${submitting ? "cursor-not-allowed opacity-60" : ""}`}
+            style={{
+              ...submitButtonStyle,
+              ...(submitting ? { opacity: 0.6, cursor: "not-allowed" } : {}),
+            }}
           >
-            {submitting ? "Submitting..." : "Submit Predictions"}
-          </Button>
+            {submitting ? "SUBMITTING..." : "SUBMIT PREDICTIONS"}
+          </button>
 
           {message && (
-            <p className={`text-center text-sm font-700 ${message.type === "success" ? "text-[#e8cb68]" : "text-red-300"}`}>
+            <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 700, color: message.type === "success" ? "#e8cb68" : "#fca5a5", margin: 0 }}>
               {message.text}
             </p>
           )}
