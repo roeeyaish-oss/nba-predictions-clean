@@ -5,8 +5,8 @@ import DailyPredictions from "@/components/DailyPredictions";
 import { getIsraelToday, isGameStarted } from "@/lib/time";
 
 const titleSectionStyle = {
-  background: "rgba(8,5,0,0.82)",
-  border: "1.5px solid rgba(201,176,55,0.65)",
+  background: "rgba(8,5,0,0.88)",
+  border: "1.5px solid rgba(201,176,55,0.8)",
   borderRadius: "16px",
   backdropFilter: "blur(16px)",
   WebkitBackdropFilter: "blur(16px)",

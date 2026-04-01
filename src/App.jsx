@@ -76,8 +76,8 @@ function App() {
   }
 
   const authCardStyle = {
-    background: "rgba(8,5,0,0.82)",
-    border: "1.5px solid rgba(201,176,55,0.65)",
+    background: "rgba(8,5,0,0.88)",
+    border: "1.5px solid rgba(201,176,55,0.8)",
     borderRadius: "16px",
     backdropFilter: "blur(16px)",
     WebkitBackdropFilter: "blur(16px)",
@@ -104,7 +104,7 @@ function App() {
     return (
       <div className="relative min-h-screen overflow-hidden text-white">
         <div className="absolute inset-0" style={courtBackgroundStyle} />
-        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.58)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.72) 100%)", pointerEvents: "none" }} />
         <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
           <div className="w-full max-w-md" style={authCardStyle}>
             <h1 style={{ marginBottom: "16px", fontSize: "28px", fontWeight: 700, color: "#fff" }}>Access Denied</h1>
@@ -121,7 +121,7 @@ function App() {
     return (
       <div className="relative min-h-screen overflow-hidden text-white">
         <div className="absolute inset-0" style={courtBackgroundStyle} />
-        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.58)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.72) 100%)", pointerEvents: "none" }} />
         <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
           <div className="w-full max-w-md" style={authCardStyle}>
             <p style={{ marginBottom: "12px", fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(201,176,55,0.7)" }}>NBA Predictions</p>
