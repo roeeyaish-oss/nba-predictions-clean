@@ -13,7 +13,7 @@ const supabase = createClient(
 );
 
 const courtBackgroundStyle = {
-  background: "url('/court-bg.jpg') center center / cover no-repeat fixed",
+  background: "url('/court-bg.png') center top / cover no-repeat scroll",
   backgroundColor: "#050200",
 };
 
@@ -81,7 +81,7 @@ function App() {
     borderRadius: "16px",
     backdropFilter: "blur(16px)",
     WebkitBackdropFilter: "blur(16px)",
-    boxShadow: "0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,215,0,0.08)",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.58), inset 0 1px 0 rgba(255,215,0,0.08)",
     padding: "32px",
     textAlign: "center",
   };
@@ -104,7 +104,7 @@ function App() {
     return (
       <div className="relative min-h-screen overflow-hidden text-white">
         <div className="absolute inset-0" style={courtBackgroundStyle} />
-        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.72)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.58)", pointerEvents: "none" }} />
         <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
           <div className="w-full max-w-md" style={authCardStyle}>
             <h1 style={{ marginBottom: "16px", fontSize: "28px", fontWeight: 700, color: "#fff" }}>Access Denied</h1>
@@ -121,7 +121,7 @@ function App() {
     return (
       <div className="relative min-h-screen overflow-hidden text-white">
         <div className="absolute inset-0" style={courtBackgroundStyle} />
-        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.72)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.58)", pointerEvents: "none" }} />
         <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
           <div className="w-full max-w-md" style={authCardStyle}>
             <p style={{ marginBottom: "12px", fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(201,176,55,0.7)" }}>NBA Predictions</p>

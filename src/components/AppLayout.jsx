@@ -49,7 +49,7 @@ export default function AppLayout({ user, onSignOut, backgroundStyle }) {
   return (
     <div className="relative min-h-screen overflow-hidden text-white">
       <div className="absolute inset-0" style={backgroundStyle} />
-      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.72)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.58)", pointerEvents: "none" }} />
 
       <div className="relative z-10 flex min-h-screen flex-col">
         <header style={headerStyle}>
@@ -66,7 +66,7 @@ export default function AppLayout({ user, onSignOut, backgroundStyle }) {
           </div>
         </header>
 
-        <main style={{ maxWidth: "600px", width: "100%", margin: "0 auto", padding: "24px 16px 120px", display: "flex", flexDirection: "column", flex: 1 }}>
+        <main className="app-main">
           <Outlet />
         </main>
 
