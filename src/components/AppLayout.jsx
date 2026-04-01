@@ -65,7 +65,7 @@ export default function AppLayout({ user, onSignOut, backgroundStyle }) {
           </div>
         </header>
 
-        <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-30 pt-6 sm:px-8 sm:pb-34 sm:pt-8">
+        <main style={{ maxWidth: "680px", width: "100%", margin: "0 auto", padding: "24px 16px 120px", display: "flex", flexDirection: "column", flex: 1 }}>
           <Outlet />
         </main>
 

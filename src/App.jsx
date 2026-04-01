@@ -15,8 +15,8 @@ const supabase = createClient(
 const courtBackgroundStyle = {
   backgroundColor: "#050200",
   backgroundImage: [
-    "repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(255,160,50,0.03) 28px, rgba(255,160,50,0.03) 30px)",
-    "radial-gradient(ellipse 60% 50% at 50% -10%, rgba(255,185,60,0.35) 0%, transparent 70%)",
+    "repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,160,50,0.015) 60px, rgba(255,160,50,0.015) 62px)",
+    "radial-gradient(ellipse 70% 60% at 50% -5%, rgba(255,185,60,0.45) 0%, transparent 65%)",
     "radial-gradient(ellipse 40% 60% at 15% 0%, rgba(255,200,80,0.22) 0%, transparent 60%)",
     "radial-gradient(ellipse 40% 60% at 85% 0%, rgba(255,200,80,0.22) 0%, transparent 60%)",
     "radial-gradient(ellipse 80% 40% at 50% 50%, rgba(180,120,30,0.08) 0%, transparent 70%)",
