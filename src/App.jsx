@@ -15,13 +15,15 @@ const supabase = createClient(
 const courtBackgroundStyle = {
   backgroundColor: "#050200",
   backgroundImage: [
-    "repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,160,50,0.015) 60px, rgba(255,160,50,0.015) 62px)",
-    "radial-gradient(ellipse 70% 60% at 50% -5%, rgba(255,185,60,0.45) 0%, transparent 65%)",
-    "radial-gradient(ellipse 40% 60% at 15% 0%, rgba(255,200,80,0.22) 0%, transparent 60%)",
-    "radial-gradient(ellipse 40% 60% at 85% 0%, rgba(255,200,80,0.22) 0%, transparent 60%)",
-    "radial-gradient(ellipse 80% 40% at 50% 50%, rgba(180,120,30,0.08) 0%, transparent 70%)",
+    "url('/court-bg.jpg')",
+    "radial-gradient(ellipse 70% 60% at 50% -5%, rgba(255,185,60,0.4) 0%, transparent 65%)",
+    "radial-gradient(ellipse 40% 50% at 15% 0%, rgba(255,200,80,0.2) 0%, transparent 55%)",
+    "radial-gradient(ellipse 40% 50% at 85% 0%, rgba(255,200,80,0.2) 0%, transparent 55%)",
   ].join(", "),
+  backgroundSize: "cover, auto, auto, auto",
+  backgroundPosition: "center center, top, top, top",
 };
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -109,6 +111,7 @@ function App() {
     return (
       <div className="relative min-h-screen overflow-hidden text-white">
         <div className="absolute inset-0" style={courtBackgroundStyle} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.85) 100%)", pointerEvents: "none" }} />
         <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
           <div className="w-full max-w-md" style={authCardStyle}>
             <h1 style={{ marginBottom: "16px", fontSize: "28px", fontWeight: 700, color: "#fff" }}>Access Denied</h1>
@@ -125,6 +128,7 @@ function App() {
     return (
       <div className="relative min-h-screen overflow-hidden text-white">
         <div className="absolute inset-0" style={courtBackgroundStyle} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.85) 100%)", pointerEvents: "none" }} />
         <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
           <div className="w-full max-w-md" style={authCardStyle}>
             <p style={{ marginBottom: "12px", fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(201,176,55,0.7)" }}>NBA Predictions</p>
