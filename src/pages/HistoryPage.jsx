@@ -1,0 +1,87 @@
+import React, { useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+
+function formatDate(dateString) {
+  if (!dateString) return "";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(dateString));
+}
+
+export default function HistoryPage({ currentUserId, supabase }) {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadHistory() {
+      try {
+        const { data, error } = await supabase
+          .from("predictions")
+          .select("user_id, pick, created_at, users(name), games(home_team, away_team, date, game_time)")
+          .order("created_at", { ascending: false })
+          .limit(100);
+
+        if (error) throw error;
+        setItems(data || []);
+      } catch (err) {
+        console.error("Failed to load all prediction history:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadHistory();
+  }, [supabase]);
+
+  return (
+    <div className="space-y-6">
+      <section className="rounded-4 border border-[#C9B037]/35 bg-black/45 p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,215,0,0.1)] backdrop-blur-[8px] sm:p-7">
+        <p className="mb-2 text-[11px] uppercase tracking-[0.35em] text-[#C9B037]/85">History</p>
+        <h1 className="text-3xl font-800 text-white sm:text-5xl">All Predictions</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/60 sm:text-base">
+          Recent picks across every user in the pool.
+        </p>
+      </section>
+
+      {loading ? (
+        <p className="text-center text-sm text-white/60">Loading history...</p>
+      ) : items.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center text-white/65">
+            No history available yet.
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {items.map((item, index) => (
+            <Card key={`${item.created_at}-${index}`}>
+              <CardContent className="space-y-3 p-5 sm:p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.25em] text-[#C9B037]/80">{formatDate(item.games?.date)}</p>
+                    <h2 className="mt-2 text-base font-700 text-white">
+                      {item.users?.name || "Unknown User"}
+                      {item.user_id === currentUserId ? " · You" : ""}
+                    </h2>
+                    <p className="mt-1 text-sm text-white/55">
+                      {item.games?.away_team} at {item.games?.home_team}
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-[#C9B037]/35 px-3 py-1 text-xs font-700 text-[#C9B037]">
+                    {item.games?.game_time || "--:--"}
+                  </span>
+                </div>
+                <div className="rounded-3 bg-white/4 px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.24em] text-white/40">Pick</p>
+                  <p className="mt-2 text-base font-700 text-white">{item.pick}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
