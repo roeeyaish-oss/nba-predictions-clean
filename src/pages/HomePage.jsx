@@ -101,7 +101,7 @@ export default function HomePage({ user, supabase }) {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      <section className="rounded-4 border border-[#C9B037]/35 bg-black/45 p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,215,0,0.1)] backdrop-blur-[8px] sm:p-7">
+      <section className="rounded-4 border border-[rgba(201,176,55,0.7)] bg-[rgba(10,8,0,0.75)] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,215,0,0.15),inset_0_0_20px_rgba(201,176,55,0.05)] backdrop-blur-[12px] sm:p-7">
         <p className="mb-2 text-[11px] uppercase tracking-[0.35em] text-[#C9B037]/85">Game Night</p>
         <h1 className="text-3xl font-800 tracking-tight text-white sm:text-5xl">NBA Predictions</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-white/60 sm:text-base">
@@ -150,20 +150,20 @@ export default function HomePage({ user, supabase }) {
                       <div className="grid gap-3 sm:grid-cols-2">
                         <Button
                           onClick={() => handlePrediction(game.gameId, game.home)}
-                          className={`rounded-2 border px-5 py-3 text-sm ${
+                          className={`rounded-2 border-2 px-5 py-3 text-sm tracking-wide uppercase ${
                             predictions[game.gameId] === game.home
-                              ? "border-[#C9B037] bg-[#C9B037] font-700 text-black"
-                              : "border-[#C9B037] bg-transparent text-white hover:bg-[rgba(201,176,55,0.2)]"
+                              ? "border-[#C9B037] bg-gradient-to-br from-[#C9B037] to-[#a89430] font-800 text-black shadow-[0_0_12px_rgba(201,176,55,0.4)]"
+                              : "border-[rgba(201,176,55,0.6)] bg-[rgba(201,176,55,0.08)] font-600 text-white hover:bg-[rgba(201,176,55,0.2)] hover:border-[#C9B037]"
                           }`}
                         >
                           {game.home}
                         </Button>
                         <Button
                           onClick={() => handlePrediction(game.gameId, game.away)}
-                          className={`rounded-2 border px-5 py-3 text-sm ${
+                          className={`rounded-2 border-2 px-5 py-3 text-sm tracking-wide uppercase ${
                             predictions[game.gameId] === game.away
-                              ? "border-[#C9B037] bg-[#C9B037] font-700 text-black"
-                              : "border-[#C9B037] bg-transparent text-white hover:bg-[rgba(201,176,55,0.2)]"
+                              ? "border-[#C9B037] bg-gradient-to-br from-[#C9B037] to-[#a89430] font-800 text-black shadow-[0_0_12px_rgba(201,176,55,0.4)]"
+                              : "border-[rgba(201,176,55,0.6)] bg-[rgba(201,176,55,0.08)] font-600 text-white hover:bg-[rgba(201,176,55,0.2)] hover:border-[#C9B037]"
                           }`}
                         >
                           {game.away}

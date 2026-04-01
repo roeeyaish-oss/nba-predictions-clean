@@ -14,11 +14,11 @@ export default function AppLayout({ user, onSignOut, backgroundStyle }) {
   return (
     <div className="relative min-h-screen overflow-hidden text-white">
       <div className="absolute inset-0" style={backgroundStyle} />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(201,176,55,0.05),transparent_55%)]" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/18 via-transparent to-black/82" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(201,176,55,0.08),transparent_50%)]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/85" />
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="sticky top-0 z-20 border-b border-[#C9B037]/45 bg-black/50 backdrop-blur-[10px]">
+        <header className="sticky top-0 z-20 border-b border-[#C9B037]/50 bg-[rgba(5,3,0,0.7)] backdrop-blur-[14px]">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-8">
             <div className="min-w-0">
               <p className="text-[11px] uppercase tracking-[0.24em] text-white/45">Court Access</p>
@@ -39,7 +39,7 @@ export default function AppLayout({ user, onSignOut, backgroundStyle }) {
           <Outlet />
         </main>
 
-        <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[#C9B037]/30 bg-black/80 backdrop-blur-[10px]">
+        <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[#C9B037]/40 bg-[rgba(5,3,0,0.85)] backdrop-blur-[14px]">
           <div className="mx-auto grid max-w-4xl grid-cols-4 px-2 py-2">
             {navItems.map((item) => (
               <NavLink

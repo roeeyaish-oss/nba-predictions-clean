@@ -14,14 +14,20 @@ const supabase = createClient(
 );
 
 const courtBackgroundStyle = {
-  backgroundColor: "#0a0600",
+  backgroundColor: "#050300",
   backgroundImage: [
-    "radial-gradient(circle at 50% 40%, rgba(26,15,0,0.62) 0%, rgba(26,15,0,0.2) 14%, rgba(10,6,0,0) 18%)",
-    "radial-gradient(circle at 18% -6%, rgba(255,200,100,0.15) 0%, rgba(255,200,100,0.05) 18%, rgba(255,200,100,0) 38%)",
-    "radial-gradient(circle at 50% -16%, rgba(255,210,130,0.17) 0%, rgba(255,210,130,0.06) 22%, rgba(255,210,130,0) 44%)",
-    "radial-gradient(circle at 82% -6%, rgba(255,190,90,0.14) 0%, rgba(255,190,90,0.04) 17%, rgba(255,190,90,0) 36%)",
-    "repeating-linear-gradient(90deg, rgba(26,15,0,0.9) 0px, rgba(26,15,0,0.9) 54px, rgba(21,12,0,0.9) 54px, rgba(21,12,0,0.9) 108px)",
-    "linear-gradient(180deg, rgba(16,10,2,0.95) 0%, rgba(7,4,1,0.98) 100%)",
+    // Center spotlight — bright cone from above
+    "radial-gradient(ellipse 60% 80% at 50% -10%, rgba(255,215,140,0.35) 0%, rgba(255,200,100,0.12) 30%, transparent 65%)",
+    // Left spotlight — angled god-ray
+    "radial-gradient(ellipse 40% 70% at 20% -8%, rgba(255,200,100,0.30) 0%, rgba(255,190,80,0.08) 35%, transparent 60%)",
+    // Right spotlight — angled god-ray
+    "radial-gradient(ellipse 40% 70% at 80% -8%, rgba(255,190,90,0.28) 0%, rgba(255,180,70,0.07) 35%, transparent 60%)",
+    // Warm center court glow
+    "radial-gradient(circle at 50% 50%, rgba(30,18,0,0.5) 0%, rgba(15,8,0,0.15) 30%, transparent 55%)",
+    // Wood floor planks
+    "repeating-linear-gradient(90deg, rgba(22,12,0,0.85) 0px, rgba(22,12,0,0.85) 54px, rgba(16,8,0,0.85) 54px, rgba(16,8,0,0.85) 108px)",
+    // Base darkness falloff
+    "linear-gradient(180deg, rgba(8,5,1,0.9) 0%, rgba(3,2,0,0.98) 100%)",
   ].join(", "),
 };
 
@@ -86,9 +92,9 @@ function App() {
     return (
       <div className="relative min-h-screen overflow-hidden text-white">
         <div className="absolute inset-0" style={courtBackgroundStyle} />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/85" />
         <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
-          <div className="w-full max-w-md rounded-4 border border-[#C9B037]/40 bg-black/60 p-8 text-center shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,215,0,0.1)] backdrop-blur-[8px]">
+          <div className="w-full max-w-md rounded-4 border border-[rgba(201,176,55,0.7)] bg-[rgba(10,8,0,0.75)] p-8 text-center shadow-[0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,215,0,0.15),inset_0_0_20px_rgba(201,176,55,0.05)] backdrop-blur-[12px]">
             <h1 className="mb-4 text-3xl font-700 text-white">Access Denied</h1>
             <p className="text-sm leading-6 text-white/65">
               Your Google account is not authorized to use this app.
@@ -103,9 +109,9 @@ function App() {
     return (
       <div className="relative min-h-screen overflow-hidden text-white">
         <div className="absolute inset-0" style={courtBackgroundStyle} />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/78" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/85" />
         <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
-          <div className="w-full max-w-md rounded-4 border border-[#C9B037]/40 bg-black/60 p-8 text-center shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,215,0,0.1)] backdrop-blur-[8px]">
+          <div className="w-full max-w-md rounded-4 border border-[rgba(201,176,55,0.7)] bg-[rgba(10,8,0,0.75)] p-8 text-center shadow-[0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,215,0,0.15),inset_0_0_20px_rgba(201,176,55,0.05)] backdrop-blur-[12px]">
             <p className="mb-3 text-xs uppercase tracking-[0.32em] text-[#C9B037]/85">NBA Predictions</p>
             <h1 className="mb-4 text-4xl font-800 text-white">Court Night</h1>
             <p className="mx-auto mb-8 max-w-sm text-sm leading-6 text-white/65">
