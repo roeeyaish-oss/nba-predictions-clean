@@ -1,16 +1,31 @@
 // Scoreboard.jsx
 import React, { useEffect, useState } from "react"
+import { createClient } from "@supabase/supabase-js"
 import { Card, CardContent } from "@/components/ui/card"
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+)
 
 export default function Scoreboard() {
   const [scores, setScores] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("https://script.google.com/macros/s/AKfycbzkm85dkp1X4FCboHYczkZ9l3oZkEAw1cZVpLD0fEQWQTVkPxtaKHRno1lfW-XY5e7Z/exec?action=scores")
-      .then((res) => res.json())
-      .then((data) => {
-        const sorted = [...data].sort((a, b) => b.score - a.score)
+    supabase
+      .from("scores")
+      .select("score, users(name)")
+      .then(({ data, error }) => {
+        if (error) {
+          throw error
+        }
+
+        const formatted = (data || []).map((row) => ({
+          user: row.users?.name ?? "",
+          score: row.score,
+        }))
+        const sorted = [...formatted].sort((a, b) => b.score - a.score)
         setScores(sorted)
         setLoading(false)
       })
@@ -29,7 +44,7 @@ export default function Scoreboard() {
       <Card className="bg-black/50 border border-gray-700 rounded-2xl shadow-xl backdrop-blur-md text-white">
         <CardContent className="p-6">
           <h2 className="text-3xl font-bold text-white text-center mb-6 drop-shadow-md">
-            🏆 Leaderboard 🏆
+            ðŸ† Leaderboard ðŸ†
           </h2>
           <table className="w-full text-left border-collapse text-sm md:text-base text-white">
             <thead>

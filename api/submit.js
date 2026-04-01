@@ -1,45 +1,63 @@
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
 export default async function handler(req, res) {
-    if (req.method !== "POST") {
-      return res.status(405).send("Method Not Allowed");
-    }
-  
-    // חשוב! ב-Vercel ה-body כבר מפוענח אוטומטית
-    const body = req.body;
-  
-    const timestamp = new Date().toLocaleString("en-IL", {
-      timeZone: "Asia/Jerusalem",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  
-    const formatted = body.map((row) => [
-      row[0], // user
-      row[1], // gameId
-      row[2], // pick
-      timestamp
-    ]);
-  
-    try {
-      const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbzkm85dkp1X4FCboHYczkZ9l3oZkEAw1cZVpLD0fEQWQTVkPxtaKHRno1lfW-XY5e7Z/exec",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formatted),
-        }
-      );
-  
-      const text = await response.text();
-      console.log("Response from script:", text);
-      return res.status(200).send(text);
-    } catch (err) {
-      console.error("Error:", err);
-      return res.status(500).send("Server Error: " + err.message);
-    }
+  if (req.method !== "POST") {
+    return res.status(405).send("Method Not Allowed");
   }
-  
+
+  const body = Array.isArray(req.body) ? req.body : [];
+
+  if (body.length === 0) {
+    return res.status(400).send("No predictions provided");
+  }
+
+  try {
+    const userNames = [...new Set(body.map((row) => row.user).filter(Boolean))];
+
+    const { data: users, error: usersError } = await supabase
+      .from("users")
+      .select("id, name")
+      .in("name", userNames);
+
+    if (usersError) {
+      throw usersError;
+    }
+
+    const userIdByName = new Map((users || []).map((user) => [user.name, user.id]));
+    const missingUsers = userNames.filter((name) => !userIdByName.has(name));
+
+    if (missingUsers.length > 0) {
+      return res.status(400).send(`Unknown user name(s): ${missingUsers.join(", ")}`);
+    }
+
+    const payload = body
+      .filter((row) => row.user && row.gameId && row.pick)
+      .map((row) => ({
+        user_id: userIdByName.get(row.user),
+        game_id: row.gameId,
+        pick: row.pick,
+      }));
+
+    if (payload.length === 0) {
+      return res.status(400).send("No valid predictions provided");
+    }
+
+    const { error } = await supabase
+      .from("predictions")
+      .upsert(payload, { onConflict: "user_id,game_id" });
+
+    if (error) {
+      throw error;
+    }
+
+    return res.status(200).send("Predictions submitted successfully!");
+  } catch (err) {
+    console.error("Error submitting predictions:", err);
+    return res.status(500).send("Server Error: " + err.message);
+  }
+}

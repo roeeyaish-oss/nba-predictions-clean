@@ -5,31 +5,20 @@ const USERS = ["Roee", "Dagan Harakuvich", "Saban", "Doron"]
 
 export default function DailyPredictions() {
   const [predictions, setPredictions] = useState([])
-  const [games, setGames] = useState([])
 
   useEffect(() => {
     const fetchPredictions = () => {
       fetch("/api/dailyPredictions")
         .then((res) => res.json())
         .then((data) => setPredictions(data))
-        .catch((err) => console.error("❌ Failed to fetch predictions", err))
+        .catch((err) => console.error("âŒ Failed to fetch predictions", err))
     }
 
     fetchPredictions()
     const interval = setInterval(fetchPredictions, 30000)
 
-    fetch("/api/submit")
-      .then((res) => res.json())
-      .then((data) => setGames(data))
-      .catch((err) => console.error("❌ Failed to fetch games", err))
-
     return () => clearInterval(interval)
   }, [])
-
-  const gameMap = new Map()
-  games.forEach((g) => {
-    gameMap.set(g.gameId, `${g.home} vs ${g.away}`)
-  })
 
   const grouped = USERS.map((user) => {
     const userPreds = predictions.filter((p) => p.user === user)
@@ -44,7 +33,7 @@ export default function DailyPredictions() {
   return (
     <div className="mt-12 rounded-2xl border border-red-500 bg-black/50 shadow-[0_0_15px_rgba(255,0,0,0.5)] backdrop-blur-md text-white p-6 w-full overflow-x-auto">
       <h2 className="text-xl md:text-2xl font-semibold text-white mb-6 flex items-center gap-2">
-         Today's Predictions 🗒️
+         Today's Predictions ðŸ—’ï¸
       </h2>
       <table className="w-full table-auto text-sm md:text-base border-collapse">
         <thead>
