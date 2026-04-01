@@ -4,15 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Scoreboard from "@/components/Scoreboard";
 import DailyPredictions from "@/components/DailyPredictions";
-import {
-  Select,
-  SelectTrigger,
-  SelectItem,
-  SelectValue,
-  SelectContent,
-} from "@/components/ui/select";
-
-const NAMES = ["Roee", "Dagan Harakuvich", "Saban", "Doron"];
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -28,9 +19,27 @@ function getIsraelToday() {
 }
 
 function App() {
+  const [user, setUser] = useState(null);
   const [games, setGames] = useState([]);
   const [predictions, setPredictions] = useState({});
-  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  function handleSignIn() {
+    supabase.auth.signInWithOAuth({ provider: "google" });
+  }
+
+  function handleSignOut() {
+    supabase.auth.signOut();
+  }
 
   useEffect(() => {
     async function loadGames() {
@@ -69,10 +78,11 @@ function App() {
   }
 
   function handleSubmit() {
-    if (!userName) return alert("Please select your name");
+    if (!user) return;
 
+    const displayName = user.user_metadata.full_name;
     const output = games.map((g) => ({
-      user: userName,
+      user: displayName,
       gameId: g.gameId,
       pick: predictions[g.gameId] || "",
     }));
@@ -113,23 +123,27 @@ function App() {
           ðŸ€ NBA Playoff Predictions
         </h1>
 
-        <div className="w-full max-w-md mb-10 mx-auto">
-          <Select onValueChange={setUserName}>
-            <SelectTrigger className="w-full border border-gray-600 bg-black text-white text-base rounded-xl px-4 py-3">
-              <SelectValue placeholder="Select your name" />
-            </SelectTrigger>
-            <SelectContent className="bg-black text-white border border-gray-600 rounded-xl">
-              {NAMES.map((n) => (
-                <SelectItem
-                  key={n}
-                  value={n}
-                  className="text-base hover:bg-blue-600 hover:text-white"
-                >
-                  {n}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {!user ? (
+          <div className="flex justify-center mt-20">
+            <Button
+              onClick={handleSignIn}
+              className="text-sm px-8 py-3 rounded-full border border-blue-500 bg-transparent hover:bg-blue-600 hover:text-white font-bold shadow-md"
+            >
+              Sign in with Google
+            </Button>
+          </div>
+        ) : (
+        <>
+        <div className="flex items-center justify-center gap-4 mb-10">
+          <span className="text-slate-300 text-sm">
+            Signed in as <span className="font-semibold text-white">{user.user_metadata.full_name}</span>
+          </span>
+          <Button
+            onClick={handleSignOut}
+            className="text-xs px-4 py-1 rounded-full border border-gray-500 bg-transparent hover:bg-gray-700 text-gray-300"
+          >
+            Sign Out
+          </Button>
         </div>
 
         <div className="grid gap-14 sm:gap-10">
@@ -200,6 +214,8 @@ function App() {
         <div className="mt-10">
           <DailyPredictions />
         </div>
+        </>
+        )}
       </div>
     </main>
   );
