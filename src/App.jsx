@@ -13,15 +13,8 @@ const supabase = createClient(
 );
 
 const courtBackgroundStyle = {
+  background: "url('/court-bg.jpg') center center / cover no-repeat fixed",
   backgroundColor: "#050200",
-  backgroundImage: [
-    "url('/court-bg.jpg')",
-    "radial-gradient(ellipse 70% 60% at 50% -5%, rgba(255,185,60,0.4) 0%, transparent 65%)",
-    "radial-gradient(ellipse 40% 50% at 15% 0%, rgba(255,200,80,0.2) 0%, transparent 55%)",
-    "radial-gradient(ellipse 40% 50% at 85% 0%, rgba(255,200,80,0.2) 0%, transparent 55%)",
-  ].join(", "),
-  backgroundSize: "cover, auto, auto, auto",
-  backgroundPosition: "center center, top, top, top",
 };
 
 
@@ -111,7 +104,7 @@ function App() {
     return (
       <div className="relative min-h-screen overflow-hidden text-white">
         <div className="absolute inset-0" style={courtBackgroundStyle} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.85) 100%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.72)", pointerEvents: "none" }} />
         <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
           <div className="w-full max-w-md" style={authCardStyle}>
             <h1 style={{ marginBottom: "16px", fontSize: "28px", fontWeight: 700, color: "#fff" }}>Access Denied</h1>
@@ -128,7 +121,7 @@ function App() {
     return (
       <div className="relative min-h-screen overflow-hidden text-white">
         <div className="absolute inset-0" style={courtBackgroundStyle} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.85) 100%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.72)", pointerEvents: "none" }} />
         <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
           <div className="w-full max-w-md" style={authCardStyle}>
             <p style={{ marginBottom: "12px", fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(201,176,55,0.7)" }}>NBA Predictions</p>
