@@ -16,5 +16,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Environment files
+.env
+
 # EXE file we don't want
 tailwindcss-windows-x64.exe

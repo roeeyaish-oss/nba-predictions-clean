@@ -244,4 +244,30 @@ try:
 except Exception as e:
     print(f"⚠️ Error while updating results in Supabase: {e}")
 
-print("🎉 All done! Games and Results are up to date.")
+# === שלב 6: חישוב ניקוד ===
+try:
+    print("📊 Calculating scores...")
+    predictions_resp = supabase.table("predictions").select("user_id, game_id, pick").execute()
+    results_resp = supabase.table("results").select("game_id, winner").execute()
+
+    results_map = {r["game_id"]: r["winner"] for r in (results_resp.data or [])}
+
+    score_counts = {}
+    for pred in (predictions_resp.data or []):
+        uid = pred["user_id"]
+        game_id = pred["game_id"]
+        if game_id in results_map:
+            score_counts.setdefault(uid, 0)
+            if pred["pick"] == results_map[game_id]:
+                score_counts[uid] += 1
+
+    if score_counts:
+        scores_payload = [{"user_id": uid, "score": count} for uid, count in score_counts.items()]
+        supabase.table("scores").upsert(scores_payload).execute()
+        print(f"📊 Upserted scores for {len(scores_payload)} users.")
+    else:
+        print("ℹ️ No scores to calculate.")
+except Exception as e:
+    print(f"⚠️ Error while calculating scores: {e}")
+
+print("🎉 All done! Games, Results, and Scores are up to date.")

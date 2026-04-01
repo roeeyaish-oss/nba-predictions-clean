@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Scoreboard from "@/components/Scoreboard";
 import DailyPredictions from "@/components/DailyPredictions";
+
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -18,17 +19,63 @@ function getIsraelToday() {
   }).format(new Date());
 }
 
+function isGameStarted(gameTimeIL) {
+  if (!gameTimeIL) return false;
+  const [h, m] = gameTimeIL.split(":").map(Number);
+  const now = new Date();
+  const nowIL = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
+  return nowIL.getHours() > h || (nowIL.getHours() === h && nowIL.getMinutes() >= m);
+}
+
 function App() {
   const [user, setUser] = useState(null);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [games, setGames] = useState([]);
+  const [gamesLoaded, setGamesLoaded] = useState(false);
   const [predictions, setPredictions] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState(null);
 
   useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => setMessage(null), 5000);
+    return () => clearTimeout(timer);
+  }, [message]);
+
+  useEffect(() => {
+    async function handleAuthUser(authUser) {
+      if (!authUser) {
+        setUser(null);
+        return;
+      }
+
+      const allowedEmails = (import.meta.env.VITE_ALLOWED_EMAILS || "")
+        .split(",")
+        .map((e) => e.trim())
+        .filter(Boolean);
+
+      if (allowedEmails.length > 0 && !allowedEmails.includes(authUser.email)) {
+        await supabase.auth.signOut();
+        setUser(null);
+        setAccessDenied(true);
+        return;
+      }
+
+      setAccessDenied(false);
+
+      await supabase.from("users").upsert(
+        { id: authUser.id, email: authUser.email, name: authUser.user_metadata.full_name },
+        { onConflict: "id" }
+      );
+
+      setUser(authUser);
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+      handleAuthUser(session?.user ?? null);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      handleAuthUser(session?.user ?? null);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -67,6 +114,8 @@ function App() {
         setGames(formatted);
       } catch (err) {
         console.error("Failed to load games:", err);
+      } finally {
+        setGamesLoaded(true);
       }
     }
 
@@ -80,50 +129,69 @@ function App() {
   function handleSubmit() {
     if (!user) return;
 
-    const displayName = user.user_metadata.full_name;
-    const output = games.map((g) => ({
-      user: displayName,
-      gameId: g.gameId,
-      pick: predictions[g.gameId] || "",
-    }));
+    const submittableGames = games.filter((g) => !isGameStarted(g.gameTimeIL));
+    const hasPick = submittableGames.some((g) => predictions[g.gameId]);
+
+    if (!hasPick) {
+      setMessage({ type: "error", text: "Please select at least one prediction before submitting." });
+      return;
+    }
+
+    setSubmitting(true);
+
+    const output = submittableGames
+      .filter((g) => predictions[g.gameId])
+      .map((g) => ({
+        userId: user.id,
+        gameId: g.gameId,
+        pick: predictions[g.gameId],
+      }));
 
     fetch("/api/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(output),
     })
-      .then((res) => res.text())
-      .then(() => alert("Predictions submitted successfully!"))
+      .then((res) =>
+        res.text().then((text) => {
+          if (res.ok) {
+            setMessage({ type: "success", text: "Predictions submitted successfully!" });
+          } else {
+            setMessage({ type: "error", text: text || "Failed to submit predictions." });
+          }
+        })
+      )
       .catch((err) => {
         console.error("Error submitting predictions:", err);
-        alert("Something went wrong.");
+        setMessage({ type: "error", text: "Network error. Please try again." });
+      })
+      .finally(() => {
+        setSubmitting(false);
       });
   }
 
   return (
     <main className="relative min-h-screen text-white px-4 sm:px-8 py-6 sm:py-10 font-sans overflow-x-hidden bg-[#0b0f2a]">
 
-
-      {/* ×¨×§×¢ ×’×¨×“×™×× ×˜ ×¢×ž×•×§ */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0b0f2a] to-black" />
 
-      {/* ×œ×•×’×• ×”Ö¾NBA ×‘×¤×™× ×” ×”×©×ž××œ×™×ª ×”×¢×œ×™×•× ×” */}
       <img
         src="/nba-logo.png"
         alt="NBA Logo"
         className="fixed top-4 right-4 w-12 sm:w-20 z-50 opacity-80"
       />
 
-
-
       <div className="relative z-10 w-full max-w-[95%] sm:max-w-4xl mx-auto">
 
-
         <h1 className="text-4xl font-extrabold mb-10 text-center text-white tracking-wide">
-          ðŸ€ NBA Playoff Predictions
+          🏀 NBA Playoff Predictions
         </h1>
 
-        {!user ? (
+        {accessDenied ? (
+          <p className="text-center text-red-500 mt-20 font-semibold">
+            Access denied. You are not authorized to use this app.
+          </p>
+        ) : !user ? (
           <div className="flex justify-center mt-20">
             <Button
               onClick={handleSignIn}
@@ -146,17 +214,24 @@ function App() {
           </Button>
         </div>
 
+        {!gamesLoaded ? (
+          <p className="text-center text-slate-400 mt-10">Loading games...</p>
+        ) : games.length === 0 ? (
+          <p className="text-center text-slate-400 mt-10">No games scheduled for today</p>
+        ) : (
+        <>
         <div className="grid gap-14 sm:gap-10">
-
-          {games.map((g) => (
+          {games.map((g) => {
+            const started = isGameStarted(g.gameTimeIL);
+            return (
             <Card
               key={g.gameId}
-              className="bg-black/80 border border-blue-900 text-white rounded-2xl shadow-lg shadow-red-500/30 hover:shadow-red-500/60 transition"
+              className={`bg-black/80 border border-blue-900 text-white rounded-2xl shadow-lg shadow-red-500/30 hover:shadow-red-500/60 transition ${started ? "opacity-50" : ""}`}
             >
               <CardContent className="p-4 sm:p-6">
                 {g.gameTimeIL && (
                   <p className="text-center text-sm text-slate-400 mb-3">
-                    ðŸ•’ Game Time <span className="font-semibold text-white">{g.gameTimeIL}</span> (IL)
+                    🕑 Game Time <span className="font-semibold text-white">{g.gameTimeIL}</span> (IL)
                   </p>
                 )}
 
@@ -172,6 +247,9 @@ function App() {
                   </div>
                 </div>
 
+                {started ? (
+                  <p className="text-center text-red-400 font-semibold text-sm">Game started</p>
+                ) : (
                 <div className="flex flex-wrap justify-center gap-4">
                   <Button
                     onClick={() => handlePrediction(g.gameId, g.home)}
@@ -193,26 +271,37 @@ function App() {
                     {g.away}
                   </Button>
                 </div>
+                )}
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
 
         <div className="flex justify-center mt-12">
           <Button
             onClick={handleSubmit}
-            className="text-sm px-8 py-3 rounded-full border border-blue-500 bg-transparent hover:bg-blue-600 hover:text-white font-bold shadow-md"
+            disabled={submitting}
+            className={`text-sm px-8 py-3 rounded-full border border-blue-500 bg-transparent hover:bg-blue-600 hover:text-white font-bold shadow-md ${submitting ? "opacity-50 cursor-not-allowed" : ""}`}
           >
-            Submit Predictions
+            {submitting ? "Submitting..." : "Submit Predictions"}
           </Button>
         </div>
+
+        {message && (
+          <p className={`text-center mt-4 font-semibold ${message.type === "success" ? "text-green-400" : "text-red-400"}`}>
+            {message.text}
+          </p>
+        )}
+        </>
+        )}
 
         <div className="mt-14">
           <Scoreboard />
         </div>
 
         <div className="mt-10">
-          <DailyPredictions />
+          <DailyPredictions currentUserId={user.id} />
         </div>
         </>
         )}

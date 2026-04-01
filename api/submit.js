@@ -5,6 +5,27 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
+function getIsraelNow() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jerusalem",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+
+  const p = Object.fromEntries(
+    parts.filter((x) => x.type !== "literal").map((x) => [x.type, x.value])
+  );
+
+  return {
+    date: `${p.year}-${p.month}-${p.day}`,
+    minutes: parseInt(p.hour) * 60 + parseInt(p.minute),
+  };
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).send("Method Not Allowed");
@@ -17,33 +38,60 @@ export default async function handler(req, res) {
   }
 
   try {
-    const userNames = [...new Set(body.map((row) => row.user).filter(Boolean))];
-
-    const { data: users, error: usersError } = await supabase
-      .from("users")
-      .select("id, name")
-      .in("name", userNames);
-
-    if (usersError) {
-      throw usersError;
+    const userId = body[0]?.userId;
+    if (!userId) {
+      return res.status(400).send("Missing user ID");
     }
 
-    const userIdByName = new Map((users || []).map((user) => [user.name, user.id]));
-    const missingUsers = userNames.filter((name) => !userIdByName.has(name));
+    const { data: userRow, error: userError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("id", userId)
+      .single();
 
-    if (missingUsers.length > 0) {
-      return res.status(400).send(`Unknown user name(s): ${missingUsers.join(", ")}`);
+    if (userError || !userRow) {
+      return res.status(400).send("Unknown user");
+    }
+
+    const gameIds = [...new Set(body.map((row) => row.gameId).filter(Boolean))];
+
+    const { data: gamesData, error: gamesError } = await supabase
+      .from("games")
+      .select("id, date, game_time")
+      .in("id", gameIds);
+
+    if (gamesError) {
+      throw gamesError;
+    }
+
+    const nowIL = getIsraelNow();
+    const startedGameIds = new Set();
+
+    for (const game of gamesData || []) {
+      if (game.date && game.game_time) {
+        if (game.date < nowIL.date) {
+          startedGameIds.add(game.id);
+        } else if (game.date === nowIL.date) {
+          const [h, m] = game.game_time.split(":").map(Number);
+          if (nowIL.minutes >= h * 60 + m) {
+            startedGameIds.add(game.id);
+          }
+        }
+      }
     }
 
     const payload = body
-      .filter((row) => row.user && row.gameId && row.pick)
+      .filter((row) => row.userId && row.gameId && row.pick && !startedGameIds.has(row.gameId))
       .map((row) => ({
-        user_id: userIdByName.get(row.user),
+        user_id: row.userId,
         game_id: row.gameId,
         pick: row.pick,
       }));
 
     if (payload.length === 0) {
+      if (startedGameIds.size > 0) {
+        return res.status(400).send("All selected games have already started");
+      }
       return res.status(400).send("No valid predictions provided");
     }
 
