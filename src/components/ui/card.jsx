@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "../../lib/utils";
 
 const cardStyle = {
-  background: "rgba(8,5,0,0.88)",
+  background: "rgba(8,5,0,0.65)",
   border: "1.5px solid rgba(201,176,55,0.8)",
   borderRadius: "16px",
   backdropFilter: "blur(16px)",
