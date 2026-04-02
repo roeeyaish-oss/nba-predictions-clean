@@ -13,7 +13,7 @@ const supabase = createClient(
 );
 
 const courtBackgroundStyle = {
-  background: "url('/court-bg.png') center top / cover no-repeat scroll",
+  background: "url('/court-bg.png') center top / cover no-repeat fixed",
   backgroundColor: "#050200",
 };
 
@@ -102,10 +102,10 @@ function App() {
 
   if (accessDenied) {
     return (
-      <div className="relative min-h-screen overflow-hidden text-white">
+      <div style={{ position: "fixed", inset: 0, overflow: "hidden" }} className="text-white">
         <div className="absolute inset-0" style={courtBackgroundStyle} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.45) 100%)", pointerEvents: "none" }} />
-        <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
+        <main style={{ position: "relative", height: "100%", overflowY: "auto", zIndex: 1 }} className="flex items-center justify-center px-6 py-10">
           <div className="w-full max-w-md" style={authCardStyle}>
             <h1 style={{ marginBottom: "16px", fontSize: "28px", fontWeight: 700, color: "#fff" }}>Access Denied</h1>
             <p style={{ fontSize: "13px", lineHeight: 1.6, color: "rgba(255,255,255,0.45)" }}>
@@ -119,10 +119,10 @@ function App() {
 
   if (!user) {
     return (
-      <div className="relative min-h-screen overflow-hidden text-white">
+      <div style={{ position: "fixed", inset: 0, overflow: "hidden" }} className="text-white">
         <div className="absolute inset-0" style={courtBackgroundStyle} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.45) 100%)", pointerEvents: "none" }} />
-        <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
+        <main style={{ position: "relative", height: "100%", overflowY: "auto", zIndex: 1 }} className="flex items-center justify-center px-6 py-10">
           <div className="w-full max-w-md" style={authCardStyle}>
             <p style={{ marginBottom: "12px", fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(201,176,55,0.7)" }}>NBA Predictions</p>
             <h1 style={{ marginBottom: "16px", fontSize: "28px", fontWeight: 700, color: "#fff" }}>Court Night</h1>

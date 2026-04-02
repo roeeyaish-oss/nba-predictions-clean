@@ -1,32 +1,34 @@
 # NBA Playoff Predictions App
 
-## Project Overview
-PWA for predicting NBA playoff game results among a closed group of friends.
-Stack: React + Vite + JavaScript + UnoCSS
-Deployment: Vercel
-Current Backend: Google Apps Script + Google Sheets (migrating to Supabase)
+## Stack
+React + Vite + JavaScript + UnoCSS + React Router | Vercel | Supabase
 
 ## Architecture
-- src/App.jsx — main page, prediction form
-- src/components/Scoreboard.jsx — leaderboard
-- src/components/DailyPredictions.jsx — daily picks view
-- src/components/ui/ — button, card, select primitives
-- api/ — Vercel serverless functions
+- src/App.jsx — auth, routing, background
+- src/components/AppLayout.jsx — fixed background, top bar, bottom nav
+- src/pages/ — HomePage, LeaderboardPage, ProfilePage, HistoryPage
+- src/components/ — Scoreboard, DailyPredictions, ui/
+- api/ — Vercel serverless functions (submit, dailyPredictions)
+- scripts/nba_playoffs_to_supabase.py — runs locally, fetches NBA data → Supabase
 
-## Active Migration
-Moving from Google Sheets backend to Supabase.
-Auth: Google OAuth via Supabase Auth.
+## Backend
+- Database: Supabase PostgreSQL
+- Tables: users, games, predictions, results, scores
+- Auth: Google OAuth via Supabase Auth + email whitelist (VITE_ALLOWED_EMAILS)
+
+## Environment Variables
+- SUPABASE_URL, SUPABASE_SERVICE_KEY — server (api/)
+- VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY — client (src/)
+- VITE_ALLOWED_EMAILS — comma-separated whitelist
+
+## Theme
+- Background: public/court-bg.png (NBA court, fixed/non-scrolling)
+- Accent: #C9B037 (gold)
+- Cards: glassmorphism, rgba(8,5,0,0.65), gold border
 
 ## Rules
-- Always maintain PWA compatibility
-- Mobile-first design
-- Never break existing prediction/scoring logic during migration
-- All external services must have a free tier
-- Always use Plan Mode before implementing any feature
-- One sub-agent per task — never mix concerns
-
-## Commands
-- npm run dev
-- npm run build
-- npm run lint
-- NBA data script runs locally via Windows Task Scheduler, not via CI/CD
+- Mobile-first, PWA compatible
+- Plan before implementing — never code without a plan
+- Use inline styles for complex CSS effects
+- Never push sensitive keys to git
+- npm run lint + npm run build must pass before every commit

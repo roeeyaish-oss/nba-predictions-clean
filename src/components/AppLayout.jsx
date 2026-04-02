@@ -47,11 +47,11 @@ const bottomNavStyle = {
 
 export default function AppLayout({ user, onSignOut, backgroundStyle }) {
   return (
-    <div className="relative min-h-screen overflow-hidden text-white">
+    <div style={{ position: "fixed", inset: 0, overflow: "hidden" }} className="text-white">
       <div className="absolute inset-0" style={backgroundStyle} />
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.45) 100%)", pointerEvents: "none" }} />
 
-      <div className="relative z-10 flex min-h-screen flex-col">
+      <div style={{ position: "relative", height: "100%", overflowY: "auto", zIndex: 1 }} className="flex flex-col">
         <header style={headerStyle}>
           <div style={{ maxWidth: "1152px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
             <div style={{ minWidth: 0 }}>
@@ -66,7 +66,7 @@ export default function AppLayout({ user, onSignOut, backgroundStyle }) {
           </div>
         </header>
 
-        <main className="app-main">
+        <main className="app-main" style={{ paddingBottom: "80px" }}>
           <Outlet />
         </main>
 
