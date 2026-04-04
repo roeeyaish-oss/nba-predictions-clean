@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ScrollText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import UserAvatar from "@/components/UserAvatar";
 import { isGameStarted } from "@/lib/time";
 
 export default function DailyPredictions({ currentUserId }) {
@@ -20,12 +21,23 @@ export default function DailyPredictions({ currentUserId }) {
     return () => clearInterval(interval);
   }, []);
 
-  const users = [...new Map(predictions.map((prediction) => [prediction.user_id, prediction.user])).entries()];
+  const users = [
+    ...new Map(
+      predictions.map((prediction) => [
+        prediction.user_id,
+        {
+          displayName: prediction.display_name || prediction.user || "",
+          avatarUrl: prediction.avatar_url ?? null,
+        },
+      ])
+    ).entries(),
+  ];
 
-  const grouped = users.map(([userId, userName]) => {
+  const grouped = users.map(([userId, userData]) => {
     const userPreds = predictions.filter((prediction) => prediction.user_id === userId);
     return {
-      user: userName,
+      user: userData.displayName,
+      avatarUrl: userData.avatarUrl,
       userId,
       picks: userPreds.map((prediction) => ({
         pick: prediction.pick,
@@ -68,7 +80,12 @@ export default function DailyPredictions({ currentUserId }) {
                   key={`${row.userId}-${idx}`}
                   className="border-b border-white/6 last:border-b-0 hover:bg-white/4"
                 >
-                  <td className="p-3 font-600 text-white">{row.user}</td>
+                  <td className="p-3 font-600 text-white">
+                    <div className="flex items-center gap-3">
+                      <UserAvatar avatarUrl={row.avatarUrl} name={row.user} size={32} textSize={12} />
+                      <span>{row.user}</span>
+                    </div>
+                  </td>
                   <td className="p-3">
                     <div className="flex flex-col gap-2">
                       {row.picks.map((pick, i) => {

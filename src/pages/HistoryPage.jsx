@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import UserAvatar from "@/components/UserAvatar";
 
 function formatDate(dateString) {
   if (!dateString) return "";
@@ -19,7 +20,7 @@ export default function HistoryPage({ currentUserId, supabase }) {
       try {
         const { data, error } = await supabase
           .from("predictions")
-          .select("user_id, pick, created_at, users(name), games(home_team, away_team, date, game_time)")
+          .select("user_id, pick, created_at, users(name, display_name, avatar_url), games(home_team, away_team, date, game_time)")
           .order("created_at", { ascending: false })
           .limit(100);
 
@@ -59,15 +60,23 @@ export default function HistoryPage({ currentUserId, supabase }) {
             <Card key={`${item.created_at}-${index}`}>
               <CardContent className="space-y-3 p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.25em] text-[#C9B037]/80">{formatDate(item.games?.date)}</p>
-                    <h2 className="mt-2 text-base font-700 text-white">
-                      {item.users?.name || "Unknown User"}
-                      {item.user_id === currentUserId ? " · You" : ""}
-                    </h2>
-                    <p className="mt-1 text-sm text-white/55">
-                      {item.games?.away_team} at {item.games?.home_team}
-                    </p>
+                  <div className="flex items-start gap-3">
+                    <UserAvatar
+                      avatarUrl={item.users?.avatar_url ?? null}
+                      name={item.users?.display_name || item.users?.name || "Unknown User"}
+                      size={36}
+                      textSize={14}
+                    />
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.25em] text-[#C9B037]/80">{formatDate(item.games?.date)}</p>
+                      <h2 className="mt-2 text-base font-700 text-white">
+                        {item.users?.display_name || item.users?.name || "Unknown User"}
+                        {item.user_id === currentUserId ? " · You" : ""}
+                      </h2>
+                      <p className="mt-1 text-sm text-white/55">
+                        {item.games?.away_team} at {item.games?.home_team}
+                      </p>
+                    </div>
                   </div>
                   <span className="rounded-full border border-[#C9B037]/35 px-3 py-1 text-xs font-700 text-[#C9B037]">
                     {item.games?.game_time || "--:--"}

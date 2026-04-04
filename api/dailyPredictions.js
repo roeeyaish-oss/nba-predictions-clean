@@ -43,7 +43,7 @@ export default async function handler(req, res) {
 
     const { data, error } = await supabase
       .from("predictions")
-      .select("pick, created_at, game_id, user_id, users(name), games(game_time, date)")
+      .select("pick, created_at, game_id, user_id, users(name, display_name, avatar_url), games(game_time, date)")
       .gte("created_at", start)
       .lt("created_at", end)
       .order("created_at", { ascending: true });
@@ -54,6 +54,8 @@ export default async function handler(req, res) {
 
     const formatted = (data || []).map((row) => ({
       user: row.users?.name ?? "",
+      display_name: row.users?.display_name || row.users?.name || "",
+      avatar_url: row.users?.avatar_url ?? null,
       user_id: row.user_id,
       pick: row.pick,
       game_id: row.game_id,
