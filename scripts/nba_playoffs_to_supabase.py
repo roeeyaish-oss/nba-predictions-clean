@@ -1,22 +1,24 @@
 # === nba_playoffs_to_supabase.py ===
 
 import pandas as pd
-from nba_api.stats.endpoints import scoreboardv2, boxscoretraditionalv2
+from nba_api.stats.endpoints import scoreboardv3, boxscoretraditionalv3
 from datetime import datetime, timedelta
-from pytz import timezone
+from pytz import timezone, utc
 from supabase import create_client, Client
+from dotenv import load_dotenv
 import os
-import re
 import time
 
+load_dotenv()
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL") or os.environ.get("VITE_SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY") or os.environ.get("SUPABASE_KEY") or os.environ.get("VITE_SUPABASE_ANON_KEY")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-# === טבלת המרה של TEAM_ID לשם קבוצה ===
+# === Team ID lookup tables ===
 team_id_to_name = {
     1610612737: "Atlanta Hawks",
     1610612738: "Boston Celtics",
@@ -83,191 +85,160 @@ team_id_to_image = {
     1610612764: "https://cdn.nba.com/logos/nba/1610612764/global/L/logo.svg",
 }
 
-# === שלב 1: שליפת משחקים של היום והמחר לפי שעון EST ===
+
+# === Step 1: Fetch games for yesterday, today, and tomorrow (ET) ===
 est = timezone('US/Eastern')
+il = timezone('Asia/Jerusalem')
+
 yesterday_est = (datetime.now(est) - timedelta(days=1)).strftime('%m/%d/%Y')
 today_est = datetime.now(est).strftime('%m/%d/%Y')
 tomorrow_est = (datetime.now(est) + timedelta(days=1)).strftime('%m/%d/%Y')
 
-print(f"📅 Fetching games for today ({today_est}) and tomorrow ({tomorrow_est})")
-
-scoreboard_yestreday = scoreboardv2.ScoreboardV2(game_date=yesterday_est)
-games_yesterday = scoreboard_yestreday.game_header.get_data_frame()
-
-scoreboard_today = scoreboardv2.ScoreboardV2(game_date=today_est)
-games_today = scoreboard_today.game_header.get_data_frame()
-
-scoreboard_tomorrow = scoreboardv2.ScoreboardV2(game_date=tomorrow_est)
-games_tomorrow = scoreboard_tomorrow.game_header.get_data_frame()
-
-games = pd.concat([games_yesterday, games_today, games_tomorrow], ignore_index=True)
-
-# === שלב 2: עיבוד נתונים ===
-def extract_game_time_et(status_text):
-    match = re.search(r'(\d{1,2}:\d{2} ?[ap]m)', status_text, re.IGNORECASE)
-    if match:
-        return match.group(1).upper()
-    return ""
+print(f"Fetching games for yesterday ({yesterday_est}), today ({today_est}), tomorrow ({tomorrow_est})")
 
 
-games["Game Time"] = games["GAME_STATUS_TEXT"].apply(extract_game_time_et)
+def fetch_scoreboard(game_date):
+    sb = scoreboardv3.ScoreboardV3(game_date=game_date)
+    games_df = sb.get_data_frames()[1]   # one row per game
+    teams_df = sb.get_data_frames()[2]   # two rows per game (away first, home second)
+    return games_df, teams_df
 
-ist = timezone('Asia/Jerusalem')
+
+games_df_y, teams_df_y = fetch_scoreboard(yesterday_est)
+games_df_t, teams_df_t = fetch_scoreboard(today_est)
+games_df_tm, teams_df_tm = fetch_scoreboard(tomorrow_est)
+
+all_games = pd.concat([games_df_y, games_df_t, games_df_tm], ignore_index=True)
+all_teams = pd.concat([teams_df_y, teams_df_t, teams_df_tm], ignore_index=True)
 
 
-def convert_et_to_ist(date_str, time_str):
+# === Step 2: Reconstruct home/away team IDs from teams_df ===
+# V3 teams_df has two rows per game: row 0 = away (visitor), row 1 = home
+away_teams = all_teams.groupby('gameId').nth(0).reset_index()[['gameId', 'teamId']].rename(columns={'teamId': 'awayTeamId'})
+home_teams = all_teams.groupby('gameId').nth(1).reset_index()[['gameId', 'teamId']].rename(columns={'teamId': 'homeTeamId'})
+
+games = all_games.merge(away_teams, on='gameId').merge(home_teams, on='gameId')
+
+
+# === Step 3: Time conversion ===
+def convert_utc_to_il(utc_str):
+    """Parse a UTC ISO string and return (il_date, il_time) or ('', '')."""
     try:
-        if time_str == "":
-            return ""
-        dt_naive = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %I:%M %p")
-        dt_est = est.localize(dt_naive)
-        dt_ist = dt_est.astimezone(ist)
-        return dt_ist.strftime("%H:%M")
+        if not utc_str:
+            return '', ''
+        dt_utc = datetime.strptime(utc_str, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=utc)
+        dt_il = dt_utc.astimezone(il)
+        return dt_il.strftime('%Y-%m-%d'), dt_il.strftime('%H:%M')
     except Exception as e:
-        print(f"⚠️ Failed to convert time: {e}")
-        return ""
+        print(f"Warning: Failed to convert time '{utc_str}': {e}")
+        return '', ''
 
 
-def convert_to_ist_date(date_str, time_str):
-    try:
-        if time_str == "":
-            return ""
-        dt_naive = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %I:%M %p")
-        dt_est = est.localize(dt_naive)
-        dt_ist = dt_est.astimezone(ist)
-        return dt_ist.strftime("%Y-%m-%d")
-    except Exception as e:
-        print(f"⚠️ Failed to convert date: {e}")
-        return ""
+games[['Date (IL)', 'Game Time (IL)']] = games['gameTimeUTC'].apply(
+    lambda t: pd.Series(convert_utc_to_il(t))
+)
+
+games['Home Team'] = games['homeTeamId'].map(team_id_to_name).fillna('TBD')
+games['Away Team'] = games['awayTeamId'].map(team_id_to_name).fillna('TBD')
+games['Home Team Image'] = games['homeTeamId'].map(team_id_to_image).fillna('')
+games['Away Team Image'] = games['awayTeamId'].map(team_id_to_image).fillna('')
 
 
+# === Step 4: Build and upsert games table ===
+games_cleaned = pd.DataFrame({
+    'id': games['gameId'].astype(str),
+    'date': games['Date (IL)'],
+    'home_team': games['Home Team'],
+    'away_team': games['Away Team'],
+    'home_img': games['Home Team Image'],
+    'away_img': games['Away Team Image'],
+    'game_time': games['Game Time (IL)'],
+})
+
+try:
+    games_payload = games_cleaned.to_dict(orient='records')
+    if games_payload:
+        supabase.table('games').upsert(games_payload).execute()
+        print(f"Saved {len(games_payload)} games to Supabase.")
+    else:
+        print("No games to save.")
+except Exception as e:
+    print(f"Error saving games: {e}")
+
+
+# === Step 5: Update results for finished games ===
 def get_winner(game_id):
     try:
-        boxscore = boxscoretraditionalv2.BoxScoreTraditionalV2(game_id=game_id)
-        df = boxscore.get_data_frames()[1]  # team stats
+        boxscore = boxscoretraditionalv3.BoxScoreTraditionalV3(game_id=game_id)
+        df = boxscore.get_data_frames()[2]  # team totals (one row per team)
         team_1 = df.iloc[0]
         team_2 = df.iloc[1]
 
-        team_1_full = team_id_to_name.get(team_1['TEAM_ID'], team_1['TEAM_NAME'])
-        team_2_full = team_id_to_name.get(team_2['TEAM_ID'], team_2['TEAM_NAME'])
+        team_1_full = team_id_to_name.get(team_1['teamId'], team_1['teamName'])
+        team_2_full = team_id_to_name.get(team_2['teamId'], team_2['teamName'])
 
-        if team_1['PTS'] > team_2['PTS']:
+        if team_1['points'] > team_2['points']:
             winner = team_1_full
-        elif team_2['PTS'] > team_1['PTS']:
+        elif team_2['points'] > team_1['points']:
             winner = team_2_full
         else:
-            winner = "Tie"
+            winner = 'Tie'
 
-        print(f"🧠 Game {game_id} | {team_1_full} vs {team_2_full} | Winner: {winner}")
+        print(f"Game {game_id} | {team_1_full} vs {team_2_full} | Winner: {winner}")
         return winner
-
     except Exception as e:
-        print(f"⚠️ Failed to get winner for Game ID {game_id}: {e}")
-        return ""
+        print(f"Warning: Failed to get winner for game {game_id}: {e}")
+        return ''
 
 
-games["Game Time (IST)"] = games.apply(
-    lambda row: convert_et_to_ist(
-        pd.to_datetime(row["GAME_DATE_EST"]).strftime('%Y-%m-%d'),
-        row["Game Time"]
-    ),
-    axis=1
-)
-
-games["Date (IL)"] = games.apply(
-    lambda row: convert_to_ist_date(
-        pd.to_datetime(row["GAME_DATE_EST"]).strftime('%Y-%m-%d'),
-        row["Game Time"]
-    ),
-    axis=1
-)
-
-games["Home Team"] = games["HOME_TEAM_ID"].map(team_id_to_name).fillna("TBD")
-games["Away Team"] = games["VISITOR_TEAM_ID"].map(team_id_to_name).fillna("TBD")
-games["Home Team Image"] = games["HOME_TEAM_ID"].map(team_id_to_image).fillna("TBD")
-games["Away Team Image"] = games["VISITOR_TEAM_ID"].map(team_id_to_image).fillna("TBD")
-
-# === שלב 3: בניית טבלה ל-Supabase ===
-if not games.empty:
-    games_cleaned = pd.DataFrame({
-        "id": games["GAME_ID"].astype(str),
-        "date": games["Date (IL)"],
-        "home_team": games["Home Team"],
-        "away_team": games["Away Team"],
-        "home_img": games["Home Team Image"],
-        "away_img": games["Away Team Image"],
-        "game_time": games["Game Time (IST)"],
-    })
-else:
-    games_cleaned = pd.DataFrame(
-        columns=["id", "date", "home_team", "away_team", "home_img", "away_img", "game_time"]
-    )
-
-# === שלב 4: שמירה לטבלת games ב-Supabase ===
 try:
-    games_payload = games_cleaned.to_dict(orient="records")
+    print(f"Status breakdown:\n{games['gameStatusText'].value_counts().to_string()}")
 
-    if games_payload:
-        supabase.table("games").upsert(games_payload).execute()
-        print(f"✅ {len(games_payload)} games saved to Supabase.")
-    else:
-        print("ℹ️ No games to save to Supabase.")
-except Exception as e:
-    print(f"⚠️ Error while saving games to Supabase: {e}")
-
-# === שלב 5: עדכון טבלת results עם מנצחות של משחקים שהסתיימו ===
-try:
-    print("🔍 Checking which games have status 'Final'...")
-    print("סטטוסים זמינים:")
-    print(games["GAME_STATUS_TEXT"].value_counts())
-
-    final_games = games[games["GAME_STATUS_TEXT"] == "Final"]
-    print(f"🎯 Found {len(final_games)} final games:")
-    print(final_games[["GAME_ID", "GAME_DATE_EST", "HOME_TEAM_ID", "VISITOR_TEAM_ID"]])
+    final_games = games[games['gameStatusText'] == 'Final']
+    print(f"Found {len(final_games)} final games.")
 
     results_payload = []
     for _, row in final_games.iterrows():
-        game_id = str(row["GAME_ID"])
+        game_id = str(row['gameId'])
         winner = get_winner(game_id)
         if winner:
-            results_payload.append({
-                "game_id": game_id,
-                "winner": winner,
-            })
+            results_payload.append({'game_id': game_id, 'winner': winner})
         time.sleep(1.5)
 
     if results_payload:
-        supabase.table("results").upsert(results_payload).execute()
-        print(f"🏆 Upserted {len(results_payload)} results into Supabase.")
+        supabase.table('results').upsert(results_payload).execute()
+        print(f"Upserted {len(results_payload)} results.")
     else:
-        print("ℹ️ No final games to update in results.")
+        print("No final games to update.")
 except Exception as e:
-    print(f"⚠️ Error while updating results in Supabase: {e}")
+    print(f"Error updating results: {e}")
 
-# === שלב 6: חישוב ניקוד ===
+
+# === Step 6: Recalculate scores ===
 try:
-    print("📊 Calculating scores...")
-    predictions_resp = supabase.table("predictions").select("user_id, game_id, pick").execute()
-    results_resp = supabase.table("results").select("game_id, winner").execute()
+    print("Calculating scores...")
+    predictions_resp = supabase.table('predictions').select('user_id, game_id, pick').execute()
+    results_resp = supabase.table('results').select('game_id, winner').execute()
 
-    results_map = {r["game_id"]: r["winner"] for r in (results_resp.data or [])}
+    results_map = {r['game_id']: r['winner'] for r in (results_resp.data or [])}
 
     score_counts = {}
     for pred in (predictions_resp.data or []):
-        uid = pred["user_id"]
-        game_id = pred["game_id"]
+        uid = pred['user_id']
+        game_id = pred['game_id']
         if game_id in results_map:
             score_counts.setdefault(uid, 0)
-            if pred["pick"] == results_map[game_id]:
+            if pred['pick'] == results_map[game_id]:
                 score_counts[uid] += 1
 
     if score_counts:
-        scores_payload = [{"user_id": uid, "score": count} for uid, count in score_counts.items()]
-        supabase.table("scores").upsert(scores_payload).execute()
-        print(f"📊 Upserted scores for {len(scores_payload)} users.")
+        scores_payload = [{'user_id': uid, 'score': count} for uid, count in score_counts.items()]
+        supabase.table('scores').upsert(scores_payload).execute()
+        print(f"Upserted scores for {len(scores_payload)} users.")
     else:
-        print("ℹ️ No scores to calculate.")
+        print("No scores to calculate.")
 except Exception as e:
-    print(f"⚠️ Error while calculating scores: {e}")
+    print(f"Error calculating scores: {e}")
 
-print("🎉 All done! Games, Results, and Scores are up to date.")
+
+print("Done. Games, results, and scores are up to date.")
