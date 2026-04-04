@@ -18,6 +18,21 @@ const courtBackgroundStyle = {
   backgroundColor: "#050200",
 };
 
+const EMAIL_AVATAR_MAP = {
+  "roeeyaish@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/roee.png",
+  "yuvaldagan95@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/dagan.png",
+  "yuvalsaban9@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/saban.png",
+  "doronnoam3@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/doron.png",
+};
+
+function resolveAvatarUrl(email, avatarUrl) {
+  if (typeof avatarUrl === "string" && avatarUrl.startsWith("http")) {
+    return avatarUrl;
+  }
+
+  return EMAIL_AVATAR_MAP[email?.toLowerCase()] ?? avatarUrl ?? null;
+}
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -46,13 +61,6 @@ function App() {
 
       setAccessDenied(false);
 
-      const EMAIL_AVATAR_MAP = {
-        "roeeyaish@gmail.com":    "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/roee.png",
-        "yuvaldagan95@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/dagan.png",
-        "yuvalsaban9@gmail.com":  "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/saban.png",
-        "doronnoam3@gmail.com":   "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/doron.png",
-      };
-
       // Fetch existing row first so we don't overwrite a custom avatar_url
       const { data: existing } = await supabase
         .from("users")
@@ -70,25 +78,23 @@ function App() {
         { onConflict: "id" }
       );
 
-      const userEmail = authUser.email.toLowerCase();
-      const storageAvatarUrl = EMAIL_AVATAR_MAP[userEmail];
-
-      if (storageAvatarUrl) {
-        await supabase
-          .from("users")
-          .update({ avatar_url: storageAvatarUrl })
-          .eq("id", authUser.id);
-      }
-
       const { data: profile } = await supabase
         .from("users")
         .select("avatar_url, onboarding_complete")
         .eq("id", authUser.id)
         .single();
 
-      console.log("[App] profile after update:", profile);
+      const normalizedAvatarUrl = resolveAvatarUrl(authUser.email, profile?.avatar_url);
+
+      if (normalizedAvatarUrl && normalizedAvatarUrl !== profile?.avatar_url) {
+        await supabase
+          .from("users")
+          .update({ avatar_url: normalizedAvatarUrl })
+          .eq("id", authUser.id);
+      }
+
       setOnboardingComplete(profile?.onboarding_complete ?? false);
-      setProfileAvatarUrl(profile?.avatar_url ?? null);
+      setProfileAvatarUrl(normalizedAvatarUrl);
       setUser(authUser);
     }
 

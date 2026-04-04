@@ -51,6 +51,26 @@ const submitButtonDisabledStyle = {
   cursor: "not-allowed",
 };
 
+const avatarStyle = {
+  width: "120px",
+  height: "120px",
+  border: "3px solid #C9B037",
+  boxShadow: "0 0 16px rgba(201,176,55,0.5)",
+  borderRadius: "50%",
+  objectFit: "cover",
+};
+
+const avatarFallbackStyle = {
+  ...avatarStyle,
+  background: "rgba(201,176,55,0.15)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: "32px",
+  fontWeight: 700,
+  color: "#C9B037",
+};
+
 export default function OnboardingPage({ user, supabase, avatarUrl, onComplete }) {
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState(
@@ -60,7 +80,6 @@ export default function OnboardingPage({ user, supabase, avatarUrl, onComplete }
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  console.log("[OnboardingPage] avatarUrl received:", avatarUrl);
   const initials = (displayName || "?")
     .split(" ")
     .map((w) => w[0])
@@ -100,7 +119,6 @@ export default function OnboardingPage({ user, supabase, avatarUrl, onComplete }
       <div style={{ position: "relative", height: "100%", overflowY: "auto", zIndex: 1 }}>
         <div style={{ minHeight: "100%", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "40px 16px 60px" }}>
           <div style={cardStyle}>
-
             {/* Header */}
             <div style={{ textAlign: "center", marginBottom: "28px" }}>
               <p style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(201,176,55,0.7)", margin: "0 0 12px" }}>
@@ -113,10 +131,10 @@ export default function OnboardingPage({ user, supabase, avatarUrl, onComplete }
                   <img
                     src={avatarUrl}
                     alt="Your avatar"
-                    style={{ width: "100px", height: "100px", borderRadius: "50%", border: "2px solid rgba(201,176,55,0.6)", objectFit: "cover" }}
+                    style={avatarStyle}
                   />
                 ) : (
-                  <div style={{ width: "100px", height: "100px", borderRadius: "50%", border: "2px solid rgba(201,176,55,0.6)", background: "rgba(201,176,55,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", fontWeight: 700, color: "#C9B037" }}>
+                  <div style={avatarFallbackStyle}>
                     {initials}
                   </div>
                 )}
@@ -204,9 +222,8 @@ export default function OnboardingPage({ user, supabase, avatarUrl, onComplete }
               disabled={!displayName.trim() || !selectedTeam || submitting}
               style={!displayName.trim() || !selectedTeam || submitting ? submitButtonDisabledStyle : submitButtonStyle}
             >
-              {submitting ? "Saving…" : "Let's go"}
+              {submitting ? "Saving..." : "Let's go"}
             </button>
-
           </div>
         </div>
       </div>
