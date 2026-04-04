@@ -46,6 +46,13 @@ function App() {
 
       setAccessDenied(false);
 
+      const EMAIL_AVATAR_MAP = {
+        "roeeyaish@gmail.com":    "roee.png",
+        "yuvaldagan95@gmail.com": "dagan.png",
+        "yuvalsaban9@gmail.com":  "saban.png",
+        "doronnoam3@gmail.com":   "doron.png",
+      };
+
       // Fetch existing row first so we don't overwrite a custom avatar_url
       const { data: existing } = await supabase
         .from("users")
@@ -58,15 +65,30 @@ function App() {
           id: authUser.id,
           email: authUser.email,
           name: authUser.user_metadata.full_name,
-          // Only fall back to Google photo if no avatar is stored yet
-          avatar_url: existing?.avatar_url ?? authUser.user_metadata.avatar_url ?? null,
+          avatar_url: existing?.avatar_url ?? null,
         },
         { onConflict: "id" }
       );
 
-      console.log("[App] existing profile from Supabase:", existing);
-      setOnboardingComplete(existing?.onboarding_complete ?? false);
-      setProfileAvatarUrl(existing?.avatar_url ?? null);
+      const userEmail = authUser.email.toLowerCase();
+      const storageAvatarUrl = EMAIL_AVATAR_MAP[userEmail];
+
+      if (storageAvatarUrl) {
+        await supabase
+          .from("users")
+          .update({ avatar_url: storageAvatarUrl })
+          .eq("id", authUser.id);
+      }
+
+      const { data: profile } = await supabase
+        .from("users")
+        .select("avatar_url, onboarding_complete")
+        .eq("id", authUser.id)
+        .single();
+
+      console.log("[App] profile after update:", profile);
+      setOnboardingComplete(profile?.onboarding_complete ?? false);
+      setProfileAvatarUrl(profile?.avatar_url ?? null);
       setUser(authUser);
     }
 
