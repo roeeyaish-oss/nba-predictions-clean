@@ -51,7 +51,7 @@ const submitButtonDisabledStyle = {
   cursor: "not-allowed",
 };
 
-export default function OnboardingPage({ user, supabase, onComplete }) {
+export default function OnboardingPage({ user, supabase, avatarUrl, onComplete }) {
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState(
     user?.user_metadata?.full_name ?? ""
@@ -60,7 +60,7 @@ export default function OnboardingPage({ user, supabase, onComplete }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  const avatarUrl = user?.user_metadata?.avatar_url ?? null;
+  console.log("[OnboardingPage] avatarUrl received:", avatarUrl);
   const initials = (displayName || "?")
     .split(" ")
     .map((w) => w[0])

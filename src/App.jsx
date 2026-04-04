@@ -23,6 +23,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [accessDenied, setAccessDenied] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(null);
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState(null);
 
   useEffect(() => {
     async function handleAuthUser(authUser) {
@@ -57,11 +58,13 @@ function App() {
 
       const { data: profile } = await supabase
         .from("users")
-        .select("onboarding_complete")
+        .select("onboarding_complete, avatar_url")
         .eq("id", authUser.id)
         .single();
 
+      console.log("[App] profile fetched from Supabase:", profile);
       setOnboardingComplete(profile?.onboarding_complete ?? false);
+      setProfileAvatarUrl(profile?.avatar_url ?? null);
       setUser(authUser);
     }
 
@@ -160,7 +163,7 @@ function App() {
         element={
           onboardingComplete
             ? <Navigate to="/" replace />
-            : <OnboardingPage user={user} supabase={supabase} onComplete={() => setOnboardingComplete(true)} />
+            : <OnboardingPage user={user} supabase={supabase} avatarUrl={profileAvatarUrl} onComplete={() => setOnboardingComplete(true)} />
         }
       />
       <Route
