@@ -46,25 +46,27 @@ function App() {
 
       setAccessDenied(false);
 
+      // Fetch existing row first so we don't overwrite a custom avatar_url
+      const { data: existing } = await supabase
+        .from("users")
+        .select("avatar_url, onboarding_complete")
+        .eq("id", authUser.id)
+        .single();
+
       await supabase.from("users").upsert(
         {
           id: authUser.id,
           email: authUser.email,
           name: authUser.user_metadata.full_name,
-          avatar_url: authUser.user_metadata.avatar_url ?? null,
+          // Only fall back to Google photo if no avatar is stored yet
+          avatar_url: existing?.avatar_url ?? authUser.user_metadata.avatar_url ?? null,
         },
         { onConflict: "id" }
       );
 
-      const { data: profile } = await supabase
-        .from("users")
-        .select("onboarding_complete, avatar_url")
-        .eq("id", authUser.id)
-        .single();
-
-      console.log("[App] profile fetched from Supabase:", profile);
-      setOnboardingComplete(profile?.onboarding_complete ?? false);
-      setProfileAvatarUrl(profile?.avatar_url ?? null);
+      console.log("[App] existing profile from Supabase:", existing);
+      setOnboardingComplete(existing?.onboarding_complete ?? false);
+      setProfileAvatarUrl(existing?.avatar_url ?? null);
       setUser(authUser);
     }
 
