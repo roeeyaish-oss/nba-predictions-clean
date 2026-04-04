@@ -2,6 +2,7 @@
 
 import pandas as pd
 from nba_api.stats.endpoints import scoreboardv3, boxscoretraditionalv3
+from nba_api.stats.library.http import NBAStatsHTTP
 from datetime import datetime, timedelta
 from pytz import timezone, utc
 from supabase import create_client, Client
@@ -10,6 +11,40 @@ import os
 import time
 
 load_dotenv()
+
+# Extend the default headers with a full browser fingerprint so stats.nba.com
+# doesn't block requests from CI/cloud environments (GitHub Actions, etc.).
+# We update rather than replace so the library's base keys are preserved.
+NBAStatsHTTP.headers = {
+    **NBAStatsHTTP.headers,
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Origin': 'https://www.nba.com',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-site',
+    'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'Sec-Ch-Ua-Platform': '"Windows"',
+}
+# Reset the shared session so it picks up the new headers on the next request.
+NBAStatsHTTP._session = None
+
+NBA_TIMEOUT = 60
+NBA_RETRIES = 3
+NBA_RETRY_DELAY = 5  # seconds between retries
+
+
+def call_with_retry(fn, *args, **kwargs):
+    """Call fn(*args, **kwargs) up to NBA_RETRIES times, sleeping between attempts."""
+    last_err = None
+    for attempt in range(1, NBA_RETRIES + 1):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as e:
+            last_err = e
+            if attempt < NBA_RETRIES:
+                print(f"Attempt {attempt} failed ({e}). Retrying in {NBA_RETRY_DELAY}s...")
+                time.sleep(NBA_RETRY_DELAY)
+    raise last_err
 
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL") or os.environ.get("VITE_SUPABASE_URL")
@@ -98,7 +133,7 @@ print(f"Fetching games for yesterday ({yesterday_est}), today ({today_est}), tom
 
 
 def fetch_scoreboard(game_date):
-    sb = scoreboardv3.ScoreboardV3(game_date=game_date)
+    sb = call_with_retry(scoreboardv3.ScoreboardV3, game_date=game_date, timeout=NBA_TIMEOUT)
     games_df = sb.get_data_frames()[1]   # one row per game
     teams_df = sb.get_data_frames()[2]   # two rows per game (away first, home second)
     return games_df, teams_df
@@ -169,7 +204,7 @@ except Exception as e:
 # === Step 5: Update results for finished games ===
 def get_winner(game_id):
     try:
-        boxscore = boxscoretraditionalv3.BoxScoreTraditionalV3(game_id=game_id)
+        boxscore = call_with_retry(boxscoretraditionalv3.BoxScoreTraditionalV3, game_id=game_id, timeout=NBA_TIMEOUT)
         df = boxscore.get_data_frames()[2]  # team totals (one row per team)
         team_1 = df.iloc[0]
         team_2 = df.iloc[1]
@@ -206,7 +241,7 @@ try:
         time.sleep(1.5)
 
     if results_payload:
-        supabase.table('results').upsert(results_payload).execute()
+        supabase.table('results').upsert(results_payload, on_conflict='game_id').execute()
         print(f"Upserted {len(results_payload)} results.")
     else:
         print("No final games to update.")
