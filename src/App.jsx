@@ -6,6 +6,7 @@ import HomePage from "@/pages/HomePage";
 import LeaderboardPage from "@/pages/LeaderboardPage";
 import ProfilePage from "@/pages/ProfilePage";
 import HistoryPage from "@/pages/HistoryPage";
+import OnboardingPage from "@/pages/OnboardingPage";
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -21,6 +22,7 @@ const courtBackgroundStyle = {
 function App() {
   const [user, setUser] = useState(null);
   const [accessDenied, setAccessDenied] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState(null);
 
   useEffect(() => {
     async function handleAuthUser(authUser) {
@@ -53,6 +55,13 @@ function App() {
         { onConflict: "id" }
       );
 
+      const { data: profile } = await supabase
+        .from("users")
+        .select("onboarding_complete")
+        .eq("id", authUser.id)
+        .single();
+
+      setOnboardingComplete(profile?.onboarding_complete ?? false);
       setUser(authUser);
     }
 
@@ -138,9 +147,29 @@ function App() {
     );
   }
 
+  if (onboardingComplete === null) {
+    return (
+      <div style={{ position: "fixed", inset: 0, overflow: "hidden", background: "#050200" }} />
+    );
+  }
+
   return (
     <Routes>
-      <Route element={<AppLayout user={user} onSignOut={handleSignOut} backgroundStyle={courtBackgroundStyle} />}>
+      <Route
+        path="/onboarding"
+        element={
+          onboardingComplete
+            ? <Navigate to="/" replace />
+            : <OnboardingPage user={user} supabase={supabase} onComplete={() => setOnboardingComplete(true)} />
+        }
+      />
+      <Route
+        element={
+          onboardingComplete
+            ? <AppLayout user={user} onSignOut={handleSignOut} backgroundStyle={courtBackgroundStyle} />
+            : <Navigate to="/onboarding" replace />
+        }
+      >
         <Route path="/" element={<HomePage user={user} supabase={supabase} />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/profile" element={<ProfilePage user={user} supabase={supabase} />} />
