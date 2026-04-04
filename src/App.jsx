@@ -47,10 +47,10 @@ function App() {
       setAccessDenied(false);
 
       const EMAIL_AVATAR_MAP = {
-        "roeeyaish@gmail.com":    "roee.png",
-        "yuvaldagan95@gmail.com": "dagan.png",
-        "yuvalsaban9@gmail.com":  "saban.png",
-        "doronnoam3@gmail.com":   "doron.png",
+        "roeeyaish@gmail.com":    "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/roee.png",
+        "yuvaldagan95@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/dagan.png",
+        "yuvalsaban9@gmail.com":  "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/saban.png",
+        "doronnoam3@gmail.com":   "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/doron.png",
       };
 
       // Fetch existing row first so we don't overwrite a custom avatar_url
