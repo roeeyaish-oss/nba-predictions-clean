@@ -28,7 +28,9 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
   const cachedItems = profileHistoryCache.get(user.id) ?? [];
   const hadCache = useRef(cachedItems.length > 0).current;
   const [items, setItems] = useState(cachedItems);
-  const [ready, setReady] = useState(hadCache);
+  const [predictionsLoaded, setPredictionsLoaded] = useState(hadCache);
+  const [avatarLoaded, setAvatarLoaded] = useState(!avatarUrl);
+  const ready = predictionsLoaded && avatarLoaded;
   const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
@@ -52,8 +54,7 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
       } catch (err) {
         console.error("Failed to load profile history:", err);
       } finally {
-        if (!hadCache) setAnimate(true);
-        setReady(true);
+        setPredictionsLoaded(true);
       }
     }
 
@@ -61,8 +62,11 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
   }, [supabase, user.id, hadCache]);
 
   useEffect(() => {
-    if (ready) console.log("PROFILE: ready=true");
-  }, [ready]);
+    if (ready) {
+      if (!hadCache) setAnimate(true);
+      console.log("PROFILE: ready=true");
+    }
+  }, [ready, hadCache]);
 
   if (!ready) {
     return (
@@ -121,6 +125,7 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
               <img
                 src={avatarUrl}
                 alt={`${displayName} avatar`}
+                onLoad={() => setAvatarLoaded(true)}
                 style={{ height: "200px", width: "auto", display: "block" }}
               />
             ) : (
