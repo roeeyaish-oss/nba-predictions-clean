@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import SkeletonBlock from "@/components/SkeletonBlock";
@@ -8,18 +8,18 @@ import useLeaderboard from "@/hooks/useLeaderboard";
 
 export default function Scoreboard() {
   const { scores, loading } = useLeaderboard(supabase);
-  const hadCachedScores = useRef(scores.length > 0).current;
-  const [contentReady, setContentReady] = useState(hadCachedScores);
-  const [shouldAnimateRows, setShouldAnimateRows] = useState(false);
+  const hadCache = useRef(scores.length > 0).current;
+  const [ready, setReady] = useState(hadCache);
+  const [animate, setAnimate] = useState(false);
 
-  useLayoutEffect(() => {
-    if (!contentReady && !loading) {
-      setContentReady(true);
-      setShouldAnimateRows(!hadCachedScores && scores.length > 0);
+  useEffect(() => {
+    if (!ready && !loading) {
+      if (!hadCache) setAnimate(true);
+      setReady(true);
     }
-  }, [contentReady, hadCachedScores, loading, scores.length]);
+  }, [ready, loading, hadCache]);
 
-  if (!contentReady) {
+  if (!ready) {
     return (
       <Card>
         <CardContent className="p-5 sm:p-7">
@@ -48,7 +48,7 @@ export default function Scoreboard() {
   }
 
   return (
-    <Card>
+    <Card style={animate ? { animation: "fadeIn 250ms ease both" } : undefined}>
       <CardContent className="p-5 sm:p-7">
         <div className="mb-6 flex items-center gap-3">
           <div className="rounded-full border border-[#C9B037]/40 bg-[#C9B037]/12 p-2 text-[#C9B037]">
@@ -72,14 +72,6 @@ export default function Scoreboard() {
               <tr
                 key={`${row.user}-${index}`}
                 className="border-b border-white/6 last:border-b-0 hover:bg-white/4"
-                style={{
-                  ...(shouldAnimateRows
-                    ? {
-                        animationDelay: `${Math.min(index * 60, 300)}ms`,
-                        animation: "cardEnter 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
-                      }
-                    : {}),
-                }}
               >
                 <td className="px-3 py-4 font-700 text-[#C9B037]">{String(index + 1).padStart(2, "0")}</td>
                 <td className="px-3 py-4 font-600 text-white">

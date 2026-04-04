@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import SkeletonBlock from "@/components/SkeletonBlock";
 import UserAvatar from "@/components/UserAvatar";
@@ -15,11 +15,10 @@ function formatDate(dateString) {
 let historyCache = [];
 
 export default function HistoryPage({ currentUserId, supabase }) {
+  const hadCache = useRef(historyCache.length > 0).current;
   const [items, setItems] = useState(historyCache);
-  const [loading, setLoading] = useState(historyCache.length === 0);
-  const hadCachedItems = useRef(historyCache.length > 0).current;
-  const [contentReady, setContentReady] = useState(hadCachedItems);
-  const [shouldAnimateCards, setShouldAnimateCards] = useState(false);
+  const [ready, setReady] = useState(hadCache);
+  const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
     async function loadHistory() {
@@ -36,44 +35,52 @@ export default function HistoryPage({ currentUserId, supabase }) {
       } catch (err) {
         console.error("Failed to load all prediction history:", err);
       } finally {
-        setLoading(false);
+        if (!hadCache) setAnimate(true);
+        setReady(true);
       }
     }
 
     loadHistory();
-  }, [supabase]);
+  }, [supabase, hadCache]);
 
-  useLayoutEffect(() => {
-    if (!contentReady && !loading) {
-      setContentReady(true);
-      setShouldAnimateCards(!hadCachedItems && items.length > 0);
-    }
-  }, [contentReady, hadCachedItems, items.length, loading]);
-
-  function renderHistorySkeleton(index) {
+  if (!ready) {
     return (
-      <Card key={`history-skeleton-${index}`}>
-        <CardContent className="space-y-3 p-5 sm:p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <SkeletonBlock style={{ width: "36px", height: "36px", borderRadius: "50%" }} />
-              <div>
-                <SkeletonBlock style={{ width: "84px", height: "12px", marginBottom: "12px" }} />
-                <SkeletonBlock style={{ width: "150px", height: "18px", marginBottom: "10px" }} />
-                <SkeletonBlock style={{ width: "120px", height: "14px" }} />
-              </div>
-            </div>
-            <SkeletonBlock style={{ width: "56px", height: "28px", borderRadius: "999px" }} />
-          </div>
-          <SkeletonBlock style={{ width: "56px", height: "12px" }} />
-          <SkeletonBlock style={{ width: "140px", height: "18px" }} />
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <section className="rounded-4 border border-[#C9B037]/35 bg-black/45 p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,215,0,0.1)] backdrop-blur-[8px] sm:p-7">
+          <SkeletonBlock style={{ width: "60px", height: "10px", marginBottom: "10px" }} />
+          <SkeletonBlock style={{ width: "220px", height: "36px", marginBottom: "14px" }} />
+          <SkeletonBlock style={{ width: "260px", height: "14px" }} />
+        </section>
+        <div className="grid gap-4">
+          {[0, 1, 2].map((index) => (
+            <Card key={`history-skeleton-${index}`}>
+              <CardContent className="space-y-3 p-5 sm:p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <SkeletonBlock style={{ width: "36px", height: "36px", borderRadius: "50%" }} />
+                    <div>
+                      <SkeletonBlock style={{ width: "84px", height: "12px", marginBottom: "12px" }} />
+                      <SkeletonBlock style={{ width: "150px", height: "18px", marginBottom: "10px" }} />
+                      <SkeletonBlock style={{ width: "120px", height: "14px" }} />
+                    </div>
+                  </div>
+                  <SkeletonBlock style={{ width: "56px", height: "28px", borderRadius: "999px" }} />
+                </div>
+                <SkeletonBlock style={{ width: "56px", height: "12px" }} />
+                <SkeletonBlock style={{ width: "140px", height: "18px" }} />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div
+      className="space-y-6"
+      style={animate ? { animation: "fadeIn 250ms ease both" } : undefined}
+    >
       <section className="rounded-4 border border-[#C9B037]/35 bg-black/45 p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,215,0,0.1)] backdrop-blur-[8px] sm:p-7">
         <p className="mb-2 text-[11px] uppercase tracking-[0.35em] text-[#C9B037]/85">History</p>
         <h1 className="text-3xl font-800 text-white sm:text-5xl">All Predictions</h1>
@@ -82,11 +89,7 @@ export default function HistoryPage({ currentUserId, supabase }) {
         </p>
       </section>
 
-      {!contentReady ? (
-        <div className="grid gap-4">
-          {[0, 1, 2].map(renderHistorySkeleton)}
-        </div>
-      ) : items.length === 0 ? (
+      {items.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center text-white/65">
             No history available yet.
@@ -95,17 +98,7 @@ export default function HistoryPage({ currentUserId, supabase }) {
       ) : (
         <div className="grid gap-4">
           {items.map((item, index) => (
-            <Card
-              key={`${item.created_at}-${index}`}
-              style={{
-                ...(shouldAnimateCards
-                  ? {
-                      animationDelay: `${Math.min(index * 60, 300)}ms`,
-                      animation: "cardEnter 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
-                    }
-                  : {}),
-              }}
-            >
+            <Card key={`${item.created_at}-${index}`}>
               <CardContent className="space-y-3 p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3">

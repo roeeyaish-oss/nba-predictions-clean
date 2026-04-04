@@ -9,6 +9,20 @@
         from { opacity: 0; transform: translateY(16px); }
         to { opacity: 1; transform: translateY(0); }
       }
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      .skeleton-block {
+        background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(201,176,55,0.08) 50%, rgba(255,255,255,0.04) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 8px;
+      }
     </style>
     <title>Vite + React</title>
   </head>
