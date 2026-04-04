@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Clock3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import DailyPredictions from "@/components/DailyPredictions";
-import FadeIn from "@/components/FadeIn";
 import SkeletonBlock from "@/components/SkeletonBlock";
 import { isGameStarted } from "@/lib/time";
 import useTodayGames from "@/hooks/useTodayGames";
@@ -166,12 +165,19 @@ export default function HomePage({ user, supabase }) {
           </CardContent>
         </Card>
       ) : (
-        <FadeIn>
+        <>
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            {games.map((game) => {
+            {games.map((game, index) => {
               const started = isGameStarted(game.gameTimeIL, game.date);
               return (
-                <Card key={game.gameId} style={started ? { opacity: 0.7 } : undefined}>
+                <Card
+                  key={game.gameId}
+                  style={{
+                    ...(started ? { opacity: 0.7 } : {}),
+                    animationDelay: `${Math.min(index * 60, 300)}ms`,
+                    animation: "cardEnter 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
+                  }}
+                >
                   <CardContent>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", marginBottom: "16px" }}>
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
@@ -232,7 +238,7 @@ export default function HomePage({ user, supabase }) {
               {message.text}
             </p>
           )}
-        </FadeIn>
+        </>
       )}
 
       <DailyPredictions currentUserId={user.id} />

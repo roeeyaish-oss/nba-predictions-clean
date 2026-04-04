@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import FadeIn from "@/components/FadeIn";
 import { Card, CardContent } from "@/components/ui/card";
 import SkeletonBlock from "@/components/SkeletonBlock";
 import UserAvatar from "@/components/UserAvatar";
@@ -84,43 +83,47 @@ export default function HistoryPage({ currentUserId, supabase }) {
           </CardContent>
         </Card>
       ) : (
-        <FadeIn>
-          <div className="grid gap-4">
-            {items.map((item, index) => (
-              <Card key={`${item.created_at}-${index}`}>
-                <CardContent className="space-y-3 p-5 sm:p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <UserAvatar
-                        avatarUrl={item.users?.avatar_url ?? null}
-                        name={item.users?.display_name || item.users?.name || "Unknown User"}
-                        size={36}
-                        textSize={14}
-                      />
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.25em] text-[#C9B037]/80">{formatDate(item.games?.date)}</p>
-                        <h2 className="mt-2 text-base font-700 text-white">
-                          {item.users?.display_name || item.users?.name || "Unknown User"}
-                          {item.user_id === currentUserId ? " · You" : ""}
-                        </h2>
-                        <p className="mt-1 text-sm text-white/55">
-                          {item.games?.away_team} at {item.games?.home_team}
-                        </p>
-                      </div>
+        <div className="grid gap-4">
+          {items.map((item, index) => (
+            <Card
+              key={`${item.created_at}-${index}`}
+              style={{
+                animationDelay: `${Math.min(index * 60, 300)}ms`,
+                animation: "cardEnter 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
+              }}
+            >
+              <CardContent className="space-y-3 p-5 sm:p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <UserAvatar
+                      avatarUrl={item.users?.avatar_url ?? null}
+                      name={item.users?.display_name || item.users?.name || "Unknown User"}
+                      size={36}
+                      textSize={14}
+                    />
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.25em] text-[#C9B037]/80">{formatDate(item.games?.date)}</p>
+                      <h2 className="mt-2 text-base font-700 text-white">
+                        {item.users?.display_name || item.users?.name || "Unknown User"}
+                        {item.user_id === currentUserId ? " · You" : ""}
+                      </h2>
+                      <p className="mt-1 text-sm text-white/55">
+                        {item.games?.away_team} at {item.games?.home_team}
+                      </p>
                     </div>
-                    <span className="rounded-full border border-[#C9B037]/35 px-3 py-1 text-xs font-700 text-[#C9B037]">
-                      {item.games?.game_time || "--:--"}
-                    </span>
                   </div>
-                  <div className="rounded-3 bg-white/4 px-4 py-3">
-                    <p className="text-xs uppercase tracking-[0.24em] text-white/40">Pick</p>
-                    <p className="mt-2 text-base font-700 text-white">{item.pick}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </FadeIn>
+                  <span className="rounded-full border border-[#C9B037]/35 px-3 py-1 text-xs font-700 text-[#C9B037]">
+                    {item.games?.game_time || "--:--"}
+                  </span>
+                </div>
+                <div className="rounded-3 bg-white/4 px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.24em] text-white/40">Pick</p>
+                  <p className="mt-2 text-base font-700 text-white">{item.pick}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
     </div>
   );
