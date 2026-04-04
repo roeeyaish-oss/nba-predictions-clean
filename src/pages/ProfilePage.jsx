@@ -32,6 +32,11 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
   const [avatarLoaded, setAvatarLoaded] = useState(!avatarUrl);
   const ready = predictionsLoaded && avatarLoaded;
   const [animate, setAnimate] = useState(false);
+  const imgRef = useRef(null);
+
+  useEffect(() => {
+    if (imgRef.current?.complete) setAvatarLoaded(true);
+  }, []);
 
   useEffect(() => {
     console.log("PROFILE: props received", { avatarUrl, displayName });
@@ -123,9 +128,11 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
           <div style={{ display: "flex", justifyContent: "center" }}>
             {avatarUrl ? (
               <img
+                ref={imgRef}
                 src={avatarUrl}
                 alt={`${displayName} avatar`}
                 onLoad={() => setAvatarLoaded(true)}
+                onError={() => setAvatarLoaded(true)}
                 style={{ height: "200px", width: "auto", display: "block" }}
               />
             ) : (
