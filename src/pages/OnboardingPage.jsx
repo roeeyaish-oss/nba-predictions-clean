@@ -113,10 +113,10 @@ export default function OnboardingPage({ user, supabase, avatarUrl, onComplete }
                   <img
                     src={avatarUrl}
                     alt="Your avatar"
-                    style={{ width: "72px", height: "72px", borderRadius: "50%", border: "2px solid rgba(201,176,55,0.6)", objectFit: "cover" }}
+                    style={{ width: "100px", height: "100px", borderRadius: "50%", border: "2px solid rgba(201,176,55,0.6)", objectFit: "cover" }}
                   />
                 ) : (
-                  <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "2px solid rgba(201,176,55,0.6)", background: "rgba(201,176,55,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", fontWeight: 700, color: "#C9B037" }}>
+                  <div style={{ width: "100px", height: "100px", borderRadius: "50%", border: "2px solid rgba(201,176,55,0.6)", background: "rgba(201,176,55,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", fontWeight: 700, color: "#C9B037" }}>
                     {initials}
                   </div>
                 )}
