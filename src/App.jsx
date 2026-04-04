@@ -18,19 +18,63 @@ const courtBackgroundStyle = {
   backgroundColor: "#050200",
 };
 
+const AVATAR_BASE_URL = "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/";
+
 const EMAIL_AVATAR_MAP = {
-  "roeeyaish@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/roee.png",
-  "yuvaldagan95@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/dagan.png",
-  "yuvalsaban9@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/saban.png",
-  "doronnoam3@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/doron.png",
+  "roeeyaish@gmail.com": `${AVATAR_BASE_URL}roee.png`,
+  "yuvaldagan95@gmail.com": `${AVATAR_BASE_URL}dagan.png`,
+  "yuvalsaban9@gmail.com": `${AVATAR_BASE_URL}saban.png`,
+  "doronnoam3@gmail.com": `${AVATAR_BASE_URL}doron.png`,
 };
 
 function resolveAvatarUrl(email, avatarUrl) {
-  if (typeof avatarUrl === "string" && avatarUrl.startsWith("http")) {
+  if (typeof avatarUrl !== "string" || !avatarUrl.trim()) {
+    return EMAIL_AVATAR_MAP[email?.toLowerCase()] ?? null;
+  }
+
+  const trimmedAvatarUrl = avatarUrl.trim();
+
+  if (trimmedAvatarUrl.startsWith("http")) {
+    return trimmedAvatarUrl;
+  }
+
+  if (!trimmedAvatarUrl.includes("/")) {
+    return `${AVATAR_BASE_URL}${trimmedAvatarUrl}`;
+  }
+
+  if (trimmedAvatarUrl.startsWith("avatars/")) {
+    return `${AVATAR_BASE_URL}${trimmedAvatarUrl.slice("avatars/".length)}`;
+  }
+
+  if (trimmedAvatarUrl.startsWith("/")) {
+    return `${AVATAR_BASE_URL}${trimmedAvatarUrl.slice(1)}`;
+  }
+
+  if (trimmedAvatarUrl.startsWith("storage/v1/object/public/avatars/")) {
+    return `${import.meta.env.VITE_SUPABASE_URL}/${trimmedAvatarUrl}`;
+  }
+
+  if (trimmedAvatarUrl.startsWith("object/public/avatars/")) {
+    return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/${trimmedAvatarUrl}`;
+  }
+
+  if (trimmedAvatarUrl.startsWith("public/avatars/")) {
+    return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/${trimmedAvatarUrl}`;
+  }
+
+  if (trimmedAvatarUrl.startsWith("avatars")) {
+    return `${AVATAR_BASE_URL}${trimmedAvatarUrl.replace(/^avatars\/?/, "")}`;
+  }
+
+  if (/\.(png|jpg|jpeg|webp|gif|avif)$/i.test(trimmedAvatarUrl)) {
+    return `${AVATAR_BASE_URL}${trimmedAvatarUrl.split("/").pop()}`;
+  }
+
+  if (trimmedAvatarUrl.startsWith("http")) {
     return avatarUrl;
   }
 
-  return EMAIL_AVATAR_MAP[email?.toLowerCase()] ?? avatarUrl ?? null;
+  return EMAIL_AVATAR_MAP[email?.toLowerCase()] ?? trimmedAvatarUrl;
 }
 
 
