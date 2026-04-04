@@ -31,21 +31,13 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
   const [predictionsLoaded, setPredictionsLoaded] = useState(hadCache);
   const [avatarLoaded, setAvatarLoaded] = useState(!avatarUrl);
   const ready = predictionsLoaded && avatarLoaded;
-  console.log("AVATAR ready derived:", { predictionsLoaded, avatarLoaded });
   const [animate, setAnimate] = useState(false);
   const imgRef = useRef(null);
 
+  // Fallback for already-cached images: onLoad won't fire if complete is already true
   useEffect(() => {
-    console.log("AVATAR: complete check", imgRef.current?.complete);
-    if (imgRef.current?.complete) {
-      console.log("AVATAR: loaded=true (from complete check)");
-      setAvatarLoaded(true);
-    }
+    if (imgRef.current?.complete) setAvatarLoaded(true);
   }, []);
-
-  useEffect(() => {
-    console.log("PROFILE: props received", { avatarUrl, displayName });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     async function loadHistory() {
@@ -60,7 +52,6 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
         const nextItems = data || [];
         profileHistoryCache.set(user.id, nextItems);
         setItems(nextItems);
-        console.log("PROFILE: predictions loaded", { count: nextItems.length });
       } catch (err) {
         console.error("Failed to load profile history:", err);
       } finally {
@@ -72,44 +63,58 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
   }, [supabase, user.id, hadCache]);
 
   useEffect(() => {
-    if (ready) {
-      if (!hadCache) setAnimate(true);
-      console.log("PROFILE: ready=true");
-    }
+    if (ready && !hadCache) setAnimate(true);
   }, [ready, hadCache]);
+
+  // Always render the avatar img hidden so it loads in the background
+  // regardless of whether the skeleton or real content is showing.
+  const hiddenAvatar = avatarUrl ? (
+    <img
+      ref={imgRef}
+      src={avatarUrl}
+      alt=""
+      aria-hidden="true"
+      onLoad={() => setAvatarLoaded(true)}
+      onError={() => setAvatarLoaded(true)}
+      style={{ display: "none" }}
+    />
+  ) : null;
 
   if (!ready) {
     return (
-      <div className="space-y-6">
-        <section className="rounded-4 border border-[#C9B037]/35 bg-black/45 p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,215,0,0.1)] backdrop-blur-[8px] sm:p-7">
-          <div style={{ maxWidth: "220px", margin: "0 auto 32px", textAlign: "center" }}>
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
-              <SkeletonBlock style={{ width: "120px", height: "120px", borderRadius: "50%" }} />
+      <>
+        {hiddenAvatar}
+        <div className="space-y-6">
+          <section className="rounded-4 border border-[#C9B037]/35 bg-black/45 p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,215,0,0.1)] backdrop-blur-[8px] sm:p-7">
+            <div style={{ maxWidth: "220px", margin: "0 auto 32px", textAlign: "center" }}>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
+                <SkeletonBlock style={{ width: "120px", height: "120px", borderRadius: "50%" }} />
+              </div>
+              <SkeletonBlock style={{ width: "140px", height: "18px", margin: "0 auto" }} />
             </div>
-            <SkeletonBlock style={{ width: "140px", height: "18px", margin: "0 auto" }} />
-          </div>
-          <SkeletonBlock style={{ width: "200px", height: "36px", marginBottom: "12px" }} />
-          <SkeletonBlock style={{ width: "260px", height: "14px" }} />
-        </section>
-        <div className="grid gap-4">
-          {[0, 1, 2].map((index) => (
-            <Card key={`profile-history-skeleton-${index}`}>
-              <CardContent className="space-y-3 p-5 sm:p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <SkeletonBlock style={{ width: "84px", height: "12px", marginBottom: "12px" }} />
-                    <SkeletonBlock style={{ width: "180px", height: "20px", marginBottom: "10px" }} />
-                    <SkeletonBlock style={{ width: "120px", height: "14px" }} />
+            <SkeletonBlock style={{ width: "200px", height: "36px", marginBottom: "12px" }} />
+            <SkeletonBlock style={{ width: "260px", height: "14px" }} />
+          </section>
+          <div className="grid gap-4">
+            {[0, 1, 2].map((index) => (
+              <Card key={`profile-history-skeleton-${index}`}>
+                <CardContent className="space-y-3 p-5 sm:p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <SkeletonBlock style={{ width: "84px", height: "12px", marginBottom: "12px" }} />
+                      <SkeletonBlock style={{ width: "180px", height: "20px", marginBottom: "10px" }} />
+                      <SkeletonBlock style={{ width: "120px", height: "14px" }} />
+                    </div>
+                    <SkeletonBlock style={{ width: "56px", height: "28px", borderRadius: "999px" }} />
                   </div>
-                  <SkeletonBlock style={{ width: "56px", height: "28px", borderRadius: "999px" }} />
-                </div>
-                <SkeletonBlock style={{ width: "56px", height: "12px" }} />
-                <SkeletonBlock style={{ width: "140px", height: "18px" }} />
-              </CardContent>
-            </Card>
-          ))}
+                  <SkeletonBlock style={{ width: "56px", height: "12px" }} />
+                  <SkeletonBlock style={{ width: "140px", height: "18px" }} />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -133,11 +138,8 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
           <div style={{ display: "flex", justifyContent: "center" }}>
             {avatarUrl ? (
               <img
-                ref={imgRef}
                 src={avatarUrl}
                 alt={`${displayName} avatar`}
-                onLoad={() => { console.log("AVATAR: onLoad fired"); console.log("AVATAR: loaded=true (from onLoad)"); setAvatarLoaded(true); }}
-                onError={() => { console.log("AVATAR: onError fired"); console.log("AVATAR: loaded=true (from onError)"); setAvatarLoaded(true); }}
                 style={{ height: "200px", width: "auto", display: "block" }}
               />
             ) : (
