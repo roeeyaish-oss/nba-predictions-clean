@@ -39,12 +39,19 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
   return (
     <div className="space-y-6">
       <section className="rounded-4 border border-[#C9B037]/35 bg-black/45 p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,215,0,0.1)] backdrop-blur-[8px] sm:p-7">
-        <div className="mb-6 flex items-center gap-4">
-          <UserAvatar avatarUrl={avatarUrl} name={displayName} size={80} textSize={28} />
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.35em] text-[#C9B037]/85">Profile</p>
-            <h2 className="mt-2 text-2xl font-800 text-white sm:text-3xl">{displayName}</h2>
+        <div className="mb-8 text-center">
+          <div className="flex justify-center">
+            <UserAvatar
+              avatarUrl={avatarUrl}
+              name={displayName}
+              size={120}
+              textSize={40}
+              border="none"
+              boxShadow="0 0 32px rgba(201,176,55,0.6), 0 0 8px rgba(201,176,55,0.3)"
+            />
           </div>
+          <h2 className="mt-5 text-2xl font-700 text-white">{displayName}</h2>
+          <p className="mt-2 text-[11px] uppercase tracking-[0.3em] text-[#C9B037]">Profile</p>
         </div>
         <h1 className="text-3xl font-800 text-white sm:text-5xl">Your Picks</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-white/60 sm:text-base">

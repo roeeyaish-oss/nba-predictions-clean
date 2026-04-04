@@ -11,12 +11,20 @@ function getInitials(name) {
     .toUpperCase() || "?";
 }
 
-export default function UserAvatar({ avatarUrl, name, size = 36, textSize = 14 }) {
+export default function UserAvatar({
+  avatarUrl,
+  name,
+  size = 36,
+  textSize = 14,
+  border = "2px solid #C9B037",
+  boxShadow,
+}) {
   const sharedStyle = {
     width: `${size}px`,
     height: `${size}px`,
     borderRadius: "50%",
-    border: "2px solid #C9B037",
+    border,
+    boxShadow,
     flexShrink: 0,
   };
 
