@@ -31,11 +31,16 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
   const [predictionsLoaded, setPredictionsLoaded] = useState(hadCache);
   const [avatarLoaded, setAvatarLoaded] = useState(!avatarUrl);
   const ready = predictionsLoaded && avatarLoaded;
+  console.log("AVATAR ready derived:", { predictionsLoaded, avatarLoaded });
   const [animate, setAnimate] = useState(false);
   const imgRef = useRef(null);
 
   useEffect(() => {
-    if (imgRef.current?.complete) setAvatarLoaded(true);
+    console.log("AVATAR: complete check", imgRef.current?.complete);
+    if (imgRef.current?.complete) {
+      console.log("AVATAR: loaded=true (from complete check)");
+      setAvatarLoaded(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -131,8 +136,8 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
                 ref={imgRef}
                 src={avatarUrl}
                 alt={`${displayName} avatar`}
-                onLoad={() => setAvatarLoaded(true)}
-                onError={() => setAvatarLoaded(true)}
+                onLoad={() => { console.log("AVATAR: onLoad fired"); console.log("AVATAR: loaded=true (from onLoad)"); setAvatarLoaded(true); }}
+                onError={() => { console.log("AVATAR: onError fired"); console.log("AVATAR: loaded=true (from onError)"); setAvatarLoaded(true); }}
                 style={{ height: "200px", width: "auto", display: "block" }}
               />
             ) : (
