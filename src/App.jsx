@@ -24,14 +24,21 @@ const EMAIL_AVATAR_MAP = {
 function App() {
   const [user, setUser] = useState(null);
   const [accessDenied, setAccessDenied] = useState(false);
-  const [onboardingComplete, setOnboardingComplete] = useState(null);
-  const [profileAvatarUrl, setProfileAvatarUrl] = useState(null);
-  const [profileDisplayName, setProfileDisplayName] = useState(null);
+  const [profile, setProfile] = useState({
+    avatarUrl: null,
+    displayName: null,
+    onboardingComplete: null,
+  });
 
   useEffect(() => {
     async function handleAuthUser(authUser) {
       if (!authUser) {
         setUser(null);
+        setProfile({
+          avatarUrl: null,
+          displayName: null,
+          onboardingComplete: null,
+        });
         return;
       }
 
@@ -70,27 +77,26 @@ function App() {
         !profile?.avatar_url ||
         profile.avatar_url.startsWith("https://lh3.googleusercontent.com");
 
+      let finalAvatarUrl = profile?.avatar_url ?? null;
+
       if (shouldReplaceAvatar && mappedAvatarUrl) {
         await supabase
           .from("users")
           .update({ avatar_url: mappedAvatarUrl })
           .eq("id", authUser.id);
+
+        finalAvatarUrl = mappedAvatarUrl;
       }
 
-      const { data: finalProfile } = await supabase
-        .from("users")
-        .select("avatar_url, display_name, name, onboarding_complete")
-        .eq("id", authUser.id)
-        .single();
-
-      setOnboardingComplete(finalProfile?.onboarding_complete ?? false);
-      setProfileAvatarUrl(finalProfile?.avatar_url ?? null);
-      setProfileDisplayName(
-        finalProfile?.display_name ??
-        finalProfile?.name ??
-        authUser.user_metadata.full_name ??
-        authUser.email
-      );
+      setProfile({
+        avatarUrl: finalAvatarUrl,
+        displayName:
+          profile?.display_name ??
+          profile?.name ??
+          authUser.user_metadata.full_name ??
+          authUser.email,
+        onboardingComplete: profile?.onboarding_complete ?? false,
+      });
       setUser(authUser);
     }
 
@@ -176,7 +182,7 @@ function App() {
     );
   }
 
-  if (onboardingComplete === null) {
+  if (profile.onboardingComplete === null) {
     return (
       <div style={{ position: "fixed", inset: 0, overflow: "hidden", background: "#050200" }} />
     );
@@ -187,27 +193,30 @@ function App() {
       <Route
         path="/onboarding"
         element={
-          onboardingComplete
+          profile.onboardingComplete
             ? <Navigate to="/" replace />
             : <OnboardingPage
                 user={user}
                 supabase={supabase}
-                avatarUrl={profileAvatarUrl}
+                avatarUrl={profile.avatarUrl}
                 onComplete={(displayName) => {
-                  setOnboardingComplete(true);
-                  setProfileDisplayName(displayName);
+                  setProfile((currentProfile) => ({
+                    ...currentProfile,
+                    displayName,
+                    onboardingComplete: true,
+                  }));
                 }}
               />
         }
       />
       <Route
         element={
-          onboardingComplete
+          profile.onboardingComplete
             ? <AppLayout
                 onSignOut={handleSignOut}
                 backgroundStyle={courtBackgroundStyle}
-                avatarUrl={profileAvatarUrl}
-                displayName={profileDisplayName ?? user.user_metadata.full_name ?? user.email}
+                avatarUrl={profile.avatarUrl}
+                displayName={profile.displayName ?? user.user_metadata.full_name ?? user.email}
               />
             : <Navigate to="/onboarding" replace />
         }
@@ -220,8 +229,8 @@ function App() {
             <ProfilePage
               user={user}
               supabase={supabase}
-              avatarUrl={profileAvatarUrl}
-              displayName={profileDisplayName ?? user.user_metadata.full_name ?? user.email}
+              avatarUrl={profile.avatarUrl}
+              displayName={profile.displayName ?? user.user_metadata.full_name ?? user.email}
             />
           }
         />
