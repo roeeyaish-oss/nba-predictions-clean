@@ -32,6 +32,10 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
   const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
+    console.log("PROFILE: props received", { avatarUrl, displayName });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
     async function loadHistory() {
       try {
         const { data, error } = await supabase
@@ -44,6 +48,7 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
         const nextItems = data || [];
         profileHistoryCache.set(user.id, nextItems);
         setItems(nextItems);
+        console.log("PROFILE: predictions loaded", { count: nextItems.length });
       } catch (err) {
         console.error("Failed to load profile history:", err);
       } finally {
@@ -54,6 +59,10 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
 
     loadHistory();
   }, [supabase, user.id, hadCache]);
+
+  useEffect(() => {
+    if (ready) console.log("PROFILE: ready=true");
+  }, [ready]);
 
   if (!ready) {
     return (
