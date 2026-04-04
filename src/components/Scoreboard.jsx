@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import { Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import SkeletonBlock from "@/components/SkeletonBlock";
@@ -8,8 +8,18 @@ import useLeaderboard from "@/hooks/useLeaderboard";
 
 export default function Scoreboard() {
   const { scores, loading } = useLeaderboard(supabase);
+  const hadCachedScores = useRef(scores.length > 0).current;
+  const [contentReady, setContentReady] = useState(hadCachedScores);
+  const [shouldAnimateRows, setShouldAnimateRows] = useState(false);
 
-  if (loading) {
+  useLayoutEffect(() => {
+    if (!contentReady && !loading) {
+      setContentReady(true);
+      setShouldAnimateRows(!hadCachedScores && scores.length > 0);
+    }
+  }, [contentReady, hadCachedScores, loading, scores.length]);
+
+  if (!contentReady) {
     return (
       <Card>
         <CardContent className="p-5 sm:p-7">
@@ -63,8 +73,12 @@ export default function Scoreboard() {
                 key={`${row.user}-${index}`}
                 className="border-b border-white/6 last:border-b-0 hover:bg-white/4"
                 style={{
-                  animationDelay: `${Math.min(index * 60, 300)}ms`,
-                  animation: "cardEnter 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
+                  ...(shouldAnimateRows
+                    ? {
+                        animationDelay: `${Math.min(index * 60, 300)}ms`,
+                        animation: "cardEnter 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
+                      }
+                    : {}),
                 }}
               >
                 <td className="px-3 py-4 font-700 text-[#C9B037]">{String(index + 1).padStart(2, "0")}</td>

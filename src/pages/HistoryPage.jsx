@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import SkeletonBlock from "@/components/SkeletonBlock";
 import UserAvatar from "@/components/UserAvatar";
@@ -17,6 +17,9 @@ let historyCache = [];
 export default function HistoryPage({ currentUserId, supabase }) {
   const [items, setItems] = useState(historyCache);
   const [loading, setLoading] = useState(historyCache.length === 0);
+  const hadCachedItems = useRef(historyCache.length > 0).current;
+  const [contentReady, setContentReady] = useState(hadCachedItems);
+  const [shouldAnimateCards, setShouldAnimateCards] = useState(false);
 
   useEffect(() => {
     async function loadHistory() {
@@ -39,6 +42,13 @@ export default function HistoryPage({ currentUserId, supabase }) {
 
     loadHistory();
   }, [supabase]);
+
+  useLayoutEffect(() => {
+    if (!contentReady && !loading) {
+      setContentReady(true);
+      setShouldAnimateCards(!hadCachedItems && items.length > 0);
+    }
+  }, [contentReady, hadCachedItems, items.length, loading]);
 
   function renderHistorySkeleton(index) {
     return (
@@ -72,7 +82,7 @@ export default function HistoryPage({ currentUserId, supabase }) {
         </p>
       </section>
 
-      {loading ? (
+      {!contentReady ? (
         <div className="grid gap-4">
           {[0, 1, 2].map(renderHistorySkeleton)}
         </div>
@@ -88,8 +98,12 @@ export default function HistoryPage({ currentUserId, supabase }) {
             <Card
               key={`${item.created_at}-${index}`}
               style={{
-                animationDelay: `${Math.min(index * 60, 300)}ms`,
-                animation: "cardEnter 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
+                ...(shouldAnimateCards
+                  ? {
+                      animationDelay: `${Math.min(index * 60, 300)}ms`,
+                      animation: "cardEnter 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
+                    }
+                  : {}),
               }}
             >
               <CardContent className="space-y-3 p-5 sm:p-6">

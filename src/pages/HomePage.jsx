@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Clock3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import DailyPredictions from "@/components/DailyPredictions";
@@ -59,6 +59,9 @@ const submitButtonStyle = {
 
 export default function HomePage({ user, supabase }) {
   const { games, loading: gamesLoading } = useTodayGames(supabase);
+  const hadCachedGames = useRef(games.length > 0).current;
+  const [contentReady, setContentReady] = useState(hadCachedGames);
+  const [shouldAnimateCards, setShouldAnimateCards] = useState(false);
   const [predictions, setPredictions] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
@@ -68,6 +71,13 @@ export default function HomePage({ user, supabase }) {
     const timer = setTimeout(() => setMessage(null), 5000);
     return () => clearTimeout(timer);
   }, [message]);
+
+  useLayoutEffect(() => {
+    if (!contentReady && !gamesLoading) {
+      setContentReady(true);
+      setShouldAnimateCards(!hadCachedGames && games.length > 0);
+    }
+  }, [contentReady, games.length, gamesLoading, hadCachedGames]);
 
   function handlePrediction(gameId, team) {
     setPredictions((prev) => ({ ...prev, [gameId]: team }));
@@ -154,7 +164,7 @@ export default function HomePage({ user, supabase }) {
         </p>
       </section>
 
-      {gamesLoading ? (
+      {!contentReady ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           {[0, 1].map(renderGameCardSkeleton)}
         </div>
@@ -174,8 +184,12 @@ export default function HomePage({ user, supabase }) {
                   key={game.gameId}
                   style={{
                     ...(started ? { opacity: 0.7 } : {}),
-                    animationDelay: `${Math.min(index * 60, 300)}ms`,
-                    animation: "cardEnter 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
+                    ...(shouldAnimateCards
+                      ? {
+                          animationDelay: `${Math.min(index * 60, 300)}ms`,
+                          animation: "cardEnter 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
+                        }
+                      : {}),
                   }}
                 >
                   <CardContent>
