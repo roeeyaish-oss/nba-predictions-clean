@@ -147,10 +147,12 @@ export default function OnboardingPage({ user, supabase, avatarUrl, onComplete }
 
             {/* Display name */}
             <div style={{ marginBottom: "24px" }}>
-              <label style={{ display: "block", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(201,176,55,0.8)", marginBottom: "8px", fontWeight: 600 }}>
+              <label htmlFor="display-name" style={{ display: "block", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(201,176,55,0.8)", marginBottom: "8px", fontWeight: 600 }}>
                 Display Name
               </label>
               <input
+                id="display-name"
+                name="display-name"
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}

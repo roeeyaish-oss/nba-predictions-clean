@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { createClient } from "@supabase/supabase-js";
 import AppLayout from "@/components/AppLayout";
 import HomePage from "@/pages/HomePage";
 import LeaderboardPage from "@/pages/LeaderboardPage";
 import ProfilePage from "@/pages/ProfilePage";
 import HistoryPage from "@/pages/HistoryPage";
 import OnboardingPage from "@/pages/OnboardingPage";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from "@/lib/supabase";
 
 const courtBackgroundStyle = {
   background: "url('/court-bg.png') center top / cover no-repeat fixed",
