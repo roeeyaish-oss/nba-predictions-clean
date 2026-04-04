@@ -6,17 +6,31 @@ import { isGameStarted } from "@/lib/time";
 
 export default function DailyPredictions({ currentUserId }) {
   const [predictions, setPredictions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPredictions = () => {
+    const fetchPredictions = (isInitialLoad = false) => {
+      if (isInitialLoad) {
+        setLoading(true);
+      }
+
       fetch("/api/dailyPredictions")
         .then((res) => res.json())
-        .then((data) => setPredictions(data))
-        .catch((err) => console.error("Failed to fetch predictions", err));
+        .then((data) => {
+          setPredictions(data);
+        })
+        .catch((err) => console.error("Failed to fetch predictions", err))
+        .finally(() => {
+          if (isInitialLoad) {
+            setLoading(false);
+          }
+        });
     };
 
-    fetchPredictions();
-    const interval = setInterval(fetchPredictions, 30000);
+    fetchPredictions(true);
+    const interval = setInterval(() => {
+      fetchPredictions(false);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);
@@ -60,50 +74,54 @@ export default function DailyPredictions({ currentUserId }) {
           </div>
         </div>
 
-        <table className="w-full border-collapse text-sm text-white sm:text-base">
-          <thead>
-            <tr className="border-b border-[#C9B037]/18 text-left text-white/55">
-              <th className="p-3">User</th>
-              <th className="p-3">Pick(s)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {grouped.length === 0 ? (
-              <tr>
-                <td colSpan={2} className="p-4 text-center text-white/55">
-                  No predictions yet
-                </td>
+        {loading && predictions.length === 0 ? (
+          <p className="text-center text-sm text-white/60">Loading predictions...</p>
+        ) : (
+          <table className="w-full border-collapse text-sm text-white sm:text-base">
+            <thead>
+              <tr className="border-b border-[#C9B037]/18 text-left text-white/55">
+                <th className="p-3">User</th>
+                <th className="p-3">Pick(s)</th>
               </tr>
-            ) : (
-              grouped.map((row, idx) => (
-                <tr
-                  key={`${row.userId}-${idx}`}
-                  className="border-b border-white/6 last:border-b-0 hover:bg-white/4"
-                >
-                  <td className="p-3 font-600 text-white">
-                    <div className="flex items-center gap-3">
-                      <UserAvatar avatarUrl={row.avatarUrl} name={row.user} size={32} textSize={12} />
-                      <span>{row.user}</span>
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    <div className="flex flex-col gap-2">
-                      {row.picks.map((pick, i) => {
-                        const started = isGameStarted(pick.game_time, pick.date);
-                        const isOwn = row.userId === currentUserId;
-                        return (
-                          <div key={i} className="rounded-3 bg-white/4 px-3 py-2 text-white">
-                            {started || isOwn ? pick.pick : <span className="italic text-white/45">Hidden</span>}
-                          </div>
-                        );
-                      })}
-                    </div>
+            </thead>
+            <tbody>
+              {grouped.length === 0 ? (
+                <tr>
+                  <td colSpan={2} className="p-4 text-center text-white/55">
+                    No predictions yet
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                grouped.map((row, idx) => (
+                  <tr
+                    key={`${row.userId}-${idx}`}
+                    className="border-b border-white/6 last:border-b-0 hover:bg-white/4"
+                  >
+                    <td className="p-3 font-600 text-white">
+                      <div className="flex items-center gap-3">
+                        <UserAvatar avatarUrl={row.avatarUrl} name={row.user} size={32} textSize={12} />
+                        <span>{row.user}</span>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex flex-col gap-2">
+                        {row.picks.map((pick, i) => {
+                          const started = isGameStarted(pick.game_time, pick.date);
+                          const isOwn = row.userId === currentUserId;
+                          return (
+                            <div key={i} className="rounded-3 bg-white/4 px-3 py-2 text-white">
+                              {started || isOwn ? pick.pick : <span className="italic text-white/45">Hidden</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
       </CardContent>
     </Card>
   );

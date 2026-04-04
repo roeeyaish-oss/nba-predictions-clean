@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Clock3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import DailyPredictions from "@/components/DailyPredictions";
-import { getIsraelToday, isGameStarted } from "@/lib/time";
+import { isGameStarted } from "@/lib/time";
+import useTodayGames from "@/hooks/useTodayGames";
 
 const titleSectionStyle = {
   background: "rgba(8,5,0,0.65)",
@@ -56,8 +57,7 @@ const submitButtonStyle = {
 };
 
 export default function HomePage({ user, supabase }) {
-  const [games, setGames] = useState([]);
-  const [gamesLoaded, setGamesLoaded] = useState(false);
+  const { games, loading: gamesLoading } = useTodayGames(supabase);
   const [predictions, setPredictions] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
@@ -67,39 +67,6 @@ export default function HomePage({ user, supabase }) {
     const timer = setTimeout(() => setMessage(null), 5000);
     return () => clearTimeout(timer);
   }, [message]);
-
-  useEffect(() => {
-    async function loadGames() {
-      try {
-        const today = getIsraelToday();
-        const { data, error } = await supabase
-          .from("games")
-          .select("id, date, home_team, away_team, home_img, away_img, game_time")
-          .eq("date", today)
-          .order("game_time", { ascending: true });
-
-        if (error) throw error;
-
-        const formatted = (data || []).map((game) => ({
-          gameId: game.id,
-          date: game.date,
-          home: game.home_team,
-          away: game.away_team,
-          homeImg: game.home_img,
-          awayImg: game.away_img,
-          gameTimeIL: game.game_time,
-        }));
-
-        setGames(formatted);
-      } catch (err) {
-        console.error("Failed to load games:", err);
-      } finally {
-        setGamesLoaded(true);
-      }
-    }
-
-    loadGames();
-  }, [supabase]);
 
   function handlePrediction(gameId, team) {
     setPredictions((prev) => ({ ...prev, [gameId]: team }));
@@ -159,7 +126,7 @@ export default function HomePage({ user, supabase }) {
         </p>
       </section>
 
-      {!gamesLoaded ? (
+      {gamesLoading ? (
         <p style={{ textAlign: "center", fontSize: "13px", color: "rgba(255,255,255,0.45)" }}>Loading today&apos;s games...</p>
       ) : games.length === 0 ? (
         <Card>

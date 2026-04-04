@@ -1,34 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import UserAvatar from "@/components/UserAvatar";
 import { supabase } from "@/lib/supabase";
+import useLeaderboard from "@/hooks/useLeaderboard";
 
 export default function Scoreboard() {
-  const [scores, setScores] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    supabase
-      .from("scores")
-      .select("score, users(name, display_name, avatar_url)")
-      .then(({ data, error }) => {
-        if (error) throw error;
-
-        const formatted = (data || []).map((row) => ({
-          user: row.users?.display_name ?? row.users?.name ?? "",
-          avatarUrl: row.users?.avatar_url ?? null,
-          score: row.score,
-        }));
-
-        setScores([...formatted].sort((a, b) => b.score - a.score));
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to load scores:", err);
-        setLoading(false);
-      });
-  }, []);
+  const { scores, loading } = useLeaderboard(supabase);
 
   if (loading) {
     return <div className="text-center text-sm text-white/60">Loading scores...</div>;
