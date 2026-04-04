@@ -107,7 +107,7 @@ export default function OnboardingPage({ user, supabase, avatarUrl, onComplete }
       return;
     }
 
-    onComplete();
+    onComplete(displayName.trim());
     navigate("/", { replace: true });
   }
 

@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { History, House, Trophy, UserRound } from "lucide-react";
+import UserAvatar from "@/components/UserAvatar";
 
 const navItems = [
   { to: "/", label: "Home", icon: House, end: true },
@@ -45,7 +46,7 @@ const bottomNavStyle = {
   height: "64px",
 };
 
-export default function AppLayout({ user, onSignOut, backgroundStyle }) {
+export default function AppLayout({ onSignOut, backgroundStyle, avatarUrl, displayName }) {
   return (
     <div style={{ position: "fixed", inset: 0, overflow: "hidden" }} className="text-white">
       <div className="absolute inset-0" style={backgroundStyle} />
@@ -54,11 +55,14 @@ export default function AppLayout({ user, onSignOut, backgroundStyle }) {
       <div style={{ position: "relative", height: "100%", overflowY: "auto", zIndex: 1 }} className="flex flex-col">
         <header style={headerStyle}>
           <div style={{ maxWidth: "1152px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
-            <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.15em", color: "rgba(201,176,55,0.6)", margin: 0 }}>Court Access</p>
-              <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.8)", margin: "2px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                Signed in as <span style={{ fontWeight: 600, color: "#C9B037" }}>{user.user_metadata.full_name}</span>
-              </p>
+            <div style={{ minWidth: 0, display: "flex", alignItems: "center", gap: "12px" }}>
+              <UserAvatar avatarUrl={avatarUrl} name={displayName} size={36} textSize={14} />
+              <div style={{ minWidth: 0 }}>
+                <p style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.15em", color: "rgba(201,176,55,0.6)", margin: 0 }}>Court Access</p>
+                <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.8)", margin: "2px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <span style={{ fontWeight: 600, color: "#C9B037" }}>{displayName}</span>
+                </p>
+              </div>
             </div>
             <button onClick={onSignOut} style={signOutButtonStyle}>
               Sign Out

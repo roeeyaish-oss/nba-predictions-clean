@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import UserAvatar from "@/components/UserAvatar";
 import { supabase } from "@/lib/supabase";
 
 export default function Scoreboard() {
@@ -10,12 +11,13 @@ export default function Scoreboard() {
   useEffect(() => {
     supabase
       .from("scores")
-      .select("score, users(name)")
+      .select("score, users(name, display_name, avatar_url)")
       .then(({ data, error }) => {
         if (error) throw error;
 
         const formatted = (data || []).map((row) => ({
-          user: row.users?.name ?? "",
+          user: row.users?.display_name ?? row.users?.name ?? "",
+          avatarUrl: row.users?.avatar_url ?? null,
           score: row.score,
         }));
 
@@ -56,7 +58,12 @@ export default function Scoreboard() {
             {scores.map((row, index) => (
               <tr key={`${row.user}-${index}`} className="border-b border-white/6 last:border-b-0 hover:bg-white/4">
                 <td className="px-3 py-4 font-700 text-[#C9B037]">{String(index + 1).padStart(2, "0")}</td>
-                <td className="px-3 py-4 font-600 text-white">{row.user}</td>
+                <td className="px-3 py-4 font-600 text-white">
+                  <div className="flex items-center gap-3">
+                    <UserAvatar avatarUrl={row.avatarUrl} name={row.user} size={32} textSize={12} />
+                    <span>{row.user}</span>
+                  </div>
+                </td>
                 <td className="px-3 py-4 text-right font-700 text-white">{row.score}</td>
               </tr>
             ))}

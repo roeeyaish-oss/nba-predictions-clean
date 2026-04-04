@@ -26,6 +26,7 @@ function App() {
   const [accessDenied, setAccessDenied] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(null);
   const [profileAvatarUrl, setProfileAvatarUrl] = useState(null);
+  const [profileDisplayName, setProfileDisplayName] = useState(null);
 
   useEffect(() => {
     async function handleAuthUser(authUser) {
@@ -59,7 +60,7 @@ function App() {
 
       const { data: profile } = await supabase
         .from("users")
-        .select("avatar_url, onboarding_complete")
+        .select("avatar_url, display_name, name, onboarding_complete")
         .eq("id", authUser.id)
         .single();
 
@@ -78,12 +79,18 @@ function App() {
 
       const { data: finalProfile } = await supabase
         .from("users")
-        .select("avatar_url, onboarding_complete")
+        .select("avatar_url, display_name, name, onboarding_complete")
         .eq("id", authUser.id)
         .single();
 
       setOnboardingComplete(finalProfile?.onboarding_complete ?? false);
       setProfileAvatarUrl(finalProfile?.avatar_url ?? null);
+      setProfileDisplayName(
+        finalProfile?.display_name ??
+        finalProfile?.name ??
+        authUser.user_metadata.full_name ??
+        authUser.email
+      );
       setUser(authUser);
     }
 
@@ -182,19 +189,42 @@ function App() {
         element={
           onboardingComplete
             ? <Navigate to="/" replace />
-            : <OnboardingPage user={user} supabase={supabase} avatarUrl={profileAvatarUrl} onComplete={() => setOnboardingComplete(true)} />
+            : <OnboardingPage
+                user={user}
+                supabase={supabase}
+                avatarUrl={profileAvatarUrl}
+                onComplete={(displayName) => {
+                  setOnboardingComplete(true);
+                  setProfileDisplayName(displayName);
+                }}
+              />
         }
       />
       <Route
         element={
           onboardingComplete
-            ? <AppLayout user={user} onSignOut={handleSignOut} backgroundStyle={courtBackgroundStyle} />
+            ? <AppLayout
+                onSignOut={handleSignOut}
+                backgroundStyle={courtBackgroundStyle}
+                avatarUrl={profileAvatarUrl}
+                displayName={profileDisplayName ?? user.user_metadata.full_name ?? user.email}
+              />
             : <Navigate to="/onboarding" replace />
         }
       >
         <Route path="/" element={<HomePage user={user} supabase={supabase} />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
-        <Route path="/profile" element={<ProfilePage user={user} supabase={supabase} />} />
+        <Route
+          path="/profile"
+          element={
+            <ProfilePage
+              user={user}
+              supabase={supabase}
+              avatarUrl={profileAvatarUrl}
+              displayName={profileDisplayName ?? user.user_metadata.full_name ?? user.email}
+            />
+          }
+        />
         <Route path="/history" element={<HistoryPage currentUserId={user.id} supabase={supabase} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
