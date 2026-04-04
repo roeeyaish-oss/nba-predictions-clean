@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Clock3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import DailyPredictions from "@/components/DailyPredictions";
+import FadeIn from "@/components/FadeIn";
+import SkeletonBlock from "@/components/SkeletonBlock";
 import { isGameStarted } from "@/lib/time";
 import useTodayGames from "@/hooks/useTodayGames";
 
@@ -116,6 +118,33 @@ export default function HomePage({ user, supabase }) {
       });
   }
 
+  function renderGameCardSkeleton(index) {
+    return (
+      <Card key={`game-skeleton-${index}`}>
+        <CardContent>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", marginBottom: "16px" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+              <SkeletonBlock style={{ width: "56px", height: "56px", borderRadius: "50%", marginBottom: "8px" }} />
+              <SkeletonBlock style={{ width: "70px", height: "14px" }} />
+            </div>
+            <SkeletonBlock style={{ width: "28px", height: "18px" }} />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+              <SkeletonBlock style={{ width: "56px", height: "56px", borderRadius: "50%", marginBottom: "8px" }} />
+              <SkeletonBlock style={{ width: "70px", height: "14px" }} />
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+            <SkeletonBlock style={{ height: "40px" }} />
+            <SkeletonBlock style={{ height: "40px" }} />
+          </div>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <SkeletonBlock style={{ width: "64px", height: "14px" }} />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       <section style={titleSectionStyle}>
@@ -127,7 +156,9 @@ export default function HomePage({ user, supabase }) {
       </section>
 
       {gamesLoading ? (
-        <p style={{ textAlign: "center", fontSize: "13px", color: "rgba(255,255,255,0.45)" }}>Loading today&apos;s games...</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          {[0, 1].map(renderGameCardSkeleton)}
+        </div>
       ) : games.length === 0 ? (
         <Card>
           <CardContent>
@@ -135,7 +166,7 @@ export default function HomePage({ user, supabase }) {
           </CardContent>
         </Card>
       ) : (
-        <>
+        <FadeIn>
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {games.map((game) => {
               const started = isGameStarted(game.gameTimeIL, game.date);
@@ -201,7 +232,7 @@ export default function HomePage({ user, supabase }) {
               {message.text}
             </p>
           )}
-        </>
+        </FadeIn>
       )}
 
       <DailyPredictions currentUserId={user.id} />

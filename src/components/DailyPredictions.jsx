@@ -7,11 +7,14 @@ import { isGameStarted } from "@/lib/time";
 export default function DailyPredictions({ currentUserId }) {
   const [predictions, setPredictions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchPredictions = (isInitialLoad = false) => {
       if (isInitialLoad) {
         setLoading(true);
+      } else {
+        setRefreshing(true);
       }
 
       fetch("/api/dailyPredictions")
@@ -23,6 +26,8 @@ export default function DailyPredictions({ currentUserId }) {
         .finally(() => {
           if (isInitialLoad) {
             setLoading(false);
+          } else {
+            setRefreshing(false);
           }
         });
     };
@@ -68,10 +73,15 @@ export default function DailyPredictions({ currentUserId }) {
           <div className="rounded-full border border-[#C9B037]/40 bg-[#C9B037]/12 p-2 text-[#C9B037]">
             <ScrollText className="h-4 w-4" strokeWidth={2.2} />
           </div>
-          <div>
+          <div className="flex-1">
             <p className="text-[11px] uppercase tracking-[0.3em] text-[#C9B037]/75">Today</p>
             <h2 className="text-2xl font-800 text-white">Predictions Board</h2>
           </div>
+          {refreshing && (
+            <p style={{ fontSize: "10px", color: "#C9B037", opacity: 0.6, margin: 0 }}>
+              ↻ updating...
+            </p>
+          )}
         </div>
 
         {loading && predictions.length === 0 ? (

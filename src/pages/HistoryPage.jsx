@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
+import FadeIn from "@/components/FadeIn";
 import { Card, CardContent } from "@/components/ui/card";
+import SkeletonBlock from "@/components/SkeletonBlock";
 import UserAvatar from "@/components/UserAvatar";
 
 function formatDate(dateString) {
@@ -11,9 +13,11 @@ function formatDate(dateString) {
   }).format(new Date(dateString));
 }
 
+let historyCache = [];
+
 export default function HistoryPage({ currentUserId, supabase }) {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState(historyCache);
+  const [loading, setLoading] = useState(historyCache.length === 0);
 
   useEffect(() => {
     async function loadHistory() {
@@ -25,7 +29,8 @@ export default function HistoryPage({ currentUserId, supabase }) {
           .limit(100);
 
         if (error) throw error;
-        setItems(data || []);
+        historyCache = data || [];
+        setItems(historyCache);
       } catch (err) {
         console.error("Failed to load all prediction history:", err);
       } finally {
@@ -35,6 +40,28 @@ export default function HistoryPage({ currentUserId, supabase }) {
 
     loadHistory();
   }, [supabase]);
+
+  function renderHistorySkeleton(index) {
+    return (
+      <Card key={`history-skeleton-${index}`}>
+        <CardContent className="space-y-3 p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <SkeletonBlock style={{ width: "36px", height: "36px", borderRadius: "50%" }} />
+              <div>
+                <SkeletonBlock style={{ width: "84px", height: "12px", marginBottom: "12px" }} />
+                <SkeletonBlock style={{ width: "150px", height: "18px", marginBottom: "10px" }} />
+                <SkeletonBlock style={{ width: "120px", height: "14px" }} />
+              </div>
+            </div>
+            <SkeletonBlock style={{ width: "56px", height: "28px", borderRadius: "999px" }} />
+          </div>
+          <SkeletonBlock style={{ width: "56px", height: "12px" }} />
+          <SkeletonBlock style={{ width: "140px", height: "18px" }} />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -47,7 +74,9 @@ export default function HistoryPage({ currentUserId, supabase }) {
       </section>
 
       {loading ? (
-        <p className="text-center text-sm text-white/60">Loading history...</p>
+        <div className="grid gap-4">
+          {[0, 1, 2].map(renderHistorySkeleton)}
+        </div>
       ) : items.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center text-white/65">
@@ -55,41 +84,43 @@ export default function HistoryPage({ currentUserId, supabase }) {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
-          {items.map((item, index) => (
-            <Card key={`${item.created_at}-${index}`}>
-              <CardContent className="space-y-3 p-5 sm:p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                    <UserAvatar
-                      avatarUrl={item.users?.avatar_url ?? null}
-                      name={item.users?.display_name || item.users?.name || "Unknown User"}
-                      size={36}
-                      textSize={14}
-                    />
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.25em] text-[#C9B037]/80">{formatDate(item.games?.date)}</p>
-                      <h2 className="mt-2 text-base font-700 text-white">
-                        {item.users?.display_name || item.users?.name || "Unknown User"}
-                        {item.user_id === currentUserId ? " · You" : ""}
-                      </h2>
-                      <p className="mt-1 text-sm text-white/55">
-                        {item.games?.away_team} at {item.games?.home_team}
-                      </p>
+        <FadeIn>
+          <div className="grid gap-4">
+            {items.map((item, index) => (
+              <Card key={`${item.created_at}-${index}`}>
+                <CardContent className="space-y-3 p-5 sm:p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <UserAvatar
+                        avatarUrl={item.users?.avatar_url ?? null}
+                        name={item.users?.display_name || item.users?.name || "Unknown User"}
+                        size={36}
+                        textSize={14}
+                      />
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.25em] text-[#C9B037]/80">{formatDate(item.games?.date)}</p>
+                        <h2 className="mt-2 text-base font-700 text-white">
+                          {item.users?.display_name || item.users?.name || "Unknown User"}
+                          {item.user_id === currentUserId ? " · You" : ""}
+                        </h2>
+                        <p className="mt-1 text-sm text-white/55">
+                          {item.games?.away_team} at {item.games?.home_team}
+                        </p>
+                      </div>
                     </div>
+                    <span className="rounded-full border border-[#C9B037]/35 px-3 py-1 text-xs font-700 text-[#C9B037]">
+                      {item.games?.game_time || "--:--"}
+                    </span>
                   </div>
-                  <span className="rounded-full border border-[#C9B037]/35 px-3 py-1 text-xs font-700 text-[#C9B037]">
-                    {item.games?.game_time || "--:--"}
-                  </span>
-                </div>
-                <div className="rounded-3 bg-white/4 px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.24em] text-white/40">Pick</p>
-                  <p className="mt-2 text-base font-700 text-white">{item.pick}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  <div className="rounded-3 bg-white/4 px-4 py-3">
+                    <p className="text-xs uppercase tracking-[0.24em] text-white/40">Pick</p>
+                    <p className="mt-2 text-base font-700 text-white">{item.pick}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </FadeIn>
       )}
     </div>
   );
