@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import UserAvatar from "@/components/UserAvatar";
 
 function formatDate(dateString) {
   if (!dateString) return "";
@@ -9,6 +8,17 @@ function formatDate(dateString) {
     month: "short",
     year: "numeric",
   }).format(new Date(dateString));
+}
+
+function getInitials(name) {
+  return (name || "?")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "?";
 }
 
 export default function ProfilePage({ user, supabase, avatarUrl, displayName }) {
@@ -39,19 +49,50 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName }) 
   return (
     <div className="space-y-6">
       <section className="rounded-4 border border-[#C9B037]/35 bg-black/45 p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,215,0,0.1)] backdrop-blur-[8px] sm:p-7">
-        <div className="mb-8 text-center">
-          <div className="flex justify-center">
-            <UserAvatar
-              avatarUrl={avatarUrl}
-              name={displayName}
-              size={120}
-              textSize={40}
-              border="none"
-              boxShadow="0 0 32px rgba(201,176,55,0.6), 0 0 8px rgba(201,176,55,0.3)"
-            />
+        <div
+          style={{
+            background: "rgba(8,5,0,0.75)",
+            border: "1.5px solid rgba(201,176,55,0.65)",
+            borderRadius: "16px",
+            padding: "24px 16px 16px",
+            maxWidth: "220px",
+            margin: "0 auto 32px",
+            boxShadow: "0 0 40px rgba(201,176,55,0.25)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={`${displayName} avatar`}
+                style={{ height: "200px", width: "auto", display: "block" }}
+              />
+            ) : (
+              <div
+                aria-hidden="true"
+                style={{
+                  height: "200px",
+                  width: "140px",
+                  background: "#C9B037",
+                  color: "#000",
+                  fontWeight: 700,
+                  fontSize: "56px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {getInitials(displayName)}
+              </div>
+            )}
           </div>
-          <h2 className="mt-5 text-2xl font-700 text-white">{displayName}</h2>
-          <p className="mt-2 text-[11px] uppercase tracking-[0.3em] text-[#C9B037]">Profile</p>
+          <div style={{ height: "1px", background: "#C9B037", opacity: 0.4, margin: "12px 0" }} />
+          <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#fff", textAlign: "center", margin: 0 }}>
+            {displayName}
+          </h2>
+          <p style={{ fontSize: "10px", letterSpacing: "0.3em", color: "#C9B037", textAlign: "center", margin: "10px 0 0", textTransform: "uppercase" }}>
+            Court Player
+          </p>
         </div>
         <h1 className="text-3xl font-800 text-white sm:text-5xl">Your Picks</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-white/60 sm:text-base">
