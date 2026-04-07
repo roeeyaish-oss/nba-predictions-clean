@@ -3,7 +3,7 @@ import { Clock3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import DailyPredictions from "@/components/DailyPredictions";
 import SkeletonBlock from "@/components/SkeletonBlock";
-import { isGameStarted } from "@/lib/time";
+import { getIsraelToday, getIsraelTomorrow, isGameStarted } from "@/lib/time";
 import useTodayGames from "@/hooks/useTodayGames";
 
 const titleSectionStyle = {
@@ -185,63 +185,72 @@ export default function HomePage({ user, supabase }) {
       {games.length === 0 ? (
         <Card>
           <CardContent>
-            <p style={{ textAlign: "center", color: "rgba(255,255,255,0.5)", margin: 0 }}>No games scheduled for today.</p>
+            <p style={{ textAlign: "center", color: "rgba(255,255,255,0.5)", margin: 0 }}>No games scheduled for today or tomorrow.</p>
           </CardContent>
         </Card>
       ) : (
         <>
-          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            {games.map((game) => {
-              const started = isGameStarted(game.gameTimeIL, game.date);
-              return (
-                <Card
-                  key={game.gameId}
-                  style={started ? { opacity: 0.7 } : undefined}
-                >
-                  <CardContent>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", marginBottom: "16px" }}>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
-                        <img src={game.homeImg} width="56" height="56" alt={game.home} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
-                        <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{game.home}</span>
-                      </div>
-                      <span style={{ fontSize: "18px", fontWeight: 700, color: "#C9B037", letterSpacing: "0.15em" }}>VS</span>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
-                        <img src={game.awayImg} width="56" height="56" alt={game.away} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
-                        <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{game.away}</span>
-                      </div>
-                    </div>
+          {[
+            { key: getIsraelToday(), label: "Today" },
+            { key: getIsraelTomorrow(), label: "Tomorrow" },
+          ].map(({ key: dateKey, label }) => {
+            const dateGames = games.filter((g) => g.date === dateKey);
+            if (dateGames.length === 0) return null;
+            return (
+              <div key={dateKey} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                <p style={{ margin: 0, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.18em", color: "rgba(201,176,55,0.7)", fontWeight: 600 }}>{label}</p>
+                {dateGames.map((game) => {
+                  const started = isGameStarted(game.gameTimeIL, game.date);
+                  return (
+                    <Card
+                      key={game.gameId}
+                      style={started ? { opacity: 0.7 } : undefined}
+                    >
+                      <CardContent>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", marginBottom: "16px" }}>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
+                            <img src={game.homeImg} width="56" height="56" alt={game.home} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
+                            <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{game.home}</span>
+                          </div>
+                          <span style={{ fontSize: "18px", fontWeight: 700, color: "#C9B037", letterSpacing: "0.15em" }}>VS</span>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
+                            <img src={game.awayImg} width="56" height="56" alt={game.away} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
+                            <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{game.away}</span>
+                          </div>
+                        </div>
 
-                    {started ? (
-                      <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 700, color: "#C9B037", margin: 0 }}>Predictions locked. Game already started.</p>
-                    ) : (
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
-                        <button
-                          onClick={() => handlePrediction(game.gameId, game.home)}
-                          style={predictions[game.gameId] === game.home ? pickButtonSelected : pickButtonUnselected}
-                        >
-                          {game.home}
-                        </button>
-                        <button
-                          onClick={() => handlePrediction(game.gameId, game.away)}
-                          style={predictions[game.gameId] === game.away ? pickButtonSelected : pickButtonUnselected}
-                        >
-                          {game.away}
-                        </button>
-                      </div>
-                    )}
+                        {started ? (
+                          <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 700, color: "#C9B037", margin: 0 }}>Predictions locked. Game already started.</p>
+                        ) : (
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+                            <button
+                              onClick={() => handlePrediction(game.gameId, game.home)}
+                              style={predictions[game.gameId] === game.home ? pickButtonSelected : pickButtonUnselected}
+                            >
+                              {game.home}
+                            </button>
+                            <button
+                              onClick={() => handlePrediction(game.gameId, game.away)}
+                              style={predictions[game.gameId] === game.away ? pickButtonSelected : pickButtonUnselected}
+                            >
+                              {game.away}
+                            </button>
+                          </div>
+                        )}
 
-                    {game.gameTimeIL && (
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginTop: started ? "12px" : "0" }}>
-                        <Clock3 style={{ width: "14px", height: "14px", color: "#C9B037" }} strokeWidth={2.3} />
-                        <span style={{ fontSize: "12px", fontWeight: 600, color: "#C9B037" }}>{game.gameTimeIL}</span>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
+                        {game.gameTimeIL && (
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginTop: started ? "12px" : "0" }}>
+                            <Clock3 style={{ width: "14px", height: "14px", color: "#C9B037" }} strokeWidth={2.3} />
+                            <span style={{ fontSize: "12px", fontWeight: 600, color: "#C9B037" }}>{game.gameTimeIL}</span>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            );
+          })}
           <button
             onClick={handleSubmit}
             disabled={submitting}

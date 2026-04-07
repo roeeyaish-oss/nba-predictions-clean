@@ -7,6 +7,17 @@ export function getIsraelToday() {
   }).format(new Date());
 }
 
+export function getIsraelTomorrow() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jerusalem",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(tomorrow);
+}
+
 export function isGameStarted(gameTimeIL, gameDate) {
   if (!gameTimeIL) return false;
 

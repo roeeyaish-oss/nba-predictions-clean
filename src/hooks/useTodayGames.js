@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getIsraelToday } from "@/lib/time";
+import { getIsraelToday, getIsraelTomorrow } from "@/lib/time";
 
 const TODAY_GAMES_TTL_MS = 5 * 60 * 1000;
 
@@ -23,6 +23,7 @@ function formatGames(data) {
 
 export default function useTodayGames(supabase) {
   const todayKey = getIsraelToday();
+  const tomorrowKey = getIsraelTomorrow();
   const hasFreshCache =
     gamesCache.key === todayKey &&
     Date.now() - gamesCache.fetchedAt < TODAY_GAMES_TTL_MS;
@@ -41,7 +42,8 @@ export default function useTodayGames(supabase) {
         const { data, error } = await supabase
           .from("games")
           .select("id, date, home_team, away_team, home_img, away_img, game_time")
-          .eq("date", todayKey)
+          .in("date", [todayKey, tomorrowKey])
+          .order("date", { ascending: true })
           .order("game_time", { ascending: true });
 
         if (error) throw error;
@@ -59,7 +61,7 @@ export default function useTodayGames(supabase) {
         setLoading(false);
       }
     },
-    [supabase, todayKey]
+    [supabase, todayKey, tomorrowKey]
   );
 
   useEffect(() => {
