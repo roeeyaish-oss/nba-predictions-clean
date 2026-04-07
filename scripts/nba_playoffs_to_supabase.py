@@ -2,7 +2,6 @@
 
 import pandas as pd
 from nba_api.stats.endpoints import scoreboardv3, boxscoretraditionalv3
-from nba_api.stats.library.http import NBAStatsHTTP
 from datetime import datetime, timedelta
 from pytz import timezone, utc
 from supabase import create_client, Client
@@ -11,22 +10,6 @@ import os
 import time
 
 load_dotenv()
-
-# Extend the default headers with a full browser fingerprint so stats.nba.com
-# doesn't block requests from CI/cloud environments (GitHub Actions, etc.).
-# We update rather than replace so the library's base keys are preserved.
-NBAStatsHTTP.headers = {
-    **NBAStatsHTTP.headers,
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Accept-Language': 'en-US,en;q=0.9',
-    'Origin': 'https://www.nba.com',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-site',
-    'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-    'Sec-Ch-Ua-Platform': '"Windows"',
-}
-# Reset the shared session so it picks up the new headers on the next request.
-NBAStatsHTTP._session = None
 
 NBA_TIMEOUT = 60
 NBA_RETRIES = 3

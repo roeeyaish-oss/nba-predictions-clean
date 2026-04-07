@@ -1,0 +1,25 @@
+
+[2026-04-07 17:20:40] SUCCESS
+    Fetching games for yesterday (04/06/2026), today (04/07/2026), tomorrow (04/08/2026)
+    Saved 22 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    7:00 pm ET     5
+    Final          4
+    10:00 pm ET    3
+    7:30 pm ET     2
+    8:00 pm ET     2
+    10:30 pm ET    2
+    Final/OT       1
+    11:00 pm ET    1
+    9:00 pm ET     1
+    9:30 pm ET     1
+    Found 4 final games.
+    Game 0022501143 | Atlanta Hawks vs New York Knicks | Winner: New York Knicks
+    Game 0022501144 | Orlando Magic vs Detroit Pistons | Winner: Orlando Magic
+    Game 0022501145 | Memphis Grizzlies vs Cleveland Cavaliers | Winner: Cleveland Cavaliers
+    Game 0022501146 | San Antonio Spurs vs Philadelphia 76ers | Winner: San Antonio Spurs
+    Upserted 4 results.
+    Calculating scores...
+    No scores to calculate.
+    Done. Games, results, and scores are up to date.
