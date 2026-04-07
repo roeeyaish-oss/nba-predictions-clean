@@ -1,11 +1,12 @@
 import React from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { History, House, Trophy, UserRound } from "lucide-react";
+import { CheckCircle, History, House, Trophy, UserRound } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
 
 const navItems = [
   { to: "/", label: "Home", icon: House, end: true },
   { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { to: "/results", label: "Results", icon: CheckCircle },
   { to: "/profile", label: "Profile", icon: UserRound },
   { to: "/history", label: "History", icon: History },
 ];
@@ -75,7 +76,7 @@ export default function AppLayout({ onSignOut, backgroundStyle, avatarUrl, displ
         </main>
 
         <nav style={bottomNavStyle}>
-          <div style={{ maxWidth: "768px", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", height: "100%", padding: "0 8px" }}>
+          <div style={{ maxWidth: "768px", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(5, 1fr)", height: "100%", padding: "0 4px" }}>
             {navItems.map((item) => (
               <NavLink
                 key={item.to}

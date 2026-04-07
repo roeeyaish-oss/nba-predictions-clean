@@ -4,6 +4,7 @@ import AppLayout from "@/components/AppLayout";
 import HomePage from "@/pages/HomePage";
 import LeaderboardPage from "@/pages/LeaderboardPage";
 import ProfilePage from "@/pages/ProfilePage";
+import ResultsPage from "@/pages/ResultsPage";
 import HistoryPage from "@/pages/HistoryPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 import { supabase } from "@/lib/supabase";
@@ -27,6 +28,7 @@ function App() {
   const [profile, setProfile] = useState({
     avatarUrl: null,
     displayName: null,
+    championshipPick: null,
     onboardingComplete: null,
   });
 
@@ -37,6 +39,7 @@ function App() {
         setProfile({
           avatarUrl: null,
           displayName: null,
+          championshipPick: null,
           onboardingComplete: null,
         });
         return;
@@ -67,7 +70,7 @@ function App() {
 
       const { data: profile } = await supabase
         .from("users")
-        .select("avatar_url, display_name, name, onboarding_complete")
+        .select("avatar_url, display_name, name, onboarding_complete, championship_pick")
         .eq("id", authUser.id)
         .single();
 
@@ -95,6 +98,7 @@ function App() {
           profile?.name ??
           authUser.user_metadata.full_name ??
           authUser.email,
+        championshipPick: profile?.championship_pick ?? null,
         onboardingComplete: profile?.onboarding_complete ?? false,
       });
       setUser(authUser);
@@ -110,6 +114,10 @@ function App() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  function handleProfileUpdate({ displayName, championshipPick }) {
+    setProfile((prev) => ({ ...prev, displayName, championshipPick }));
+  }
 
   function handleSignIn() {
     supabase.auth.signInWithOAuth({ provider: "google" });
@@ -231,9 +239,12 @@ function App() {
               supabase={supabase}
               avatarUrl={profile.avatarUrl}
               displayName={profile.displayName ?? user.user_metadata.full_name ?? user.email}
+              championshipPick={profile.championshipPick}
+              onProfileUpdate={handleProfileUpdate}
             />
           }
         />
+        <Route path="/results" element={<ResultsPage supabase={supabase} />} />
         <Route path="/history" element={<HistoryPage currentUserId={user.id} supabase={supabase} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
