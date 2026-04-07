@@ -185,7 +185,7 @@ except Exception as e:
 
 
 # === Step 5: Update results for finished games ===
-def get_winner(game_id):
+def get_winner(game_id, home_team_id):
     try:
         boxscore = call_with_retry(boxscoretraditionalv3.BoxScoreTraditionalV3, game_id=game_id, timeout=NBA_TIMEOUT)
         df = boxscore.get_data_frames()[2]  # team totals (one row per team)
@@ -194,19 +194,27 @@ def get_winner(game_id):
 
         team_1_full = team_id_to_name.get(team_1['teamId'], team_1['teamName'])
         team_2_full = team_id_to_name.get(team_2['teamId'], team_2['teamName'])
+        team_1_pts = int(team_1['points'])
+        team_2_pts = int(team_2['points'])
 
-        if team_1['points'] > team_2['points']:
+        if team_1_pts > team_2_pts:
             winner = team_1_full
-        elif team_2['points'] > team_1['points']:
+        elif team_2_pts > team_1_pts:
             winner = team_2_full
         else:
             winner = 'Tie'
 
-        print(f"Game {game_id} | {team_1_full} vs {team_2_full} | Winner: {winner}")
-        return winner
+        # Determine home/away scores by matching teamId to homeTeamId
+        if int(team_1['teamId']) == int(home_team_id):
+            home_score, away_score = team_1_pts, team_2_pts
+        else:
+            home_score, away_score = team_2_pts, team_1_pts
+
+        print(f"Game {game_id} | {team_1_full} {team_1_pts} vs {team_2_full} {team_2_pts} | Winner: {winner}")
+        return winner, home_score, away_score
     except Exception as e:
         print(f"Warning: Failed to get winner for game {game_id}: {e}")
-        return ''
+        return '', None, None
 
 
 try:
@@ -218,9 +226,14 @@ try:
     results_payload = []
     for _, row in final_games.iterrows():
         game_id = str(row['gameId'])
-        winner = get_winner(game_id)
+        winner, home_score, away_score = get_winner(game_id, row['homeTeamId'])
         if winner:
-            results_payload.append({'game_id': game_id, 'winner': winner})
+            results_payload.append({
+                'game_id': game_id,
+                'winner': winner,
+                'home_score': home_score,
+                'away_score': away_score,
+            })
         time.sleep(1.5)
 
     if results_payload:
