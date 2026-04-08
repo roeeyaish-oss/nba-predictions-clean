@@ -23,6 +23,7 @@ export default async function handler(req, res) {
 
   try {
     const yesterday = getIsraelYesterday();
+    console.log("[Oracle] querying for yesterday:", yesterday);
 
     // Fetch yesterday's results joined with games
     const { data: results, error: resultsError } = await supabase
@@ -30,18 +31,24 @@ export default async function handler(req, res) {
       .select("game_id, winner, games!inner(home_team, away_team, date)")
       .eq("games.date", yesterday);
 
+    console.log("[Oracle] results query — error:", resultsError, "| count:", results?.length ?? 0, "| data:", JSON.stringify(results));
+
     if (resultsError) throw resultsError;
     if (!results || results.length === 0) {
+      console.log("[Oracle] skip: no results found for yesterday");
       return res.status(200).json({ skip: true });
     }
 
     const gameIds = results.map((r) => r.game_id);
+    console.log("[Oracle] game_ids to query predictions for:", gameIds);
 
     // Fetch predictions for those games joined with users
     const { data: predictions, error: predsError } = await supabase
       .from("predictions")
       .select("game_id, pick, users(display_name, name)")
       .in("game_id", gameIds);
+
+    console.log("[Oracle] predictions query — error:", predsError, "| count:", predictions?.length ?? 0, "| data:", JSON.stringify(predictions));
 
     if (predsError) throw predsError;
 
@@ -102,15 +109,18 @@ Choose CALLED IT if someone got everything right.`,
     const claudeData = await claudeRes.json();
     const raw = claudeData.content?.[0]?.text ?? "";
 
+    console.log("[Oracle] Claude raw response:", raw);
+
     let parsed;
     try {
       parsed = JSON.parse(raw);
-    } catch {
-      // Claude returned something unparseable — skip gracefully
+    } catch (parseErr) {
+      console.error("[Oracle] skip: JSON parse failed:", parseErr.message, "| raw:", raw);
       return res.status(200).json({ skip: true });
     }
 
     if (!parsed.title || !parsed.recap) {
+      console.error("[Oracle] skip: missing title or recap in parsed response:", JSON.stringify(parsed));
       return res.status(200).json({ skip: true });
     }
 
