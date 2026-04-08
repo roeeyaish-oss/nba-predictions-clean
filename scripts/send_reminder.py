@@ -1,7 +1,7 @@
 import os
 import smtplib
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.message import EmailMessage
 from zoneinfo import ZoneInfo
 
@@ -29,6 +29,10 @@ def get_israel_date() -> str:
     return get_israel_now().strftime("%Y-%m-%d")
 
 
+def get_israel_tomorrow() -> str:
+    return (get_israel_now() + timedelta(days=1)).strftime("%Y-%m-%d")
+
+
 def get_israel_minutes() -> int:
     now = get_israel_now()
     return now.hour * 60 + now.minute
@@ -39,12 +43,16 @@ def parse_game_minutes(game_time: str) -> int:
     return int(hours) * 60 + int(minutes)
 
 
-def is_upcoming_today(game: dict, today: str, now_minutes: int) -> bool:
+def is_game_started(game: dict, today: str, now_minutes: int) -> bool:
     game_date = (game.get("date") or "").strip()
     game_time = (game.get("game_time") or "").strip()
-    if game_date != today or not game_time:
+    if not game_time:
         return False
-    return parse_game_minutes(game_time) > now_minutes
+    if game_date < today:
+        return True
+    if game_date > today:
+        return False
+    return parse_game_minutes(game_time) <= now_minutes
 
 
 def load_supabase() -> Client:
@@ -55,18 +63,20 @@ def load_supabase() -> Client:
 
 def fetch_upcoming_games(supabase: Client) -> list[dict]:
     today = get_israel_date()
+    tomorrow = get_israel_tomorrow()
     now_minutes = get_israel_minutes()
 
     response = (
         supabase.table("games")
         .select("id, date, game_time, home_team, away_team")
-        .eq("date", today)
+        .in_("date", [today, tomorrow])
+        .order("date")
         .order("game_time")
         .execute()
     )
 
     games = response.data or []
-    return [game for game in games if is_upcoming_today(game, today, now_minutes)]
+    return [game for game in games if not is_game_started(game, today, now_minutes)]
 
 
 def fetch_users(supabase: Client) -> list[dict]:
@@ -140,7 +150,7 @@ def main() -> int:
         supabase = load_supabase()
         upcoming_games = fetch_upcoming_games(supabase)
         if not upcoming_games:
-            print("No upcoming games today in Israel time. No reminder emails sent.")
+            print("No upcoming games for today or tomorrow in Israel time. No reminder emails sent.")
             return 0
 
         game_ids = [str(game["id"]) for game in upcoming_games if game.get("id")]
