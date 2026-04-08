@@ -15,6 +15,18 @@ import { getIsraelToday } from "@/lib/time";
 // even if auth state change fires multiple times.
 let oracleFetched = false;
 
+// Safe localStorage helpers — Safari PWA / private mode can throw SecurityError
+// on property access, not just on set/get calls.
+function lsGet(key) {
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+function lsSet(key, value) {
+  try { localStorage.setItem(key, value); } catch { /* ignore */ }
+}
+function lsGetJson(key) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
+}
+
 const courtBackgroundStyle = {
   background: "url('/court-bg.png') center top / cover no-repeat fixed",
   backgroundColor: "#050200",
@@ -42,11 +54,7 @@ function App() {
 
   function handleOracleClose() {
     setShowOracle(false);
-    try {
-      localStorage.setItem("oracle_last_shown", getIsraelToday());
-    } catch {
-      // ignore
-    }
+    lsSet("oracle_last_shown", getIsraelToday());
   }
 
   useEffect(() => {
@@ -123,9 +131,8 @@ function App() {
       if (profile?.onboarding_complete) {
         try {
           const today = getIsraelToday();
-          const lastShown = localStorage.getItem("oracle_last_shown");
-          const storedRaw = localStorage.getItem("oracle_data_today");
-          const stored = storedRaw ? JSON.parse(storedRaw) : null;
+          const lastShown = lsGet("oracle_last_shown");
+          const stored = lsGetJson("oracle_data_today");
 
           // PATH 1 — Always restore cached data so button is always visible
           if (stored?.date === today && stored.title && stored.recap) {
@@ -142,9 +149,7 @@ function App() {
                   ? { title: data.title, recap: data.recap }
                   : { title: "QUIET NIGHT", recap: "No games last night. Stay ready. 🏀" };
 
-                try {
-                  localStorage.setItem("oracle_data_today", JSON.stringify({ date: today, ...payload }));
-                } catch { /* ignore */ }
+                lsSet("oracle_data_today", JSON.stringify({ date: today, ...payload }));
 
                 setOracleData(payload);
                 if (!data.skip && data.title && data.recap) {
@@ -273,8 +278,8 @@ function App() {
                     onboardingComplete: true,
                   }));
                   try {
-                    if (!localStorage.getItem("welcome_shown")) {
-                      localStorage.setItem("welcome_shown", "true");
+                    if (!lsGet("welcome_shown")) {
+                      lsSet("welcome_shown", "true");
                       fetch(`/api/welcome?name=${encodeURIComponent(displayName)}`)
                         .then((r) => r.json())
                         .then((data) => {
