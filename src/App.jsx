@@ -126,19 +126,21 @@ function App() {
         try {
           const today = getIsraelToday();
           const lastShown = localStorage.getItem("oracle_last_shown");
+          console.log("[Oracle] oracle_last_shown:", lastShown, "| today (IL):", today, "| will fetch:", lastShown !== today);
           if (lastShown !== today) {
             fetch("/api/oracle")
               .then((r) => r.json())
               .then((data) => {
+                console.log("[Oracle] API response:", data);
                 if (!data.skip && data.title && data.recap) {
                   setOracleData(data);
                   setShowOracle(true);
                 }
               })
-              .catch(() => {});
+              .catch((err) => console.error("[Oracle] fetch error:", err));
           }
-        } catch {
-          // ignore localStorage errors
+        } catch (err) {
+          console.error("[Oracle] localStorage error:", err);
         }
       }
     }
@@ -288,7 +290,7 @@ function App() {
             : <Navigate to="/onboarding" replace />
         }
       >
-        <Route path="/" element={<HomePage user={user} supabase={supabase} />} />
+        <Route path="/" element={<HomePage user={user} supabase={supabase} oracleData={oracleData} onReopenOracle={() => setShowOracle(true)} />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route
           path="/profile"

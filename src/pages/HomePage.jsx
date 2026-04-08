@@ -57,7 +57,10 @@ const submitButtonStyle = {
   cursor: "pointer",
 };
 
-export default function HomePage({ user, supabase }) {
+const ANNOUNCER_URL =
+  "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/announcer.png";
+
+export default function HomePage({ user, supabase, oracleData, onReopenOracle }) {
   const { games, loading: gamesLoading } = useTodayGames(supabase);
   const hadCache = useRef(games.length > 0).current;
   const [ready, setReady] = useState(hadCache);
@@ -274,6 +277,36 @@ export default function HomePage({ user, supabase }) {
       )}
 
       <DailyPredictions currentUserId={user.id} refreshKey={predictionsRefreshKey} />
+
+      {oracleData && (
+        <button
+          onClick={onReopenOracle}
+          aria-label="Reopen Game Night Recap"
+          style={{
+            position: "fixed",
+            bottom: "80px",
+            left: "16px",
+            zIndex: 50,
+            width: "52px",
+            height: "52px",
+            borderRadius: "50%",
+            border: "2px solid rgba(201,176,55,0.85)",
+            background: "rgba(8,5,0,0.75)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
+            padding: 0,
+            cursor: "pointer",
+            overflow: "hidden",
+          }}
+        >
+          <img
+            src={ANNOUNCER_URL}
+            alt="Announcer"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </button>
+      )}
     </div>
   );
 }
