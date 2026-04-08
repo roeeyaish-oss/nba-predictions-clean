@@ -120,22 +120,21 @@ function App() {
       });
       setUser(authUser);
 
-      // Trigger Oracle once per session, only for onboarded users
-      if (profile?.onboarding_complete && !oracleFetched) {
-        oracleFetched = true;
+      if (profile?.onboarding_complete) {
         try {
           const today = getIsraelToday();
           const lastShown = localStorage.getItem("oracle_last_shown");
           const storedRaw = localStorage.getItem("oracle_data_today");
           const stored = storedRaw ? JSON.parse(storedRaw) : null;
 
-          if (lastShown === today) {
-            // Already shown today — restore cached data so button stays visible
-            if (stored?.date === today && stored.title && stored.recap) {
-              setOracleData({ title: stored.title, recap: stored.recap });
-            }
-          } else {
-            // First visit today — fetch fresh data
+          // PATH 1 — Always restore cached data so button is always visible
+          if (stored?.date === today && stored.title && stored.recap) {
+            setOracleData({ title: stored.title, recap: stored.recap });
+          }
+
+          // PATH 2 — Fetch new data once per day (guarded by flag + last shown date)
+          if (lastShown !== today && !oracleFetched) {
+            oracleFetched = true;
             fetch("/api/oracle")
               .then((r) => r.json())
               .then((data) => {
