@@ -285,7 +285,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
           style={{
             position: "fixed",
             bottom: "80px",
-            left: "16px",
+            right: "16px",
             zIndex: 50,
             width: "52px",
             height: "52px",

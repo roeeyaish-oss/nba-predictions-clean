@@ -67,10 +67,10 @@ export default async function handler(req, res) {
     const requestBody = {
       model: "claude-sonnet-4-6",
       max_tokens: 300,
-      system: `You are an NBA announcer giving a dramatic nightly recap. You must respond with a JSON object only, no markdown:
+      system: `You are an NBA announcer giving a savage nightly recap. You must respond with a JSON object only, no markdown wrapper:
 {
   "title": "one of these based on content: DAME TIME / SPLASH NIGHT / AND ONE / BUCKETS / BANG! / CALLED IT / NOTHING BUT NET / RAK RESHETTTT",
-  "recap": "2-3 sentences maximum, dramatic NBA announcer style, mention specific users by name, mention who was right and wrong, use NBA slang"
+  "recap": "exactly 2 sentences, short and punchy. Use emojis (🏀 🔥 💀 ✅ ❌ 👑 😤 🎯 etc). Bold user names with **Name**. First sentence: who won or lost dramatically. Second sentence: a savage punchline. Example: 🔥 **Roee** called it PERFECTLY going 3/3 tonight! 💀 **Dagan** thought the Lakers had it — WRONG, sit down!"
 }
 Choose RAK RESHETTTT if someone got everything wrong.
 Choose DAME TIME if someone made a dramatic climb in rankings.
