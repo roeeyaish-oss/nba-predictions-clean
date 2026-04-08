@@ -204,6 +204,12 @@ export default function OnboardingPage({ user, supabase, avatarUrl, onComplete }
                 })}
               </div>
 
+              {!selectedTeam && (
+                <p style={{ marginTop: "8px", fontSize: "12px", color: "#C9B037", textAlign: "center" }}>
+                  Select a championship team to continue
+                </p>
+              )}
+
               {selectedTeam && (
                 <p style={{ marginTop: "10px", fontSize: "12px", color: "#C9B037", textAlign: "center" }}>
                   {NBA_TEAMS.find((t) => t.id === selectedTeam)?.name}

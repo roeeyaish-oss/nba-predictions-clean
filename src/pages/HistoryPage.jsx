@@ -12,11 +12,12 @@ function formatDate(dateString) {
   }).format(new Date(dateString));
 }
 
-let historyCache = [];
+const historyCache = new Map();
 
 export default function HistoryPage({ currentUserId, supabase }) {
-  const hadCache = useRef(historyCache.length > 0).current;
-  const [items, setItems] = useState(historyCache);
+  const cachedItems = historyCache.get(currentUserId) ?? [];
+  const hadCache = useRef(cachedItems.length > 0).current;
+  const [items, setItems] = useState(cachedItems);
   const [ready, setReady] = useState(hadCache);
   const [animate, setAnimate] = useState(false);
 
@@ -31,8 +32,9 @@ export default function HistoryPage({ currentUserId, supabase }) {
           .limit(100);
 
         if (error) throw error;
-        historyCache = data || [];
-        setItems(historyCache);
+        const nextItems = data || [];
+        historyCache.set(currentUserId, nextItems);
+        setItems(nextItems);
       } catch (err) {
         console.error("Failed to load all prediction history:", err);
       } finally {
@@ -42,7 +44,7 @@ export default function HistoryPage({ currentUserId, supabase }) {
     }
 
     loadHistory();
-  }, [supabase, hadCache]);
+  }, [supabase, hadCache, currentUserId]);
 
   if (!ready) {
     return (

@@ -21,6 +21,15 @@ const courtBackgroundStyle = {
   backgroundColor: "#050200",
 };
 
+const loadingSpinnerStyle = {
+  width: "44px",
+  height: "44px",
+  borderRadius: "50%",
+  border: "4px solid rgba(201,176,55,0.25)",
+  borderTopColor: "#C9B037",
+  animation: "spin 0.8s linear infinite",
+};
+
 const EMAIL_AVATAR_MAP = {
   "roeeyaish@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/roee.png",
   "yuvaldagan95@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/dagan.png",
@@ -248,7 +257,19 @@ function App() {
 
   if (profile.onboardingComplete === null) {
     return (
-      <div style={{ position: "fixed", inset: 0, overflow: "hidden", background: "#050200" }} />
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          overflow: "hidden",
+          background: "#050200",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div style={loadingSpinnerStyle} aria-label="Loading" />
+      </div>
     );
   }
 

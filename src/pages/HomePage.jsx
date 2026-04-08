@@ -69,6 +69,8 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
   const [predictionsRefreshKey, setPredictionsRefreshKey] = useState(0);
+  const submittableGames = games.filter((game) => !isGameStarted(game.gameTimeIL, game.date));
+  const hasSubmittableGames = submittableGames.length > 0;
 
   useEffect(() => {
     if (!message) return;
@@ -90,7 +92,6 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   async function handleSubmit() {
     if (!user) return;
 
-    const submittableGames = games.filter((game) => !isGameStarted(game.gameTimeIL, game.date));
     const hasPick = submittableGames.some((game) => predictions[game.gameId]);
 
     if (!hasPick) {
@@ -261,16 +262,18 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
               </div>
             );
           })}
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            style={{
-              ...submitButtonStyle,
-              ...(submitting ? { opacity: 0.6, cursor: "not-allowed" } : {}),
-            }}
-          >
-            {submitting ? "SUBMITTING..." : "SUBMIT PREDICTIONS"}
-          </button>
+          {hasSubmittableGames && (
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              style={{
+                ...submitButtonStyle,
+                ...(submitting ? { opacity: 0.6, cursor: "not-allowed" } : {}),
+              }}
+            >
+              {submitting ? "SUBMITTING..." : "SUBMIT PREDICTIONS"}
+            </button>
+          )}
 
           {message && (
             <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 700, color: message.type === "success" ? "#e8cb68" : "#fca5a5", margin: 0 }}>
