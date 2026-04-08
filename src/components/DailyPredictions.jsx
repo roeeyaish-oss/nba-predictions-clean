@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import UserAvatar from "@/components/UserAvatar";
 import { isGameStarted } from "@/lib/time";
 
-export default function DailyPredictions({ currentUserId }) {
+export default function DailyPredictions({ currentUserId, refreshKey }) {
   const [predictions, setPredictions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -38,7 +38,7 @@ export default function DailyPredictions({ currentUserId }) {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [refreshKey]);
 
   const users = [
     ...new Map(

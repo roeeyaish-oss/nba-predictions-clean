@@ -65,6 +65,7 @@ export default function HomePage({ user, supabase }) {
   const [predictions, setPredictions] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
+  const [predictionsRefreshKey, setPredictionsRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!message) return;
@@ -113,6 +114,7 @@ export default function HomePage({ user, supabase }) {
         res.text().then((text) => {
           if (res.ok) {
             setMessage({ type: "success", text: "Predictions submitted successfully!" });
+            setPredictionsRefreshKey((k) => k + 1);
           } else {
             setMessage({ type: "error", text: text || "Failed to submit predictions." });
           }
@@ -270,7 +272,7 @@ export default function HomePage({ user, supabase }) {
         </>
       )}
 
-      <DailyPredictions currentUserId={user.id} />
+      <DailyPredictions currentUserId={user.id} refreshKey={predictionsRefreshKey} />
     </div>
   );
 }

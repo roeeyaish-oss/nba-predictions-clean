@@ -25,7 +25,8 @@ export default function HistoryPage({ currentUserId, supabase }) {
       try {
         const { data, error } = await supabase
           .from("predictions")
-          .select("user_id, pick, created_at, users(name, display_name, avatar_url), games(home_team, away_team, date, game_time)")
+          .select("user_id, pick, created_at, users(name, display_name, avatar_url), games!inner(home_team, away_team, date, game_time, results!inner(winner))")
+          .not("games.results.winner", "is", null)
           .order("created_at", { ascending: false })
           .limit(100);
 
