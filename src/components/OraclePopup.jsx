@@ -1,7 +1,5 @@
 import React, { useEffect } from "react";
-
-const ANNOUNCER_URL =
-  "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/announcer.png";
+import { ANNOUNCER_URL } from "@/lib/constants";
 
 export default function OraclePopup({ data, onClose }) {
   // Close on Escape key

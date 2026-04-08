@@ -1,6 +1,7 @@
 // 2024-25 NBA Playoffs
 // Team names must exactly match what nba_playoffs_to_supabase.py writes (team_id_to_name)
 // ESPN logo abbreviations: https://a.espncdn.com/i/teamlogos/nba/500/{abbr}.png
+import { ESPN_LOGO_BASE } from "@/lib/constants";
 
 export const TEAM_ABBR = {
   "Atlanta Hawks":            "atl",
@@ -57,7 +58,7 @@ export const TEAM_SHORT = {
 
 export function teamLogo(teamName) {
   const abbr = TEAM_ABBR[teamName] ?? teamName;
-  return `https://a.espncdn.com/i/teamlogos/nba/500/${abbr}.png`;
+  return `${ESPN_LOGO_BASE}/${abbr}.png`;
 }
 
 // First round matchups ordered for bracket tree layout.

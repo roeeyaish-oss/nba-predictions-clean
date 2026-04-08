@@ -16,7 +16,7 @@ export const SelectTrigger = React.forwardRef(({ className, children, ...props }
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex w-full items-center justify-between rounded-xl border border-red-600 bg-black px-4 py-3 text-white text-base shadow ring-1 ring-red-500/40 hover:ring-red-400/80 transition duration-300",
+      "flex w-full items-center justify-between rounded-xl border border-[#C9B037] bg-black px-4 py-3 text-white text-base shadow ring-1 ring-[#C9B037]/40 hover:ring-[#C9B037]/80 transition duration-300",
       className
     )}
     {...props}
@@ -35,7 +35,7 @@ export const SelectContent = React.forwardRef(({ className, children, ...props }
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "z-50 min-w-[8rem] overflow-hidden rounded-xl border border-red-600 bg-black text-white p-1 text-sm shadow-lg backdrop-blur-md",
+        "z-50 min-w-[8rem] overflow-hidden rounded-xl border border-[#C9B037] bg-black text-white p-1 text-sm shadow-lg backdrop-blur-md",
         className
       )}
       {...props}
@@ -55,7 +55,7 @@ export const SelectItem = React.forwardRef(({ className, children, ...props }, r
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-pointer select-none items-center rounded-md px-3 py-2 text-base outline-none hover:bg-red-600 hover:text-black transition",
+      "relative flex w-full cursor-pointer select-none items-center rounded-md px-3 py-2 text-base outline-none hover:bg-[#C9B037] hover:text-black transition",
       className
     )}
     {...props}

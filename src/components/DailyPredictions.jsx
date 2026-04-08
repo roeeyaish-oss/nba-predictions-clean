@@ -9,6 +9,7 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
   const [predictions, setPredictions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchPredictions = async (isInitialLoad = false) => {
@@ -25,9 +26,11 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
 
         const res = await fetch("/api/dailyPredictions", { headers });
         const data = await res.json();
+        setError(false);
         setPredictions(data);
       } catch (err) {
         console.error("Failed to fetch predictions", err);
+        setError(true);
       } finally {
         if (isInitialLoad) {
           setLoading(false);
@@ -38,11 +41,24 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
     };
 
     fetchPredictions(true);
+
     const interval = setInterval(() => {
-      fetchPredictions(false);
+      if (!document.hidden) {
+        fetchPredictions(false);
+      }
     }, 30000);
 
-    return () => clearInterval(interval);
+    function handleVisibilityChange() {
+      if (!document.hidden) {
+        fetchPredictions(false);
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [refreshKey]);
 
   const users = [
@@ -89,7 +105,15 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
           )}
         </div>
 
-        {loading && predictions.length === 0 ? (
+        {error ? (
+          <p
+            className="text-center text-sm cursor-pointer"
+            style={{ color: "#C9B037" }}
+            onClick={() => { setError(false); setLoading(true); }}
+          >
+            Failed to load predictions. Tap to retry.
+          </p>
+        ) : loading && predictions.length === 0 ? (
           <p className="text-center text-sm text-white/60">Loading predictions...</p>
         ) : (
           <table className="w-full border-collapse text-sm text-white sm:text-base">

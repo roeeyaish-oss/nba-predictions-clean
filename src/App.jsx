@@ -30,13 +30,6 @@ const loadingSpinnerStyle = {
   animation: "spin 0.8s linear infinite",
 };
 
-const EMAIL_AVATAR_MAP = {
-  "roeeyaish@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/roee.png",
-  "yuvaldagan95@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/dagan.png",
-  "yuvalsaban9@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/saban.png",
-  "doronnoam3@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/doron.png",
-};
-
 
 function App() {
   const [user, setUser] = useState(null);
@@ -103,25 +96,8 @@ function App() {
         .eq("id", authUser.id)
         .single();
 
-      const emailKey = authUser.email?.toLowerCase();
-      const mappedAvatarUrl = EMAIL_AVATAR_MAP[emailKey];
-      const shouldReplaceAvatar =
-        !profile?.avatar_url ||
-        profile.avatar_url.startsWith("https://lh3.googleusercontent.com");
-
-      let finalAvatarUrl = profile?.avatar_url ?? null;
-
-      if (shouldReplaceAvatar && mappedAvatarUrl) {
-        await supabase
-          .from("users")
-          .update({ avatar_url: mappedAvatarUrl })
-          .eq("id", authUser.id);
-
-        finalAvatarUrl = mappedAvatarUrl;
-      }
-
       setProfile({
-        avatarUrl: finalAvatarUrl,
+        avatarUrl: profile?.avatar_url ?? null,
         displayName:
           profile?.display_name ??
           profile?.name ??
@@ -173,7 +149,8 @@ function App() {
       handleAuthUser(session?.user ?? null);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "INITIAL_SESSION") return;
       handleAuthUser(session?.user ?? null);
     });
 

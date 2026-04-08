@@ -20,6 +20,7 @@ export default function HistoryPage({ currentUserId, supabase }) {
   const [items, setItems] = useState(cachedItems);
   const [ready, setReady] = useState(hadCache);
   const [animate, setAnimate] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     async function loadHistory() {
@@ -35,8 +36,10 @@ export default function HistoryPage({ currentUserId, supabase }) {
         const nextItems = data || [];
         historyCache.set(currentUserId, nextItems);
         setItems(nextItems);
+        setError(false);
       } catch (err) {
         console.error("Failed to load all prediction history:", err);
+        setError(true);
       } finally {
         if (!hadCache) setAnimate(true);
         setReady(true);
@@ -76,6 +79,14 @@ export default function HistoryPage({ currentUserId, supabase }) {
           ))}
         </div>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <p style={{ textAlign: "center", color: "#C9B037", marginTop: "48px" }}>
+        Failed to load history. Please refresh.
+      </p>
     );
   }
 

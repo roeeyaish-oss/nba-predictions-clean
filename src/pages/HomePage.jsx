@@ -5,6 +5,7 @@ import DailyPredictions from "@/components/DailyPredictions";
 import SkeletonBlock from "@/components/SkeletonBlock";
 import { getIsraelToday, getIsraelTomorrow, isGameStarted } from "@/lib/time";
 import useTodayGames from "@/hooks/useTodayGames";
+import { ANNOUNCER_URL } from "@/lib/constants";
 
 const titleSectionStyle = {
   background: "rgba(8,5,0,0.65)",
@@ -57,8 +58,6 @@ const submitButtonStyle = {
   cursor: "pointer",
 };
 
-const ANNOUNCER_URL =
-  "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/announcer.png";
 
 export default function HomePage({ user, supabase, oracleData, onReopenOracle }) {
   const { games, loading: gamesLoading } = useTodayGames(supabase);

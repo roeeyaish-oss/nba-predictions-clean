@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { CLAUDE_MODEL } from "./_constants.js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -91,7 +92,7 @@ export default async function handler(req, res) {
     const context = lines.join("\n\n");
 
     const requestBody = {
-      model: "claude-sonnet-4-6",
+      model: CLAUDE_MODEL,
       max_tokens: 300,
       system: `You are an NBA announcer giving a savage nightly recap. Return raw JSON only, no markdown, no code fences, no backticks.
 {

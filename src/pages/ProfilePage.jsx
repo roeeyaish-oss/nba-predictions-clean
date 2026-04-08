@@ -42,6 +42,7 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
   const hadCache = useRef(cachedItems.length > 0).current;
   const [items, setItems] = useState(cachedItems);
   const [predictionsLoaded, setPredictionsLoaded] = useState(hadCache);
+  const [error, setError] = useState(false);
   const [avatarLoaded, setAvatarLoaded] = useState(!avatarUrl);
   const ready = predictionsLoaded && avatarLoaded;
   const [animate, setAnimate] = useState(false);
@@ -72,8 +73,10 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
         const nextItems = data || [];
         profileHistoryCache.set(user.id, nextItems);
         setItems(nextItems);
+        setError(false);
       } catch (err) {
         console.error("Failed to load profile history:", err);
+        setError(true);
       } finally {
         setPredictionsLoaded(true);
       }
@@ -395,7 +398,11 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
         </section>
       )}
 
-      {items.length === 0 ? (
+      {error ? (
+        <p style={{ textAlign: "center", color: "#C9B037", marginTop: "16px" }}>
+          Failed to load picks. Please refresh.
+        </p>
+      ) : items.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center text-white/65">
             No predictions submitted yet.

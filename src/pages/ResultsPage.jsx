@@ -497,6 +497,7 @@ export default function ResultsPage({ supabase }) {
   const [flatResults, setFlatResults] = useState([]);
   const [ready, setReady] = useState(false);
   const [animate, setAnimate] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -507,8 +508,10 @@ export default function ResultsPage({ supabase }) {
 
         if (error) throw error;
         setFlatResults(data || []);
+        setError(false);
       } catch (err) {
         console.error("Failed to load results:", err);
+        setError(true);
       } finally {
         if (!hadCache.current) setAnimate(true);
         setReady(true);
@@ -532,6 +535,14 @@ export default function ResultsPage({ supabase }) {
           ))}
         </div>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <p style={{ textAlign: "center", color: "#C9B037", marginTop: "48px" }}>
+        Failed to load results. Please refresh.
+      </p>
     );
   }
 

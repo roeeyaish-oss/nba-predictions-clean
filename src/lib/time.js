@@ -21,11 +21,18 @@ export function getIsraelTomorrow() {
 export function isGameStarted(gameTimeIL, gameDate) {
   if (!gameTimeIL) return false;
 
-  const now = new Date();
-  const nowIL = new Date(
-    now.toLocaleString("en-US", {
-      timeZone: "Asia/Jerusalem",
-    })
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jerusalem",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+
+  const p = Object.fromEntries(
+    parts.filter((x) => x.type !== "literal").map((x) => [x.type, x.value])
   );
 
   if (gameDate) {
@@ -34,6 +41,8 @@ export function isGameStarted(gameTimeIL, gameDate) {
     if (gameDate > todayIL) return false;
   }
 
+  const nowHour = parseInt(p.hour, 10);
+  const nowMinute = parseInt(p.minute, 10);
   const [hours, minutes] = gameTimeIL.split(":").map(Number);
-  return nowIL.getHours() > hours || (nowIL.getHours() === hours && nowIL.getMinutes() >= minutes);
+  return nowHour > hours || (nowHour === hours && nowMinute >= minutes);
 }
