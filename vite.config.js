@@ -10,13 +10,13 @@ export default defineConfig({
     Unocss(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "favicon.ico", "robots.txt", "apple-touch-icon.png"],
+      includeAssets: ["icon-192.png", "icon-512.png"],
       manifest: {
-        name: "NBA Playoff Predictions",
-        short_name: "NBA Predictions",
-        description: "Predict NBA playoff games and compete with friends!",
-        theme_color: "#0b0f2a",
-        background_color: "#000000",
+        name: "Court Night",
+        short_name: "Court Night",
+        description: "NBA Playoff Predictions",
+        theme_color: "#C9B037",
+        background_color: "#080500",
         display: "standalone",
         start_url: "/",
         id: "/",
@@ -36,16 +36,15 @@ export default defineConfig({
         ],
         icons: [
           {
-            src: "/logo-192x192.png",
+            src: "/icon-192.png",
             sizes: "192x192",
             type: "image/png",
           },
           {
-            src: "/logo-512x512.png",
+            src: "/icon-512.png",
             sizes: "512x512",
             type: "image/png",
           },
-          
         ],
       },
     }),
