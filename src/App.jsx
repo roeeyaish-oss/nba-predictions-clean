@@ -126,21 +126,36 @@ function App() {
         try {
           const today = getIsraelToday();
           const lastShown = localStorage.getItem("oracle_last_shown");
-          console.log("[Oracle] oracle_last_shown:", lastShown, "| today (IL):", today, "| will fetch:", lastShown !== today);
-          if (lastShown !== today) {
+          const storedRaw = localStorage.getItem("oracle_data_today");
+          const stored = storedRaw ? JSON.parse(storedRaw) : null;
+
+          if (lastShown === today) {
+            // Already shown today — restore cached data so button stays visible
+            if (stored?.date === today && stored.title && stored.recap) {
+              setOracleData({ title: stored.title, recap: stored.recap });
+            }
+          } else {
+            // First visit today — fetch fresh data
             fetch("/api/oracle")
               .then((r) => r.json())
               .then((data) => {
-                console.log("[Oracle] API response:", data);
+                const payload = (!data.skip && data.title && data.recap)
+                  ? { title: data.title, recap: data.recap }
+                  : { title: "QUIET NIGHT", recap: "No games last night. Stay ready. 🏀" };
+
+                try {
+                  localStorage.setItem("oracle_data_today", JSON.stringify({ date: today, ...payload }));
+                } catch { /* ignore */ }
+
+                setOracleData(payload);
                 if (!data.skip && data.title && data.recap) {
-                  setOracleData(data);
                   setShowOracle(true);
                 }
               })
               .catch((err) => console.error("[Oracle] fetch error:", err));
           }
         } catch (err) {
-          console.error("[Oracle] localStorage error:", err);
+          console.error("[Oracle] error:", err);
         }
       }
     }
