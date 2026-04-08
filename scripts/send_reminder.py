@@ -127,6 +127,15 @@ def build_email_body(user: dict, missing_games: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def get_user_display_name(user: dict) -> str:
+    return (
+        (user.get("display_name") or "").strip()
+        or (user.get("name") or "").strip()
+        or (user.get("email") or "").strip()
+        or "Unknown user"
+    )
+
+
 def send_email(to_email: str, body: str) -> None:
     gmail_user = require_env("GMAIL_USER")
     gmail_password = require_env("GMAIL_APP_PASSWORD")
@@ -149,6 +158,7 @@ def main() -> int:
     try:
         supabase = load_supabase()
         upcoming_games = fetch_upcoming_games(supabase)
+        print(f"Found {len(upcoming_games)} upcoming games for reminders.")
         if not upcoming_games:
             print("No upcoming games for today or tomorrow in Israel time. No reminder emails sent.")
             return 0
@@ -163,8 +173,10 @@ def main() -> int:
         for user in users:
             user_id = str(user.get("id") or "").strip()
             email = (user.get("email") or "").strip()
+            display_name = get_user_display_name(user)
             if not user_id or not email:
                 skipped_users += 1
+                print(f"{display_name} - skipped, missing email or user id")
                 continue
 
             submitted_game_ids = predictions_by_user.get(user_id, set())
@@ -172,11 +184,12 @@ def main() -> int:
                 game for game in upcoming_games if str(game["id"]) not in submitted_game_ids
             ]
             if not missing_games:
+                print(f"{display_name} - all picks submitted, no reminder needed")
                 continue
 
             send_email(email, build_email_body(user, missing_games))
             reminders_sent += 1
-            print(f"Sent reminder to {email} for {len(missing_games)} missing picks.")
+            print(f"{display_name} - missing {len(missing_games)} picks, reminder sent")
 
         print(
             f"Reminder run complete. Sent {reminders_sent} emails. "
