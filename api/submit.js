@@ -37,22 +37,20 @@ export default async function handler(req, res) {
     return res.status(400).send("No predictions provided");
   }
 
+  const authHeader = req.headers.authorization ?? "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  if (!token) {
+    return res.status(401).send("Missing authorization token");
+  }
+
+  const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+  if (authError || !authUser) {
+    return res.status(401).send("Unauthorized");
+  }
+
+  const userId = authUser.id;
+
   try {
-    const userId = body[0]?.userId;
-    if (!userId) {
-      return res.status(400).send("Missing user ID");
-    }
-
-    const { data: userRow, error: userError } = await supabase
-      .from("users")
-      .select("id")
-      .eq("id", userId)
-      .single();
-
-    if (userError || !userRow) {
-      return res.status(400).send("Unknown user");
-    }
-
     const gameIds = [...new Set(body.map((row) => row.gameId).filter(Boolean))];
 
     const { data: gamesData, error: gamesError } = await supabase
@@ -81,9 +79,9 @@ export default async function handler(req, res) {
     }
 
     const payload = body
-      .filter((row) => row.userId && row.gameId && row.pick && !startedGameIds.has(row.gameId))
+      .filter((row) => row.gameId && row.pick && !startedGameIds.has(row.gameId))
       .map((row) => ({
-        user_id: row.userId,
+        user_id: userId,
         game_id: row.gameId,
         pick: row.pick,
       }));

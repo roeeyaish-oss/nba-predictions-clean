@@ -5,6 +5,7 @@ import SkeletonBlock from "@/components/SkeletonBlock";
 import UserAvatar from "@/components/UserAvatar";
 import { supabase } from "@/lib/supabase";
 import useLeaderboard from "@/hooks/useLeaderboard";
+import { lsGet, lsSet } from "@/lib/storage";
 
 const STORAGE_KEY = "leaderboard_prev_ranks";
 
@@ -22,12 +23,8 @@ export default function Scoreboard() {
   const [ready, setReady] = useState(hadCache);
   const [animate, setAnimate] = useState(false);
   const prevRanks = useRef((() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
+    const stored = lsGet(STORAGE_KEY);
+    try { return stored ? JSON.parse(stored) : null; } catch { return null; }
   })()).current;
   const savedThisLoad = useRef(false);
 
@@ -42,11 +39,7 @@ export default function Scoreboard() {
     if (scores.length === 0 || savedThisLoad.current) return;
     savedThisLoad.current = true;
     const currentRanks = Object.fromEntries(scores.map((row, i) => [row.user, i + 1]));
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentRanks));
-    } catch {
-      // ignore
-    }
+    lsSet(STORAGE_KEY, JSON.stringify(currentRanks));
   }, [scores]);
 
   if (!ready) {

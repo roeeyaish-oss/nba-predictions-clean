@@ -87,7 +87,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
     setPredictions((prev) => ({ ...prev, [gameId]: prev[gameId] === team ? undefined : team }));
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!user) return;
 
     const submittableGames = games.filter((game) => !isGameStarted(game.gameTimeIL, game.date));
@@ -100,17 +100,21 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
 
     setSubmitting(true);
 
+    const { data: { session } } = await supabase.auth.getSession();
+
     const output = submittableGames
       .filter((game) => predictions[game.gameId])
       .map((game) => ({
-        userId: user.id,
         gameId: game.gameId,
         pick: predictions[game.gameId],
       }));
 
     fetch("/api/submit", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session?.access_token}`,
+      },
       body: JSON.stringify(output),
     })
       .then((res) =>
@@ -278,7 +282,6 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
 
       <DailyPredictions currentUserId={user.id} refreshKey={predictionsRefreshKey} />
 
-      {console.log("[OracleButton] oracleData:", oracleData)}
       {oracleData && (
         <button
           onClick={onReopenOracle}

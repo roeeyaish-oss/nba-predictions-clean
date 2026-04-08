@@ -10,22 +10,11 @@ import OnboardingPage from "@/pages/OnboardingPage";
 import OraclePopup from "@/components/OraclePopup";
 import { supabase } from "@/lib/supabase";
 import { getIsraelToday } from "@/lib/time";
+import { lsGet, lsSet, lsGetJson } from "@/lib/storage";
 
 // Module-level guard so the oracle only fires once per session,
 // even if auth state change fires multiple times.
 let oracleFetched = false;
-
-// Safe localStorage helpers — Safari PWA / private mode can throw SecurityError
-// on property access, not just on set/get calls.
-function lsGet(key) {
-  try { return localStorage.getItem(key); } catch { return null; }
-}
-function lsSet(key, value) {
-  try { localStorage.setItem(key, value); } catch { /* ignore */ }
-}
-function lsGetJson(key) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
 
 const courtBackgroundStyle = {
   background: "url('/court-bg.png') center top / cover no-repeat fixed",

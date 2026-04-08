@@ -91,7 +91,7 @@ export default function OraclePopup({ data, onClose }) {
           {data.title}
         </p>
 
-        {/* Recap text — converts **bold** to <strong> */}
+        {/* Recap text — renders **bold** as <strong> without dangerouslySetInnerHTML */}
         <p
           style={{
             margin: 0,
@@ -99,10 +99,11 @@ export default function OraclePopup({ data, onClose }) {
             fontSize: "15px",
             lineHeight: 1.6,
           }}
-          dangerouslySetInnerHTML={{
-            __html: data.recap.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"),
-          }}
-        />
+        >
+          {data.recap.split("**").map((part, i) =>
+            i % 2 === 1 ? <strong key={i}>{part}</strong> : part
+          )}
+        </p>
       </div>
     </div>
   );
