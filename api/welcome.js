@@ -22,7 +22,7 @@ export default async function handler(req, res) {
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-5",
+        model: "claude-sonnet-4-6",
         max_tokens: 150,
         system: `You are a hype NBA arena announcer welcoming a new player to a predictions game called Court Night. Respond with a JSON object only, no markdown:
 {

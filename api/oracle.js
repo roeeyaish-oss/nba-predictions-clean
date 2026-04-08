@@ -64,17 +64,10 @@ export default async function handler(req, res) {
     const context = lines.join("\n\n");
 
     // Call Claude API
-    const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-5",
-        max_tokens: 300,
-        system: `You are an NBA announcer giving a dramatic nightly recap. You must respond with a JSON object only, no markdown:
+    const requestBody = {
+      model: "claude-sonnet-4-6",
+      max_tokens: 300,
+      system: `You are an NBA announcer giving a dramatic nightly recap. You must respond with a JSON object only, no markdown:
 {
   "title": "one of these based on content: DAME TIME / SPLASH NIGHT / AND ONE / BUCKETS / BANG! / CALLED IT / NOTHING BUT NET / RAK RESHETTTT",
   "recap": "2-3 sentences maximum, dramatic NBA announcer style, mention specific users by name, mention who was right and wrong, use NBA slang"
@@ -82,12 +75,28 @@ export default async function handler(req, res) {
 Choose RAK RESHETTTT if someone got everything wrong.
 Choose DAME TIME if someone made a dramatic climb in rankings.
 Choose CALLED IT if someone got everything right.`,
-        messages: [{ role: "user", content: context }],
-      }),
+      messages: [{ role: "user", content: context }],
+    };
+    console.log("[Oracle] Sending to Claude:", JSON.stringify({ model: requestBody.model, messages: requestBody.messages }));
+
+    const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": process.env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
     });
 
     if (!claudeRes.ok) {
-      throw new Error(`Claude API error: ${claudeRes.status}`);
+      const errorBody = await claudeRes.text();
+      console.error("[Oracle] Claude API error:", {
+        status: claudeRes.status,
+        headers: Object.fromEntries(claudeRes.headers.entries()),
+        body: errorBody,
+      });
+      throw new Error(`Claude API error: ${claudeRes.status} — ${errorBody}`);
     }
 
     const claudeData = await claudeRes.json();
