@@ -5,6 +5,29 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
+async function requireAuth(req, res) {
+  const authHeader = req.headers.authorization || "";
+  const match = authHeader.match(/^Bearer\s+(.+)$/i);
+  if (!match) {
+    res.status(401).json({ error: "Unauthorized" });
+    return null;
+  }
+
+  const token = match[1].trim();
+  if (!token) {
+    res.status(401).json({ error: "Unauthorized" });
+    return null;
+  }
+
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data?.user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return null;
+  }
+
+  return data.user;
+}
+
 function getIsraelDates() {
   const formatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Jerusalem",
@@ -27,6 +50,11 @@ export default async function handler(req, res) {
   }
 
   try {
+    const user = await requireAuth(req, res);
+    if (!user) {
+      return;
+    }
+
     const { today, tomorrow } = getIsraelDates();
 
     const { data, error } = await supabase

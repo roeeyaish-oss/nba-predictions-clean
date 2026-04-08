@@ -1,6 +1,41 @@
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
+async function requireAuth(req, res) {
+  const authHeader = req.headers.authorization || "";
+  const match = authHeader.match(/^Bearer\s+(.+)$/i);
+  if (!match) {
+    res.status(401).json({ error: "Unauthorized" });
+    return null;
+  }
+
+  const token = match[1].trim();
+  if (!token) {
+    res.status(401).json({ error: "Unauthorized" });
+    return null;
+  }
+
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data?.user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return null;
+  }
+
+  return data.user;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method Not Allowed" });
+  }
+
+  const user = await requireAuth(req, res);
+  if (!user) {
+    return;
   }
 
   const name = req.query.name?.trim();
