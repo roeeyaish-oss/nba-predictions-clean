@@ -46,6 +46,12 @@ function App() {
     lsSet("oracle_last_shown", getIsraelToday());
   }
 
+  async function getAuthHeaders() {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
   useEffect(() => {
     async function handleAuthUser(authUser) {
       if (!authUser) {
@@ -131,7 +137,8 @@ function App() {
           // PATH 2 — Fetch new data once per day (guarded by flag + last shown date)
           if (lastShown !== today && !oracleFetched) {
             oracleFetched = true;
-            fetch("/api/oracle")
+            getAuthHeaders()
+              .then((headers) => fetch("/api/oracle", { headers }))
               .then((r) => r.json())
               .then((data) => {
                 const payload = (!data.skip && data.title && data.recap)
@@ -269,7 +276,8 @@ function App() {
                   try {
                     if (!lsGet("welcome_shown")) {
                       lsSet("welcome_shown", "true");
-                      fetch(`/api/welcome?name=${encodeURIComponent(displayName)}`)
+                      getAuthHeaders()
+                        .then((headers) => fetch(`/api/welcome?name=${encodeURIComponent(displayName)}`, { headers }))
                         .then((r) => r.json())
                         .then((data) => {
                           if (data.title && data.recap) {

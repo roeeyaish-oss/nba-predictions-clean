@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ScrollText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import UserAvatar from "@/components/UserAvatar";
+import { supabase } from "@/lib/supabase";
 import { isGameStarted } from "@/lib/time";
 
 export default function DailyPredictions({ currentUserId, refreshKey }) {
@@ -10,26 +11,30 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    const fetchPredictions = (isInitialLoad = false) => {
+    const fetchPredictions = async (isInitialLoad = false) => {
       if (isInitialLoad) {
         setLoading(true);
       } else {
         setRefreshing(true);
       }
 
-      fetch("/api/dailyPredictions")
-        .then((res) => res.json())
-        .then((data) => {
-          setPredictions(data);
-        })
-        .catch((err) => console.error("Failed to fetch predictions", err))
-        .finally(() => {
-          if (isInitialLoad) {
-            setLoading(false);
-          } else {
-            setRefreshing(false);
-          }
-        });
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const res = await fetch("/api/dailyPredictions", { headers });
+        const data = await res.json();
+        setPredictions(data);
+      } catch (err) {
+        console.error("Failed to fetch predictions", err);
+      } finally {
+        if (isInitialLoad) {
+          setLoading(false);
+        } else {
+          setRefreshing(false);
+        }
+      }
     };
 
     fetchPredictions(true);
