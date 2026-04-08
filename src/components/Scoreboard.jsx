@@ -6,11 +6,30 @@ import UserAvatar from "@/components/UserAvatar";
 import { supabase } from "@/lib/supabase";
 import useLeaderboard from "@/hooks/useLeaderboard";
 
+const STORAGE_KEY = "leaderboard_prev_ranks";
+
+function getRankChange(user, currentRank, prevRanks) {
+  if (!prevRanks || !(user in prevRanks)) return "=";
+  const prev = prevRanks[user];
+  if (currentRank < prev) return "up";
+  if (currentRank > prev) return "down";
+  return "=";
+}
+
 export default function Scoreboard() {
   const { scores, loading } = useLeaderboard(supabase);
   const hadCache = useRef(scores.length > 0).current;
   const [ready, setReady] = useState(hadCache);
   const [animate, setAnimate] = useState(false);
+  const prevRanks = useRef((() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  })()).current;
+  const savedThisLoad = useRef(false);
 
   useEffect(() => {
     if (!ready && !loading) {
@@ -18,6 +37,17 @@ export default function Scoreboard() {
       setReady(true);
     }
   }, [ready, loading, hadCache]);
+
+  useEffect(() => {
+    if (scores.length === 0 || savedThisLoad.current) return;
+    savedThisLoad.current = true;
+    const currentRanks = Object.fromEntries(scores.map((row, i) => [row.user, i + 1]));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentRanks));
+    } catch {
+      // ignore
+    }
+  }, [scores]);
 
   if (!ready) {
     return (
@@ -68,21 +98,37 @@ export default function Scoreboard() {
             </tr>
           </thead>
           <tbody>
-            {scores.map((row, index) => (
-              <tr
-                key={`${row.user}-${index}`}
-                className="border-b border-white/6 last:border-b-0 hover:bg-white/4"
-              >
-                <td className="px-3 py-4 font-700 text-[#C9B037]">{String(index + 1).padStart(2, "0")}</td>
-                <td className="px-3 py-4 font-600 text-white">
-                  <div className="flex items-center gap-3">
-                    <UserAvatar avatarUrl={row.avatarUrl} name={row.user} size={32} textSize={12} />
-                    <span>{row.user}</span>
-                  </div>
-                </td>
-                <td className="px-3 py-4 text-right font-700 text-white">{row.score}</td>
-              </tr>
-            ))}
+            {scores.map((row, index) => {
+              const change = getRankChange(row.user, index + 1, prevRanks);
+              return (
+                <tr
+                  key={`${row.user}-${index}`}
+                  className="border-b border-white/6 last:border-b-0 hover:bg-white/4"
+                >
+                  <td className="px-3 py-4 font-700 text-[#C9B037]">{String(index + 1).padStart(2, "0")}</td>
+                  <td className="px-3 py-4 font-600 text-white">
+                    <div className="flex items-center gap-3">
+                      <div style={{ position: "relative", display: "inline-flex" }}>
+                        <UserAvatar avatarUrl={row.avatarUrl} name={row.user} size={32} textSize={12} />
+                        <span style={{
+                          position: "absolute",
+                          bottom: "-4px",
+                          right: "-6px",
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          lineHeight: 1,
+                          color: change === "up" ? "#4ade80" : change === "down" ? "#f87171" : "rgba(255,255,255,0.4)",
+                        }}>
+                          {change === "up" ? "↑" : change === "down" ? "↓" : "="}
+                        </span>
+                      </div>
+                      <span>{row.user}</span>
+                    </div>
+                  </td>
+                  <td className="px-3 py-4 text-right font-700 text-white">{row.score}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </CardContent>

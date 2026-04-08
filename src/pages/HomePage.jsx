@@ -81,7 +81,7 @@ export default function HomePage({ user, supabase }) {
   }, [ready, gamesLoading, hadCache]);
 
   function handlePrediction(gameId, team) {
-    setPredictions((prev) => ({ ...prev, [gameId]: team }));
+    setPredictions((prev) => ({ ...prev, [gameId]: prev[gameId] === team ? undefined : team }));
   }
 
   function handleSubmit() {
@@ -114,6 +114,7 @@ export default function HomePage({ user, supabase }) {
         res.text().then((text) => {
           if (res.ok) {
             setMessage({ type: "success", text: "Predictions submitted successfully!" });
+            setPredictions({});
             setPredictionsRefreshKey((k) => k + 1);
           } else {
             setMessage({ type: "error", text: text || "Failed to submit predictions." });
