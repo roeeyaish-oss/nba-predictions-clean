@@ -51,36 +51,28 @@ export default async function handler(req, res) {
     }
 
     const yesterday = getIsraelYesterday();
-    console.log("[Oracle] querying for yesterday:", yesterday);
 
-    // Fetch yesterday's results joined with games
     const { data: results, error: resultsError } = await supabase
       .from("results")
       .select("game_id, winner, games!inner(home_team, away_team, date)")
       .eq("games.date", yesterday);
 
-    console.log("[Oracle] results query — error:", resultsError, "| count:", results?.length ?? 0, "| data:", JSON.stringify(results));
-
     if (resultsError) throw resultsError;
+    console.log(`[Oracle] found ${results?.length ?? 0} results for ${yesterday}`);
     if (!results || results.length === 0) {
       console.log("[Oracle] skip: no results found for yesterday");
       return res.status(200).json({ skip: true });
     }
 
     const gameIds = results.map((r) => r.game_id);
-    console.log("[Oracle] game_ids to query predictions for:", gameIds);
 
-    // Fetch predictions for those games joined with users
     const { data: predictions, error: predsError } = await supabase
       .from("predictions")
       .select("game_id, pick, users(display_name, name)")
       .in("game_id", gameIds);
 
-    console.log("[Oracle] predictions query — error:", predsError, "| count:", predictions?.length ?? 0, "| data:", JSON.stringify(predictions));
-
     if (predsError) throw predsError;
 
-    // Build context string for Claude
     const lines = results.map((result) => {
       const { home_team, away_team } = result.games;
       const winner = result.winner;
@@ -98,7 +90,6 @@ export default async function handler(req, res) {
 
     const context = lines.join("\n\n");
 
-    // Call Claude API
     const requestBody = {
       model: "claude-sonnet-4-6",
       max_tokens: 300,
@@ -112,7 +103,6 @@ Choose DAME TIME if someone made a dramatic climb in rankings.
 Choose CALLED IT if someone got everything right.`,
       messages: [{ role: "user", content: context }],
     };
-    console.log("[Oracle] Sending to Claude:", JSON.stringify({ model: requestBody.model, messages: requestBody.messages }));
 
     const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -128,31 +118,29 @@ Choose CALLED IT if someone got everything right.`,
       const errorBody = await claudeRes.text();
       console.error("[Oracle] Claude API error:", {
         status: claudeRes.status,
-        headers: Object.fromEntries(claudeRes.headers.entries()),
         body: errorBody,
       });
-      throw new Error(`Claude API error: ${claudeRes.status} — ${errorBody}`);
+      throw new Error(`Claude API error: ${claudeRes.status} - ${errorBody}`);
     }
 
     const claudeData = await claudeRes.json();
     const raw = claudeData.content?.[0]?.text ?? "";
-
-    console.log("[Oracle] Claude raw response:", raw);
 
     let parsed;
     try {
       const cleaned = raw.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
       parsed = JSON.parse(cleaned);
     } catch (parseErr) {
-      console.error("[Oracle] skip: JSON parse failed:", parseErr.message, "| raw:", raw);
+      console.error("[Oracle] skip: JSON parse failed:", parseErr.message);
       return res.status(200).json({ skip: true });
     }
 
     if (!parsed.title || !parsed.recap) {
-      console.error("[Oracle] skip: missing title or recap in parsed response:", JSON.stringify(parsed));
+      console.error("[Oracle] skip: missing title or recap in parsed response");
       return res.status(200).json({ skip: true });
     }
 
+    console.log("[Oracle] recap generated successfully");
     return res.status(200).json({ title: parsed.title, recap: parsed.recap });
   } catch (err) {
     console.error("Oracle error:", err);

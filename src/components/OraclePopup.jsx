@@ -91,7 +91,7 @@ export default function OraclePopup({ data, onClose }) {
           {data.title}
         </p>
 
-        {/* Recap text — renders **bold** as <strong> without dangerouslySetInnerHTML */}
+        {/* Recap text - renders **bold** as <strong> without dangerouslySetInnerHTML */}
         <p
           style={{
             margin: 0,

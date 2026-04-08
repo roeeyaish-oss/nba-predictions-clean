@@ -54,14 +54,4 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
-  server: {
-    proxy: {
-      "/api/dailyPredictions": {
-        target:
-          "https://script.google.com/macros/s/AKfycbzkm85dkp1X4FCboHYczkZ9l3oZkEAw1cZVpLD0fEQWQTVkPxtaKHRno1lfW-XY5e7Z/exec",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/dailyPredictions/, "?action=dailyPredictions"),
-      },
-    },
-  },
 })

@@ -12,9 +12,9 @@ import { supabase } from "@/lib/supabase";
 import { getIsraelToday } from "@/lib/time";
 import { lsGet, lsSet, lsGetJson } from "@/lib/storage";
 
-// Module-level guard so the oracle only fires once per session,
+// Module-level guard so the oracle only fires once per Israel date,
 // even if auth state change fires multiple times.
-let oracleFetched = false;
+let oracleLastFetchedDate = null;
 
 const courtBackgroundStyle = {
   background: "url('/court-bg.png') center top / cover no-repeat fixed",
@@ -138,14 +138,14 @@ function App() {
           const lastShown = lsGet("oracle_last_shown");
           const stored = lsGetJson("oracle_data_today");
 
-          // PATH 1 — Always restore cached data so button is always visible
+          // PATH 1 - Always restore cached data so button is always visible
           if (stored?.date === today && stored.title && stored.recap) {
             setOracleData({ title: stored.title, recap: stored.recap });
           }
 
-          // PATH 2 — Fetch new data once per day (guarded by flag + last shown date)
-          if (lastShown !== today && !oracleFetched) {
-            oracleFetched = true;
+          // PATH 2 - Fetch new data once per Israel day
+          if (lastShown !== today && oracleLastFetchedDate !== today) {
+            oracleLastFetchedDate = today;
             getAuthHeaders()
               .then((headers) => fetch("/api/oracle", { headers }))
               .then((r) => r.json())
@@ -275,78 +275,78 @@ function App() {
 
   return (
     <>
-    {showOracle && oracleData && (
-      <OraclePopup data={oracleData} onClose={handleOracleClose} />
-    )}
-    <Routes>
-      <Route
-        path="/onboarding"
-        element={
-          profile.onboardingComplete
-            ? <Navigate to="/" replace />
-            : <OnboardingPage
+      {showOracle && oracleData && (
+        <OraclePopup data={oracleData} onClose={handleOracleClose} />
+      )}
+      <Routes>
+        <Route
+          path="/onboarding"
+          element={
+            profile.onboardingComplete
+              ? <Navigate to="/" replace />
+              : <OnboardingPage
+                  user={user}
+                  supabase={supabase}
+                  avatarUrl={profile.avatarUrl}
+                  onComplete={(displayName) => {
+                    setProfile((currentProfile) => ({
+                      ...currentProfile,
+                      displayName,
+                      onboardingComplete: true,
+                    }));
+                    try {
+                      if (!lsGet("welcome_shown")) {
+                        lsSet("welcome_shown", "true");
+                        getAuthHeaders()
+                          .then((headers) => fetch(`/api/welcome?name=${encodeURIComponent(displayName)}`, { headers }))
+                          .then((r) => r.json())
+                          .then((data) => {
+                            if (data.title && data.recap) {
+                              setOracleData(data);
+                              setShowOracle(true);
+                            }
+                          })
+                          .catch(() => {});
+                      }
+                    } catch {
+                      // ignore localStorage errors
+                    }
+                  }}
+                />
+          }
+        />
+        <Route
+          element={
+            profile.onboardingComplete
+              ? <AppLayout
+                  onSignOut={handleSignOut}
+                  backgroundStyle={courtBackgroundStyle}
+                  avatarUrl={profile.avatarUrl}
+                  displayName={profile.displayName ?? user.user_metadata.full_name ?? user.email}
+                />
+              : <Navigate to="/onboarding" replace />
+          }
+        >
+          <Route path="/" element={<HomePage user={user} supabase={supabase} oracleData={oracleData} onReopenOracle={() => setShowOracle(true)} />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route
+            path="/profile"
+            element={
+              <ProfilePage
                 user={user}
                 supabase={supabase}
                 avatarUrl={profile.avatarUrl}
-                onComplete={(displayName) => {
-                  setProfile((currentProfile) => ({
-                    ...currentProfile,
-                    displayName,
-                    onboardingComplete: true,
-                  }));
-                  try {
-                    if (!lsGet("welcome_shown")) {
-                      lsSet("welcome_shown", "true");
-                      getAuthHeaders()
-                        .then((headers) => fetch(`/api/welcome?name=${encodeURIComponent(displayName)}`, { headers }))
-                        .then((r) => r.json())
-                        .then((data) => {
-                          if (data.title && data.recap) {
-                            setOracleData(data);
-                            setShowOracle(true);
-                          }
-                        })
-                        .catch(() => {});
-                    }
-                  } catch {
-                    // ignore localStorage errors
-                  }
-                }}
-              />
-        }
-      />
-      <Route
-        element={
-          profile.onboardingComplete
-            ? <AppLayout
-                onSignOut={handleSignOut}
-                backgroundStyle={courtBackgroundStyle}
-                avatarUrl={profile.avatarUrl}
                 displayName={profile.displayName ?? user.user_metadata.full_name ?? user.email}
+                championshipPick={profile.championshipPick}
+                onProfileUpdate={handleProfileUpdate}
               />
-            : <Navigate to="/onboarding" replace />
-        }
-      >
-        <Route path="/" element={<HomePage user={user} supabase={supabase} oracleData={oracleData} onReopenOracle={() => setShowOracle(true)} />} />
-        <Route path="/leaderboard" element={<LeaderboardPage />} />
-        <Route
-          path="/profile"
-          element={
-            <ProfilePage
-              user={user}
-              supabase={supabase}
-              avatarUrl={profile.avatarUrl}
-              displayName={profile.displayName ?? user.user_metadata.full_name ?? user.email}
-              championshipPick={profile.championshipPick}
-              onProfileUpdate={handleProfileUpdate}
-            />
-          }
-        />
-        <Route path="/results" element={<ResultsPage supabase={supabase} />} />
-        <Route path="/history" element={<HistoryPage currentUserId={user.id} supabase={supabase} />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-    </Routes>
+            }
+          />
+          <Route path="/results" element={<ResultsPage supabase={supabase} />} />
+          <Route path="/history" element={<HistoryPage currentUserId={user.id} supabase={supabase} />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
     </>
   );
 }
