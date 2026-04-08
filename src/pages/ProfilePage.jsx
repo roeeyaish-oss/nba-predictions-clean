@@ -410,7 +410,7 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
                   <div>
                     <p className="text-xs uppercase tracking-[0.25em] text-[#C9B037]/80">{formatDate(item.games?.date)}</p>
                     <h2 className="mt-2 text-lg font-700 text-white">
-                      {item.games?.away_team} at {item.games?.home_team}
+                      {item.games?.away_team} vs {item.games?.home_team}
                     </h2>
                   </div>
                   <span className="rounded-full border border-[#C9B037]/35 px-3 py-1 text-xs font-700 text-[#C9B037]">

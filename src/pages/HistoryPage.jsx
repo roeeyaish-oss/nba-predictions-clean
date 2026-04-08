@@ -115,7 +115,7 @@ export default function HistoryPage({ currentUserId, supabase }) {
                         {item.user_id === currentUserId ? " · You" : ""}
                       </h2>
                       <p className="mt-1 text-sm text-white/55">
-                        {item.games?.away_team} at {item.games?.home_team}
+                        {item.games?.away_team} vs {item.games?.home_team}
                       </p>
                     </div>
                   </div>

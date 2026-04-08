@@ -23,3 +23,31 @@
     Calculating scores...
     No scores to calculate.
     Done. Games, results, and scores are up to date.
+
+[2026-04-08 11:26:42] SUCCESS
+    Fetching games for yesterday (04/07/2026), today (04/08/2026), tomorrow (04/09/2026)
+    Saved 23 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final          10
+    7:00 pm ET      5
+    10:00 pm ET     3
+    7:30 pm ET      2
+    9:00 pm ET      1
+    9:30 pm ET      1
+    8:00 pm ET      1
+    Found 10 final games.
+    Game 0022501148 | Washington Wizards 98 vs Chicago Bulls 129 | Winner: Chicago Bulls
+    Game 0022501152 | Indiana Pacers 104 vs Minnesota Timberwolves 124 | Winner: Minnesota Timberwolves
+    Game 0022501150 | Brooklyn Nets 96 vs Milwaukee Bucks 90 | Winner: Brooklyn Nets
+    Game 0022501151 | Toronto Raptors 121 vs Miami Heat 95 | Winner: Toronto Raptors
+    Game 0022501149 | Boston Celtics 113 vs Charlotte Hornets 102 | Winner: Boston Celtics
+    Game 0022501153 | New Orleans Pelicans 156 vs Utah Jazz 137 | Winner: New Orleans Pelicans
+    Game 0022501154 | Golden State Warriors 110 vs Sacramento Kings 105 | Winner: Golden State Warriors
+    Game 0022501155 | Los Angeles Lakers 87 vs Oklahoma City Thunder 123 | Winner: Oklahoma City Thunder
+    Game 0022501156 | LA Clippers 116 vs Dallas Mavericks 103 | Winner: LA Clippers
+    Game 0022501157 | Phoenix Suns 105 vs Houston Rockets 119 | Winner: Houston Rockets
+    Upserted 10 results.
+    Calculating scores...
+    No scores to calculate.
+    Done. Games, results, and scores are up to date.
