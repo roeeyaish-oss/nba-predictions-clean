@@ -74,7 +74,7 @@ export default async function handler(req, res) {
     const requestBody = {
       model: "claude-sonnet-4-6",
       max_tokens: 300,
-      system: `You are an NBA announcer giving a savage nightly recap. You must respond with a JSON object only, no markdown wrapper:
+      system: `You are an NBA announcer giving a savage nightly recap. Return raw JSON only, no markdown, no code fences, no backticks.
 {
   "title": "one of these based on content: DAME TIME / SPLASH NIGHT / AND ONE / BUCKETS / BANG! / CALLED IT / NOTHING BUT NET / RAK RESHETTTT",
   "recap": "exactly 2 sentences, short and punchy. Use emojis (🏀 🔥 💀 ✅ ❌ 👑 😤 🎯 etc). Bold user names with **Name**. First sentence: who won or lost dramatically. Second sentence: a savage punchline. Example: 🔥 **Roee** called it PERFECTLY going 3/3 tonight! 💀 **Dagan** thought the Lakers had it — WRONG, sit down!"
@@ -113,7 +113,8 @@ Choose CALLED IT if someone got everything right.`,
 
     let parsed;
     try {
-      parsed = JSON.parse(raw);
+      const cleaned = raw.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
+      parsed = JSON.parse(cleaned);
     } catch (parseErr) {
       console.error("[Oracle] skip: JSON parse failed:", parseErr.message, "| raw:", raw);
       return res.status(200).json({ skip: true });

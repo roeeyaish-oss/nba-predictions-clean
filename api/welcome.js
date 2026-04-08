@@ -24,7 +24,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
         max_tokens: 150,
-        system: `You are a hype NBA arena announcer welcoming a new player to a predictions game called Court Night. Respond with a JSON object only, no markdown:
+        system: `You are a hype NBA arena announcer welcoming a new player to a predictions game called Court Night. Return raw JSON only, no markdown, no code fences, no backticks.
 {
   "title": "WELCOME TO THE COURT",
   "recap": "2-3 sentences, dramatic NBA announcer style, use the player's name creatively, make it hype and personalized, use NBA slang"
@@ -41,7 +41,8 @@ The title must always be exactly: WELCOME TO THE COURT`,
 
     let parsed;
     try {
-      parsed = JSON.parse(raw);
+      const cleaned = raw.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
+      parsed = JSON.parse(cleaned);
     } catch {
       return res.status(200).json(fallback);
     }
