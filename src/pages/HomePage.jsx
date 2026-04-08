@@ -278,22 +278,21 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
 
       <DailyPredictions currentUserId={user.id} refreshKey={predictionsRefreshKey} />
 
+      {console.log("[OracleButton] oracleData:", oracleData)}
       {oracleData && (
         <button
           onClick={onReopenOracle}
           aria-label="Reopen Game Night Recap"
           style={{
             position: "fixed",
-            bottom: "80px",
+            bottom: "90px",
             right: "16px",
-            zIndex: 50,
-            width: "52px",
-            height: "52px",
+            zIndex: 999,
+            width: "60px",
+            height: "60px",
             borderRadius: "50%",
             border: "2px solid rgba(201,176,55,0.85)",
-            background: "rgba(8,5,0,0.75)",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
+            background: "#C9B037",
             boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
             padding: 0,
             cursor: "pointer",
