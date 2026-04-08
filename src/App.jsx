@@ -69,10 +69,10 @@ function App() {
 
       const allowedEmails = (import.meta.env.VITE_ALLOWED_EMAILS || "")
         .split(",")
-        .map((email) => email.trim())
+        .map((email) => email.trim().toLowerCase())
         .filter(Boolean);
 
-      if (allowedEmails.length > 0 && !allowedEmails.includes(authUser.email)) {
+      if (allowedEmails.length > 0 && !allowedEmails.includes(authUser.email?.toLowerCase())) {
         await supabase.auth.signOut();
         setUser(null);
         setAccessDenied(true);
