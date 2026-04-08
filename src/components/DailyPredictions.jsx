@@ -20,6 +20,9 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
       fetch("/api/dailyPredictions")
         .then((res) => res.json())
         .then((data) => {
+          console.log("[DailyPredictions] raw API response:", data);
+          console.log("[DailyPredictions] currentUserId:", currentUserId, typeof currentUserId);
+          console.log("[DailyPredictions] user_ids in response:", data.map((d) => `${d.user_id} (${typeof d.user_id})`));
           setPredictions(data);
         })
         .catch((err) => console.error("Failed to fetch predictions", err))
@@ -118,6 +121,7 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
                         {row.picks.map((pick, i) => {
                           const started = isGameStarted(pick.game_time, pick.date);
                           const isOwn = row.userId === currentUserId;
+                          console.log(`[DailyPredictions] pick render — userId: ${row.userId}, currentUserId: ${currentUserId}, isOwn: ${isOwn}, started: ${started}, game_time: ${pick.game_time}, date: ${pick.date}, pick: ${pick.pick}`);
                           return (
                             <div key={i} className="rounded-3 bg-white/4 px-3 py-2 text-white">
                               {started || isOwn ? pick.pick : <span className="italic text-white/45">Hidden</span>}
