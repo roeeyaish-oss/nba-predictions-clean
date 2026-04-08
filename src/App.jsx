@@ -7,7 +7,13 @@ import ProfilePage from "@/pages/ProfilePage";
 import ResultsPage from "@/pages/ResultsPage";
 import HistoryPage from "@/pages/HistoryPage";
 import OnboardingPage from "@/pages/OnboardingPage";
+import OraclePopup from "@/components/OraclePopup";
 import { supabase } from "@/lib/supabase";
+import { getIsraelToday } from "@/lib/time";
+
+// Module-level guard so the oracle only fires once per session,
+// even if auth state change fires multiple times.
+let oracleFetched = false;
 
 const courtBackgroundStyle = {
   background: "url('/court-bg.png') center top / cover no-repeat fixed",
@@ -31,6 +37,17 @@ function App() {
     championshipPick: null,
     onboardingComplete: null,
   });
+  const [showOracle, setShowOracle] = useState(false);
+  const [oracleData, setOracleData] = useState(null);
+
+  function handleOracleClose() {
+    setShowOracle(false);
+    try {
+      localStorage.setItem("oracle_last_shown", getIsraelToday());
+    } catch {
+      // ignore
+    }
+  }
 
   useEffect(() => {
     async function handleAuthUser(authUser) {
@@ -102,6 +119,28 @@ function App() {
         onboardingComplete: profile?.onboarding_complete ?? false,
       });
       setUser(authUser);
+
+      // Trigger Oracle once per session, only for onboarded users
+      if (profile?.onboarding_complete && !oracleFetched) {
+        oracleFetched = true;
+        try {
+          const today = getIsraelToday();
+          const lastShown = localStorage.getItem("oracle_last_shown");
+          if (lastShown !== today) {
+            fetch("/api/oracle")
+              .then((r) => r.json())
+              .then((data) => {
+                if (!data.skip && data.title && data.recap) {
+                  setOracleData(data);
+                  setShowOracle(true);
+                }
+              })
+              .catch(() => {});
+          }
+        } catch {
+          // ignore localStorage errors
+        }
+      }
     }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -197,6 +236,10 @@ function App() {
   }
 
   return (
+    <>
+    {showOracle && oracleData && (
+      <OraclePopup data={oracleData} onClose={handleOracleClose} />
+    )}
     <Routes>
       <Route
         path="/onboarding"
@@ -213,6 +256,22 @@ function App() {
                     displayName,
                     onboardingComplete: true,
                   }));
+                  try {
+                    if (!localStorage.getItem("welcome_shown")) {
+                      localStorage.setItem("welcome_shown", "true");
+                      fetch(`/api/welcome?name=${encodeURIComponent(displayName)}`)
+                        .then((r) => r.json())
+                        .then((data) => {
+                          if (data.title && data.recap) {
+                            setOracleData(data);
+                            setShowOracle(true);
+                          }
+                        })
+                        .catch(() => {});
+                    }
+                  } catch {
+                    // ignore localStorage errors
+                  }
                 }}
               />
         }
@@ -249,6 +308,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
+    </>
   );
 }
 
