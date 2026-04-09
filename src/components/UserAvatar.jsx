@@ -18,6 +18,7 @@ export default function UserAvatar({
   textSize = 14,
   border = "2px solid #C9B037",
   boxShadow,
+  onClick,
 }) {
   const sharedStyle = {
     width: `${size}px`,
@@ -26,6 +27,7 @@ export default function UserAvatar({
     border,
     boxShadow,
     flexShrink: 0,
+    ...(onClick ? { cursor: "pointer" } : {}),
   };
 
   if (avatarUrl) {
@@ -33,6 +35,7 @@ export default function UserAvatar({
       <img
         src={avatarUrl}
         alt={name ? `${name} avatar` : "User avatar"}
+        onClick={onClick}
         style={{
           ...sharedStyle,
           objectFit: "cover",
@@ -44,6 +47,7 @@ export default function UserAvatar({
   return (
     <div
       aria-hidden="true"
+      onClick={onClick}
       style={{
         ...sharedStyle,
         background: "#C9B037",

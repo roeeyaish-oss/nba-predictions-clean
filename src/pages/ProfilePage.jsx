@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import SkeletonBlock from "@/components/SkeletonBlock";
+import AvatarModal from "@/components/AvatarModal";
 import NBA_TEAMS from "@/lib/nbaTeams";
 
 function formatDate(dateString) {
@@ -49,6 +50,7 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
   const imgRef = useRef(null);
 
   // Edit mode state
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editName, setEditName] = useState(displayName);
   const [editTeam, setEditTeam] = useState(championshipPick);
@@ -182,6 +184,9 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
       style={animate ? { animation: "fadeIn 250ms ease both" } : undefined}
     >
       {hiddenAvatar}
+      {showAvatarModal && (
+        <AvatarModal avatarUrl={avatarUrl} name={displayName} onClose={() => setShowAvatarModal(false)} />
+      )}
 
       {/* ── Edit Mode ── */}
       {editMode ? (
@@ -327,11 +332,13 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
                 <img
                   src={avatarUrl}
                   alt={`${displayName} avatar`}
-                  style={{ height: "200px", width: "auto", display: "block" }}
+                  onClick={() => setShowAvatarModal(true)}
+                  style={{ height: "200px", width: "auto", display: "block", cursor: "pointer" }}
                 />
               ) : (
                 <div
                   aria-hidden="true"
+                  onClick={() => setShowAvatarModal(true)}
                   style={{
                     height: "200px",
                     width: "140px",
@@ -342,6 +349,7 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    cursor: "pointer",
                   }}
                 >
                   {getInitials(displayName)}

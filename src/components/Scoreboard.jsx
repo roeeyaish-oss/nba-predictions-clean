@@ -3,6 +3,7 @@ import { Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import SkeletonBlock from "@/components/SkeletonBlock";
 import UserAvatar from "@/components/UserAvatar";
+import AvatarModal from "@/components/AvatarModal";
 import { supabase } from "@/lib/supabase";
 import useLeaderboard from "@/hooks/useLeaderboard";
 import { lsGet, lsSet } from "@/lib/storage";
@@ -22,6 +23,7 @@ export default function Scoreboard() {
   const hadCache = useRef(scores.length > 0).current;
   const [ready, setReady] = useState(hadCache);
   const [animate, setAnimate] = useState(false);
+  const [modalTarget, setModalTarget] = useState(null);
   const prevRanks = useRef((() => {
     const stored = lsGet(STORAGE_KEY);
     try { return stored ? JSON.parse(stored) : null; } catch { return null; }
@@ -71,6 +73,10 @@ export default function Scoreboard() {
   }
 
   return (
+    <>
+    {modalTarget && (
+      <AvatarModal avatarUrl={modalTarget.avatarUrl} name={modalTarget.name} onClose={() => setModalTarget(null)} />
+    )}
     <Card style={animate ? { animation: "fadeIn 250ms ease both" } : undefined}>
       <CardContent className="p-5 sm:p-7">
         <div className="mb-6 flex items-center gap-3">
@@ -102,7 +108,7 @@ export default function Scoreboard() {
                   <td className="px-3 py-4 font-600 text-white">
                     <div className="flex items-center gap-3">
                       <div style={{ position: "relative", display: "inline-flex" }}>
-                        <UserAvatar avatarUrl={row.avatarUrl} name={row.user} size={32} textSize={12} />
+                        <UserAvatar avatarUrl={row.avatarUrl} name={row.user} size={32} textSize={12} onClick={() => setModalTarget({ avatarUrl: row.avatarUrl, name: row.user })} />
                         <span style={{
                           position: "absolute",
                           bottom: "-4px",
@@ -126,5 +132,6 @@ export default function Scoreboard() {
         </table>
       </CardContent>
     </Card>
+    </>
   );
 }

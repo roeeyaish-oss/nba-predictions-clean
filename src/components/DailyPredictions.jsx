@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ScrollText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import UserAvatar from "@/components/UserAvatar";
+import AvatarModal from "@/components/AvatarModal";
 import { supabase } from "@/lib/supabase";
 import { isGameStarted } from "@/lib/time";
 
@@ -10,6 +11,7 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
+  const [modalTarget, setModalTarget] = useState(null);
 
   useEffect(() => {
     const fetchPredictions = async (isInitialLoad = false) => {
@@ -90,6 +92,10 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
   });
 
   return (
+    <>
+    {modalTarget && (
+      <AvatarModal avatarUrl={modalTarget.avatarUrl} name={modalTarget.name} onClose={() => setModalTarget(null)} />
+    )}
     <Card>
       <CardContent className="p-5 sm:p-7">
         <div className="mb-6 flex items-center gap-3">
@@ -140,7 +146,7 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
                   >
                     <td className="p-3 font-600 text-white">
                       <div className="flex items-center gap-3">
-                        <UserAvatar avatarUrl={row.avatarUrl} name={row.user} size={32} textSize={12} />
+                        <UserAvatar avatarUrl={row.avatarUrl} name={row.user} size={32} textSize={12} onClick={() => setModalTarget({ avatarUrl: row.avatarUrl, name: row.user })} />
                         <span>{row.user}</span>
                       </div>
                     </td>
@@ -165,5 +171,6 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
         )}
       </CardContent>
     </Card>
+    </>
   );
 }

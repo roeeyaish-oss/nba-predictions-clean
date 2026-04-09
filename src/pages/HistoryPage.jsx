@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import SkeletonBlock from "@/components/SkeletonBlock";
 import UserAvatar from "@/components/UserAvatar";
+import AvatarModal from "@/components/AvatarModal";
 
 function formatDate(dateString) {
   if (!dateString) return "";
@@ -21,6 +22,7 @@ export default function HistoryPage({ currentUserId, supabase }) {
   const [ready, setReady] = useState(hadCache);
   const [animate, setAnimate] = useState(false);
   const [error, setError] = useState(false);
+  const [modalTarget, setModalTarget] = useState(null);
 
   useEffect(() => {
     async function loadHistory() {
@@ -91,6 +93,10 @@ export default function HistoryPage({ currentUserId, supabase }) {
   }
 
   return (
+    <>
+    {modalTarget && (
+      <AvatarModal avatarUrl={modalTarget.avatarUrl} name={modalTarget.name} onClose={() => setModalTarget(null)} />
+    )}
     <div
       className="space-y-6"
       style={animate ? { animation: "fadeIn 250ms ease both" } : undefined}
@@ -121,6 +127,7 @@ export default function HistoryPage({ currentUserId, supabase }) {
                       name={item.users?.display_name || item.users?.name || "Unknown User"}
                       size={36}
                       textSize={14}
+                      onClick={() => setModalTarget({ avatarUrl: item.users?.avatar_url ?? null, name: item.users?.display_name || item.users?.name || "Unknown User" })}
                     />
                     <div>
                       <p className="text-xs uppercase tracking-[0.25em] text-[#C9B037]/80">{formatDate(item.games?.date)}</p>
@@ -147,5 +154,6 @@ export default function HistoryPage({ currentUserId, supabase }) {
         </div>
       )}
     </div>
+    </>
   );
 }
