@@ -402,9 +402,9 @@ function ResultsTable({ flatResults }) {
 
   const sorted = [...flatResults].sort((a, b) => {
     const da = a.games?.date ?? "", db = b.games?.date ?? "";
-    if (da !== db) return da < db ? -1 : 1;
+    if (da !== db) return da > db ? -1 : 1;
     const ta = a.games?.game_time ?? "", tb = b.games?.game_time ?? "";
-    return ta < tb ? -1 : 1;
+    return ta > tb ? -1 : 1;
   });
 
   const byDate = groupBy(sorted, (r) => r.games?.date ?? "");

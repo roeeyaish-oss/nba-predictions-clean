@@ -13,6 +13,15 @@ import { getIsraelToday } from "@/lib/time";
 import { lsGet, lsSet, lsGetJson } from "@/lib/storage";
 import { ANNOUNCER_URL, ANNOUNCER_HE_URL } from "@/lib/constants";
 
+const EMAIL_AVATAR_MAP = {
+  "roeeyaish@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/roee.png",
+  "yuvaldagan95@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/dagan.png",
+  "yuvalsaban9@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/saban.png",
+  "doronnoam3@gmail.com": "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/doron.png",
+};
+
+const SUPABASE_STORAGE_BASE = "https://mdllwtozvzjrlkexrdwk.supabase.co/storage/v1/object/public/avatars/";
+
 function announcerToAvatarUrl(announcer) {
   return announcer === "barak" ? ANNOUNCER_HE_URL : ANNOUNCER_URL;
 }
@@ -85,23 +94,96 @@ function App() {
 
       setAccessDenied(false);
 
-      await supabase.from("users").upsert(
-        {
-          id: authUser.id,
-          email: authUser.email,
-          name: authUser.user_metadata.full_name,
-        },
-        { onConflict: "id" }
-      );
+      let profile = null;
 
-      const { data: profile } = await supabase
-        .from("users")
-        .select("avatar_url, display_name, name, onboarding_complete, championship_pick")
-        .eq("id", authUser.id)
-        .single();
+      try {
+        const { error: upsertError } = await supabase.from("users").upsert(
+          {
+            id: authUser.id,
+            email: authUser.email,
+            name: authUser.user_metadata.full_name,
+          },
+          { onConflict: "id" }
+        );
+
+        if (upsertError) {
+          throw upsertError;
+        }
+      } catch (error) {
+        console.error("[Avatar] Failed to upsert user:", error);
+      }
+
+      try {
+        const { data, error: profileError } = await supabase
+          .from("users")
+          .select("avatar_url, display_name, name, onboarding_complete, championship_pick")
+          .eq("id", authUser.id)
+          .single();
+
+        if (profileError) {
+          throw profileError;
+        }
+
+        profile = data;
+      } catch (error) {
+        console.error("[Avatar] Failed to fetch profile:", error);
+      }
+
+      const emailKey = authUser.email?.toLowerCase() ?? "";
+      const mappedAvatarUrl = EMAIL_AVATAR_MAP[emailKey] ?? null;
+      const currentAvatarUrl = typeof profile?.avatar_url === "string" ? profile.avatar_url : null;
+      const hasStoredSupabaseAvatar = currentAvatarUrl?.startsWith(SUPABASE_STORAGE_BASE) ?? false;
+
+      let finalAvatarUrl = currentAvatarUrl;
+      let avatarDecision = "using_db_avatar";
+
+      if (mappedAvatarUrl) {
+        finalAvatarUrl = mappedAvatarUrl;
+        avatarDecision = "using_email_map";
+      } else if (hasStoredSupabaseAvatar) {
+        finalAvatarUrl = currentAvatarUrl;
+        avatarDecision = "keeping_existing_supabase_avatar";
+      } else {
+        finalAvatarUrl = null;
+        avatarDecision = currentAvatarUrl ? "ignoring_non_supabase_avatar" : "no_avatar_available";
+      }
+
+      console.log("[Avatar] decision:", {
+        email: authUser.email ?? null,
+        currentAvatarUrl,
+        mappedAvatarUrl,
+        finalAvatarUrl,
+        avatarDecision,
+      });
+
+      if (mappedAvatarUrl && currentAvatarUrl !== mappedAvatarUrl) {
+        try {
+          const { error: avatarUpdateError } = await supabase
+            .from("users")
+            .update({ avatar_url: mappedAvatarUrl })
+            .eq("id", authUser.id);
+
+          if (avatarUpdateError) {
+            throw avatarUpdateError;
+          }
+
+          console.log("[Avatar] updated DB avatar_url from email map:", {
+            email: authUser.email ?? null,
+            avatarUrl: mappedAvatarUrl,
+          });
+        } catch (error) {
+          console.error("[Avatar] Failed to update mapped avatar_url:", error);
+        }
+      } else {
+        console.log("[Avatar] no avatar DB update needed:", {
+          email: authUser.email ?? null,
+          currentAvatarUrl,
+          mappedAvatarUrl,
+        });
+      }
 
       setProfile({
-        avatarUrl: profile?.avatar_url ?? null,
+        avatarUrl: mappedAvatarUrl ?? finalAvatarUrl,
         displayName:
           profile?.display_name ??
           profile?.name ??
