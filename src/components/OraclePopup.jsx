@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { ANNOUNCER_URL, ANNOUNCER_HE_URL } from "@/lib/constants";
+import { ANNOUNCER_URL } from "@/lib/constants";
 
 export default function OraclePopup({ data, onClose }) {
-  const isHebrew = data.announcer === "he";
-  const announcerImg = isHebrew ? ANNOUNCER_HE_URL : ANNOUNCER_URL;
-  const announcerName = isHebrew ? "גיל ברק" : "Mike Breen";
+  const announcerImg = data.avatarUrl ?? ANNOUNCER_URL;
+  const announcerName = data.announcer === "barak" ? "Gil Barak" : "Mike Breen";
   const [imgLoaded, setImgLoaded] = useState(false);
 
   // Close on Escape key
@@ -120,7 +119,6 @@ export default function OraclePopup({ data, onClose }) {
 
         {/* Recap text - renders **bold** as <strong> without dangerouslySetInnerHTML */}
         <p
-          dir={isHebrew ? "rtl" : "ltr"}
           style={{
             margin: 0,
             color: "rgba(255,255,255,0.9)",

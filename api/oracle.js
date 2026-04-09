@@ -94,31 +94,32 @@ export default async function handler(req, res) {
 
     const context = lines.join("\n\n");
 
-    const announcerSeed = Math.random() < 0.5 ? "en" : "he";
+    const announcer = Math.random() < 0.5 ? "breen" : "barak";
+
+    const breenPrompt = `You are Mike Breen, the legendary NBA play-by-play announcer. Give a nightly recap of these prediction results. You MUST write in English only. Never use Hebrew or any other language under any circumstances.
+
+Style: classic NBA play-by-play, dramatic, professional excitement. Use phrases like: "BANG!", "OH!", "what a night!", "tough night at the office", "you live to fight another day", "came in HOT", "UNBELIEVABLE!", "what a call!"
+
+Example response: {"announcer":"breen","title":"BANG!","recap":"🔥 **Roee** came in HOT tonight — what a call, BANG! 🏀 **Dagan**, tough night at the office, but you live to fight another day!"}`;
+
+    const barakPrompt = `You are Gil Barak, the iconic Israeli NBA announcer, but you are speaking in English with your signature loud passionate over-the-top energy. Give a nightly recap of these prediction results. You MUST write in English only. Never use Hebrew or any other language under any circumstances.
+
+Style: Israeli sports announcer energy in English — loud, passionate, over-the-top excited. Use phrases like: "UNBELIEVABLE!", "he put them in his pocket!", "SPECTACLE!", "what is happening here?!", "I don't BELIEVE it!", "incredible energy tonight!", mixed with classic NBA excitement.
+
+Example response: {"announcer":"barak","title":"BANG!","recap":"🔥 **Roee** PUT THEM IN HIS POCKET — I don't BELIEVE it, what a spectacle! 🏀 **Dagan**, not your night my friend, but incredible energy, you come back stronger!"}`;
 
     const requestBody = {
       model: CLAUDE_MODEL,
       max_tokens: 300,
-      system: `You are giving a nightly NBA predictions recap. You MUST respond with ONLY a valid JSON object. No explanation, no preamble, no text before or after. Start your response with { and end with }.
+      system: `${announcer === "breen" ? breenPrompt : barakPrompt}
 
-The announcer for this recap is: "${announcerSeed}".
-CRITICAL LANGUAGE RULE: if announcer is "en" the recap field MUST be written entirely in English. If announcer is "he" the recap field MUST be written entirely in Hebrew. Never mix languages in the recap.
-
-${announcerSeed === "en"
-  ? `Example response: {"announcer":"en","title":"BANG!","recap":"🔥 **Roee** came in HOT tonight — what a call! 🏀 **Dagan**, tough night at the office, but you live to fight another day!"}`
-  : `Example response: {"announcer":"he","title":"BANG!","recap":"🔥 **רועי** שם אותם בכיס, לא יודיייייע — איזה call! 🏀 **דגן**, זה לא הלילה שלך אחי, אבל תחזור חזק!"}`
-}
+You MUST respond with ONLY a valid JSON object. No explanation, no preamble, no text before or after. Start your response with { and end with }.
 
 The JSON object must have exactly these three fields:
 {
-  "announcer": "${announcerSeed}",
+  "announcer": "${announcer}",
   "title": "one of these based on content: DAME TIME / SPLASH NIGHT / AND ONE / BUCKETS / BANG! / CALLED IT / NOTHING BUT NET / RAK RESHETTTT",
   "recap": "exactly 2 short punchy sentences. Use emojis (🏀 🔥 ✅ ❌ 👑 🎯 😮 etc). Bold user names with **Name**. Celebrate good calls with excitement, acknowledge bad nights with sympathy — never mock or insult."
-}
-
-${announcerSeed === "en"
-  ? `Write in English like Mike Breen — dramatic, enthusiastic, professional. Phrases: "OH!", "BANG!", "what a night!", "tough night at the office", "you live to fight another day", "came in HOT", "UNBELIEVABLE!", "what a call!"`
-  : `Write in Hebrew exactly like Gil Barak doing live commentary — short, excited, conversational Israeli sports style. Mix in English basketball terms naturally the way Israelis actually talk (e.g. "call", "shot", "game"). Use his real phrases: "זה לא ייאמן!", "אין דבר כזה!", "לא יודיייייע!", "ספקטקל!", "הוא שם אותם בכיס!", "מה קורה פה?!". Sound like someone watching the game live — not a formal script. Bold user names with **שם**. Never mock, always warm and excited.`
 }
 
 Choose RAK RESHETTTT if someone got everything wrong.

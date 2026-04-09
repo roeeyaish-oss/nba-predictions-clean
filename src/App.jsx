@@ -11,6 +11,11 @@ import OraclePopup from "@/components/OraclePopup";
 import { supabase } from "@/lib/supabase";
 import { getIsraelToday } from "@/lib/time";
 import { lsGet, lsSet, lsGetJson } from "@/lib/storage";
+import { ANNOUNCER_URL, ANNOUNCER_HE_URL } from "@/lib/constants";
+
+function announcerToAvatarUrl(announcer) {
+  return announcer === "barak" ? ANNOUNCER_HE_URL : ANNOUNCER_URL;
+}
 
 // Module-level guard so the oracle only fires once per Israel date,
 // even if auth state change fires multiple times.
@@ -120,7 +125,8 @@ function App() {
 
           // PATH 1 - Restore cached data; show popup only for real content (not a skip day)
           if (stored?.date === today && stored.title && stored.recap) {
-            setOracleData({ title: stored.title, recap: stored.recap, announcer: stored.announcer ?? "en" });
+            const ann = stored.announcer ?? "breen";
+            setOracleData({ title: stored.title, recap: stored.recap, announcer: ann, avatarUrl: announcerToAvatarUrl(ann) });
             if (!stored.skip) {
               setShowOracle(true);
             }
@@ -134,12 +140,13 @@ function App() {
               .then((r) => r.json())
               .then((data) => {
                 const isReal = !data.skip && data.title && data.recap;
+                const ann = isReal ? (data.announcer ?? "breen") : "breen";
                 const payload = isReal
-                  ? { title: data.title, recap: data.recap, announcer: data.announcer ?? "en", skip: false }
-                  : { title: "QUIET NIGHT", recap: "No games last night. Stay ready. 🏀", announcer: "en", skip: true };
+                  ? { title: data.title, recap: data.recap, announcer: ann, skip: false }
+                  : { title: "QUIET NIGHT", recap: "No games last night. Stay ready. 🏀", announcer: "breen", skip: true };
 
                 lsSet("oracle_data_today", JSON.stringify({ date: today, ...payload }));
-                setOracleData({ title: payload.title, recap: payload.recap, announcer: payload.announcer });
+                setOracleData({ title: payload.title, recap: payload.recap, announcer: ann, avatarUrl: announcerToAvatarUrl(ann) });
                 if (isReal) {
                   setShowOracle(true);
                 }
