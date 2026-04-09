@@ -120,7 +120,7 @@ function App() {
 
           // PATH 1 - Restore cached data; show popup only for real content (not a skip day)
           if (stored?.date === today && stored.title && stored.recap) {
-            setOracleData({ title: stored.title, recap: stored.recap });
+            setOracleData({ title: stored.title, recap: stored.recap, announcer: stored.announcer ?? "en" });
             if (!stored.skip) {
               setShowOracle(true);
             }
@@ -135,11 +135,11 @@ function App() {
               .then((data) => {
                 const isReal = !data.skip && data.title && data.recap;
                 const payload = isReal
-                  ? { title: data.title, recap: data.recap, skip: false }
-                  : { title: "QUIET NIGHT", recap: "No games last night. Stay ready. 🏀", skip: true };
+                  ? { title: data.title, recap: data.recap, announcer: data.announcer ?? "en", skip: false }
+                  : { title: "QUIET NIGHT", recap: "No games last night. Stay ready. 🏀", announcer: "en", skip: true };
 
                 lsSet("oracle_data_today", JSON.stringify({ date: today, ...payload }));
-                setOracleData({ title: payload.title, recap: payload.recap });
+                setOracleData({ title: payload.title, recap: payload.recap, announcer: payload.announcer });
                 if (isReal) {
                   setShowOracle(true);
                 }

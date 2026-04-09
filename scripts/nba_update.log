@@ -86,3 +86,30 @@
         raise EnvironmentError(
     OSError: SUPABASE_SERVICE_KEY is not set. This script requires the service role key to write data. Set it in your .env file or environment before running.
     Email notification sent to roeeyaish@gmail.com.
+
+[2026-04-09 15:00:02] SUCCESS
+    Fetching games for yesterday (04/08/2026), today (04/09/2026), tomorrow (04/10/2026)
+    Saved 28 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final          7
+    7:00 pm ET     5
+    7:30 pm ET     5
+    8:00 pm ET     4
+    10:00 pm ET    3
+    9:30 pm ET     2
+    9:00 pm ET     1
+    10:30 pm ET    1
+    Found 7 final games.
+    Game 0022501158 | Cleveland Cavaliers 122 vs Atlanta Hawks 116 | Winner: Cleveland Cavaliers
+    Game 0022501159 | Orlando Magic 132 vs Minnesota Timberwolves 120 | Winner: Orlando Magic
+    Game 0022501160 | Detroit Pistons 137 vs Milwaukee Bucks 111 | Winner: Detroit Pistons
+    Game 0022501162 | Denver Nuggets 136 vs Memphis Grizzlies 119 | Winner: Denver Nuggets
+    Game 0022501161 | San Antonio Spurs 112 vs Portland Trail Blazers 101 | Winner: San Antonio Spurs
+    Game 0022501163 | LA Clippers 110 vs Oklahoma City Thunder 128 | Winner: Oklahoma City Thunder
+    Game 0022501164 | Phoenix Suns 112 vs Dallas Mavericks 107 | Winner: Phoenix Suns
+    Upserted 7 results.
+    Calculating scores...
+    Upserted scores for 1 users.
+    Done. Games, results, and scores are up to date.
+    Email notification sent to roeeyaish@gmail.com.

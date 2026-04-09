@@ -1,7 +1,12 @@
-import React, { useEffect } from "react";
-import { ANNOUNCER_URL } from "@/lib/constants";
+import React, { useEffect, useState } from "react";
+import { ANNOUNCER_URL, ANNOUNCER_HE_URL } from "@/lib/constants";
 
 export default function OraclePopup({ data, onClose }) {
+  const isHebrew = data.announcer === "he";
+  const announcerImg = isHebrew ? ANNOUNCER_HE_URL : ANNOUNCER_URL;
+  const announcerName = isHebrew ? "גיל ברק" : "Mike Breen";
+  const [imgLoaded, setImgLoaded] = useState(false);
+
   // Close on Escape key
   useEffect(() => {
     function handleKey(e) {
@@ -61,18 +66,42 @@ export default function OraclePopup({ data, onClose }) {
           ✕
         </button>
 
-        {/* Announcer image */}
-        <img
-          src={ANNOUNCER_URL}
-          alt="Announcer"
+        {/* Announcer image — fixed container height prevents layout jump */}
+        <div style={{ width: "120px", height: "120px", margin: "0 auto 6px", position: "relative", borderRadius: "50%", overflow: "hidden" }}>
+          {!imgLoaded && (
+            <div
+              className="skeleton-block"
+              style={{ position: "absolute", inset: 0, borderRadius: "50%" }}
+            />
+          )}
+          <img
+            src={announcerImg}
+            alt={announcerName}
+            onLoad={() => setImgLoaded(true)}
+            style={{
+              width: "120px",
+              height: "120px",
+              objectFit: "contain",
+              display: "block",
+              opacity: imgLoaded ? 1 : 0,
+              transition: "opacity 0.2s ease",
+            }}
+          />
+        </div>
+
+        {/* Announcer name */}
+        <p
           style={{
-            width: "120px",
-            height: "120px",
-            objectFit: "contain",
-            display: "block",
-            margin: "0 auto 20px",
+            margin: "0 0 18px",
+            fontSize: "11px",
+            fontWeight: 700,
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+            color: "rgba(201,176,55,0.7)",
           }}
-        />
+        >
+          {announcerName}
+        </p>
 
         {/* Dynamic title */}
         <p
@@ -91,6 +120,7 @@ export default function OraclePopup({ data, onClose }) {
 
         {/* Recap text - renders **bold** as <strong> without dangerouslySetInnerHTML */}
         <p
+          dir={isHebrew ? "rtl" : "ltr"}
           style={{
             margin: 0,
             color: "rgba(255,255,255,0.9)",

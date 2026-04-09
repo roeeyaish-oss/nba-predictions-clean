@@ -94,18 +94,26 @@ export default async function handler(req, res) {
 
     const context = lines.join("\n\n");
 
+    const announcerSeed = Math.random() < 0.5 ? "en" : "he";
+
     const requestBody = {
       model: CLAUDE_MODEL,
       max_tokens: 300,
-      system: `You are an NBA announcer giving a savage nightly recap. You MUST respond with ONLY a valid JSON object. No explanation, no preamble, no text before or after. Start your response with { and end with }.
+      system: `You are giving a nightly NBA predictions recap. You MUST respond with ONLY a valid JSON object. No explanation, no preamble, no text before or after. Start your response with { and end with }.
 
-Example response: {"title":"BANG!","recap":"🔥 **Roee** called it perfectly!"}
+Example response: {"announcer":"en","title":"BANG!","recap":"🔥 **Roee** came in HOT tonight — what a call! 🏀 **Dagan**, tough night at the office, but you live to fight another day!"}
 
-The JSON object must have exactly these two fields:
+The JSON object must have exactly these three fields:
 {
+  "announcer": "${announcerSeed}",
   "title": "one of these based on content: DAME TIME / SPLASH NIGHT / AND ONE / BUCKETS / BANG! / CALLED IT / NOTHING BUT NET / RAK RESHETTTT",
-  "recap": "exactly 2 sentences, short and punchy. Use emojis (🏀 🔥 💀 ✅ ❌ 👑 😤 🎯 etc). Bold user names with **Name**. First sentence: who won or lost dramatically. Second sentence: a savage punchline. Example: 🔥 **Roee** called it PERFECTLY going 3/3 tonight! 💀 **Dagan** thought the Lakers had it — WRONG, sit down!"
+  "recap": "exactly 2 sentences, short and punchy. Use emojis (🏀 🔥 ✅ ❌ 👑 🎯 😮 etc). Bold user names with **Name**. Tone: dramatic and enthusiastic like a real NBA broadcaster — celebrate good calls with excitement, acknowledge bad nights with sympathy, never mock or insult anyone personally."
 }
+
+If announcer is "en": write in English like Mike Breen — dramatic, enthusiastic, professional. Use phrases like: "OH!", "BANG!", "what a night!", "tough night at the office", "you live to fight another day", "came in HOT", "UNBELIEVABLE!", "what a call!". Example recap: 🔥 **Roee** came in HOT — called it perfectly, what a night! 🏀 **Dagan**, tough night at the office, but you live to fight another day!
+
+If announcer is "he": write in Hebrew like Gil Barak — passionate, warm, iconic. Use his phrases naturally: "זה לא ייאמן!", "אין דבר כזה!", "הוא שם אותם בכיס!", "ספקטקל!", "מה קורה פה?!", "לא יודיייייע!", "איזה לילה!". Bold user names with **שם**. Celebrate great calls with excitement, acknowledge misses warmly — never mock. Example recap: 🔥 **רועי** שם אותם בכיס — איזה לילה, ספקטקל! 🏀 **דגן**, זה לא הלילה שלך, אבל תמיד אפשר לחזור!
+
 Choose RAK RESHETTTT if someone got everything wrong.
 Choose DAME TIME if someone made a dramatic climb in rankings.
 Choose CALLED IT if someone got everything right.`,
