@@ -29,15 +29,18 @@ async function requireAuth(req, res) {
   return data.user;
 }
 
-function getIsraelYesterday() {
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  return new Intl.DateTimeFormat("en-CA", {
+function getIsraelDates() {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Jerusalem",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(yesterday);
+  });
+  const today = fmt.format(new Date());
+  const yesterdayDate = new Date();
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const yesterday = fmt.format(yesterdayDate);
+  return { today, yesterday };
 }
 
 export default async function handler(req, res) {
@@ -51,15 +54,15 @@ export default async function handler(req, res) {
       return;
     }
 
-    const yesterday = getIsraelYesterday();
+    const { today, yesterday } = getIsraelDates();
 
     const { data: results, error: resultsError } = await supabase
       .from("results")
       .select("game_id, winner, games!inner(home_team, away_team, date)")
-      .eq("games.date", yesterday);
+      .in("games.date", [yesterday, today]);
 
     if (resultsError) throw resultsError;
-    console.log(`[Oracle] found ${results?.length ?? 0} results for ${yesterday}`);
+    console.log(`[Oracle] found ${results?.length ?? 0} results for ${yesterday} / ${today}`);
     if (!results || results.length === 0) {
       console.log("[Oracle] skip: no results found for yesterday");
       return res.status(200).json({ skip: true });
