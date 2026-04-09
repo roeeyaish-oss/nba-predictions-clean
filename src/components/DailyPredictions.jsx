@@ -61,9 +61,11 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
     };
   }, [refreshKey]);
 
+  const upcoming = predictions.filter((p) => !isGameStarted(p.game_time, p.date));
+
   const users = [
     ...new Map(
-      predictions.map((prediction) => [
+      upcoming.map((prediction) => [
         prediction.user_id,
         {
           displayName: prediction.display_name || prediction.user || "",
@@ -74,7 +76,7 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
   ];
 
   const grouped = users.map(([userId, userData]) => {
-    const userPreds = predictions.filter((prediction) => prediction.user_id === userId);
+    const userPreds = upcoming.filter((prediction) => prediction.user_id === userId);
     return {
       user: userData.displayName,
       avatarUrl: userData.avatarUrl,
@@ -127,7 +129,7 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
               {grouped.length === 0 ? (
                 <tr>
                   <td colSpan={2} className="p-4 text-center text-white/55">
-                    No predictions yet
+                    {predictions.length > 0 ? "No upcoming games" : "No predictions yet"}
                   </td>
                 </tr>
               ) : (

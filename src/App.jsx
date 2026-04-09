@@ -45,7 +45,6 @@ function App() {
 
   function handleOracleClose() {
     setShowOracle(false);
-    lsSet("oracle_last_shown", getIsraelToday());
   }
 
   async function getAuthHeaders() {
@@ -111,29 +110,31 @@ function App() {
       if (profile?.onboarding_complete) {
         try {
           const today = getIsraelToday();
-          const lastShown = lsGet("oracle_last_shown");
           const stored = lsGetJson("oracle_data_today");
 
-          // PATH 1 - Always restore cached data so button is always visible
+          // PATH 1 - Restore cached data; show popup only for real content (not a skip day)
           if (stored?.date === today && stored.title && stored.recap) {
             setOracleData({ title: stored.title, recap: stored.recap });
+            if (!stored.skip) {
+              setShowOracle(true);
+            }
           }
 
           // PATH 2 - Fetch new data once per Israel day
-          if (lastShown !== today && oracleLastFetchedDate !== today) {
+          if (stored?.date !== today && oracleLastFetchedDate !== today) {
             oracleLastFetchedDate = today;
             getAuthHeaders()
               .then((headers) => fetch("/api/oracle", { headers }))
               .then((r) => r.json())
               .then((data) => {
-                const payload = (!data.skip && data.title && data.recap)
-                  ? { title: data.title, recap: data.recap }
-                  : { title: "QUIET NIGHT", recap: "No games last night. Stay ready. 🏀" };
+                const isReal = !data.skip && data.title && data.recap;
+                const payload = isReal
+                  ? { title: data.title, recap: data.recap, skip: false }
+                  : { title: "QUIET NIGHT", recap: "No games last night. Stay ready. 🏀", skip: true };
 
                 lsSet("oracle_data_today", JSON.stringify({ date: today, ...payload }));
-
-                setOracleData(payload);
-                if (!data.skip && data.title && data.recap) {
+                setOracleData({ title: payload.title, recap: payload.recap });
+                if (isReal) {
                   setShowOracle(true);
                 }
               })
