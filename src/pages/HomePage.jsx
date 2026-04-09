@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Clock3 } from "lucide-react";
+import { Clock3, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import DailyPredictions from "@/components/DailyPredictions";
 import SkeletonBlock from "@/components/SkeletonBlock";
@@ -285,31 +285,60 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
       <DailyPredictions currentUserId={user.id} refreshKey={predictionsRefreshKey} />
 
       {oracleData && (
-        <button
-          onClick={onReopenOracle}
-          aria-label="Reopen Game Night Recap"
-          style={{
-            position: "fixed",
-            bottom: "90px",
-            right: "16px",
-            zIndex: 999,
-            width: "60px",
-            height: "60px",
-            borderRadius: "50%",
-            border: "2px solid rgba(201,176,55,0.85)",
-            background: "#C9B037",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
-            padding: 0,
-            cursor: "pointer",
-            overflow: "hidden",
-          }}
-        >
-          <img
-            src={ANNOUNCER_URL}
-            alt="Announcer"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
-        </button>
+        <>
+          <button
+            onClick={() => {
+              try { localStorage.removeItem("oracle_data_today"); } catch (e) { void e; }
+              window.location.reload();
+            }}
+            aria-label="Refresh Oracle"
+            style={{
+              position: "fixed",
+              bottom: "162px",
+              right: "28px",
+              zIndex: 999,
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              border: "1.5px solid rgba(201,176,55,0.85)",
+              background: "transparent",
+              color: "#C9B037",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+              padding: 0,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <RefreshCw size={16} strokeWidth={2.2} />
+          </button>
+          <button
+            onClick={onReopenOracle}
+            aria-label="Reopen Game Night Recap"
+            style={{
+              position: "fixed",
+              bottom: "90px",
+              right: "16px",
+              zIndex: 999,
+              width: "60px",
+              height: "60px",
+              borderRadius: "50%",
+              border: "2px solid rgba(201,176,55,0.85)",
+              background: "#C9B037",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
+              padding: 0,
+              cursor: "pointer",
+              overflow: "hidden",
+            }}
+          >
+            <img
+              src={ANNOUNCER_URL}
+              alt="Announcer"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          </button>
+        </>
       )}
     </div>
   );

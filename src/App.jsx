@@ -110,7 +110,13 @@ function App() {
       if (profile?.onboarding_complete) {
         try {
           const today = getIsraelToday();
-          const stored = lsGetJson("oracle_data_today");
+          let stored = lsGetJson("oracle_data_today");
+
+          // If today's cache is a skip day, clear it so PATH 2 re-fetches fresh data
+          if (stored?.date === today && stored.skip === true) {
+            try { localStorage.removeItem("oracle_data_today"); } catch (e) { void e; }
+            stored = null;
+          }
 
           // PATH 1 - Restore cached data; show popup only for real content (not a skip day)
           if (stored?.date === today && stored.title && stored.recap) {
