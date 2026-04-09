@@ -135,8 +135,10 @@ function App() {
           // PATH 2 - Fetch new data once per Israel day
           if (stored?.date !== today && oracleLastFetchedDate !== today) {
             oracleLastFetchedDate = today;
+            const fetchCount = parseInt(lsGet("oracle_fetch_count") ?? "0", 10);
+            lsSet("oracle_fetch_count", String(fetchCount + 1));
             getAuthHeaders()
-              .then((headers) => fetch("/api/oracle", { headers }))
+              .then((headers) => fetch(`/api/oracle?fetchCount=${fetchCount}`, { headers }))
               .then((r) => r.json())
               .then((data) => {
                 const isReal = !data.skip && data.title && data.recap;
