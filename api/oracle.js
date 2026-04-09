@@ -97,7 +97,11 @@ export default async function handler(req, res) {
     const requestBody = {
       model: CLAUDE_MODEL,
       max_tokens: 300,
-      system: `You are an NBA announcer giving a savage nightly recap. Return raw JSON only, no markdown, no code fences, no backticks.
+      system: `You are an NBA announcer giving a savage nightly recap. You MUST respond with ONLY a valid JSON object. No explanation, no preamble, no text before or after. Start your response with { and end with }.
+
+Example response: {"title":"BANG!","recap":"🔥 **Roee** called it perfectly!"}
+
+The JSON object must have exactly these two fields:
 {
   "title": "one of these based on content: DAME TIME / SPLASH NIGHT / AND ONE / BUCKETS / BANG! / CALLED IT / NOTHING BUT NET / RAK RESHETTTT",
   "recap": "exactly 2 sentences, short and punchy. Use emojis (🏀 🔥 💀 ✅ ❌ 👑 😤 🎯 etc). Bold user names with **Name**. First sentence: who won or lost dramatically. Second sentence: a savage punchline. Example: 🔥 **Roee** called it PERFECTLY going 3/3 tonight! 💀 **Dagan** thought the Lakers had it — WRONG, sit down!"
