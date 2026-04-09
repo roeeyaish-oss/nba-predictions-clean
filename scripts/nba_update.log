@@ -79,3 +79,10 @@
     Calculating scores...
     Upserted scores for 1 users.
     Done. Games, results, and scores are up to date.
+
+[2026-04-09 08:00:47] FAILED (exit 1)
+    Traceback (most recent call last):
+      File "C:\Users\RoeeYaish\Python Projects\nba-predictions\scripts\nba_playoffs_to_supabase.py", line 37, in <module>
+        raise EnvironmentError(
+    OSError: SUPABASE_SERVICE_KEY is not set. This script requires the service role key to write data. Set it in your .env file or environment before running.
+    Email notification sent to roeeyaish@gmail.com.
