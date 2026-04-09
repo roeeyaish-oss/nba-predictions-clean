@@ -94,8 +94,7 @@ export default async function handler(req, res) {
 
     const context = lines.join("\n\n");
 
-    const fetchCount = parseInt(req.query?.fetchCount ?? "0", 10);
-    const announcer = fetchCount % 2 === 0 ? "breen" : "barak";
+    const announcer = req.query?.announcer === "barak" ? "barak" : "breen";
 
     const breenPrompt = `You are Mike Breen, the legendary NBA play-by-play announcer. Give a nightly recap of these prediction results. You MUST write in English only. Never use Hebrew or any other language under any circumstances.
 

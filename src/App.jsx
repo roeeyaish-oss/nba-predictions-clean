@@ -136,16 +136,16 @@ function App() {
           if (stored?.date !== today && oracleLastFetchedDate !== today) {
             oracleLastFetchedDate = today;
             const fetchCount = parseInt(lsGet("oracle_fetch_count") ?? "0", 10);
+            const ann = fetchCount % 2 === 0 ? "breen" : "barak";
             lsSet("oracle_fetch_count", String(fetchCount + 1));
             getAuthHeaders()
-              .then((headers) => fetch(`/api/oracle?fetchCount=${fetchCount}`, { headers }))
+              .then((headers) => fetch(`/api/oracle?announcer=${ann}`, { headers }))
               .then((r) => r.json())
               .then((data) => {
                 const isReal = !data.skip && data.title && data.recap;
-                const ann = isReal ? (data.announcer ?? "breen") : "breen";
                 const payload = isReal
                   ? { title: data.title, recap: data.recap, announcer: ann, skip: false }
-                  : { title: "QUIET NIGHT", recap: "No games last night. Stay ready. 🏀", announcer: "breen", skip: true };
+                  : { title: "QUIET NIGHT", recap: "No games last night. Stay ready. 🏀", announcer: ann, skip: true };
 
                 lsSet("oracle_data_today", JSON.stringify({ date: today, ...payload }));
                 setOracleData({ title: payload.title, recap: payload.recap, announcer: ann, avatarUrl: announcerToAvatarUrl(ann) });
