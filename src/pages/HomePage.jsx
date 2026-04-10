@@ -97,20 +97,6 @@ const seriesPickButtonSelected = {
   boxShadow: "0 6px 20px rgba(99,102,241,0.38)",
 };
 
-const seriesSubmitButtonStyle = {
-  background: "linear-gradient(135deg, #818cf8 0%, #6366f1 55%, #4338ca 100%)",
-  color: "#f8fafc",
-  fontWeight: 700,
-  fontSize: "15px",
-  letterSpacing: "0.05em",
-  borderRadius: "12px",
-  padding: "14px",
-  width: "100%",
-  border: "none",
-  boxShadow: "0 6px 20px rgba(99,102,241,0.35)",
-  cursor: "pointer",
-};
-
 const SERIES_POINTS = { 1: 5, 2: 9, 3: 14, 4: 20 };
 const ROUND_LABELS = { 1: "ROUND 1", 2: "ROUND 2", 3: "CONF FINALS", 4: "NBA FINALS" };
 
@@ -210,7 +196,10 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   const shouldShowSeriesAlert = series.length > 0 && !hasSavedSeriesPicks;
 
   useEffect(() => {
-    setSeriesPredictions(savedSeriesPicks);
+    console.log("[HomePage] savedSeriesPicks on mount/update:", savedSeriesPicks);
+    const nextSeriesPredictions = { ...savedSeriesPicks };
+    console.log("[HomePage] seriesPredictions initialized from server:", nextSeriesPredictions);
+    setSeriesPredictions(nextSeriesPredictions);
   }, [savedSeriesPicks]);
 
   useEffect(() => {
@@ -292,7 +281,11 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
         return;
       }
 
-      await refreshSeries();
+      const freshSeriesData = await refreshSeries();
+      const freshServerPicks = freshSeriesData?.userPicks ?? {};
+      console.log("[HomePage] savedSeriesPicks after submit refresh:", freshServerPicks);
+      console.log("[HomePage] seriesPredictions reinitialized after submit:", freshServerPicks);
+      setSeriesPredictions({ ...freshServerPicks });
       setSeriesMessage({ type: "success", text: "Series picks submitted!" });
     } catch {
       setSeriesMessage({ type: "error", text: "Network error. Please try again." });
@@ -645,7 +638,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
                   onClick={handleSeriesSubmit}
                   disabled={submittingSeries}
                   style={{
-                    ...seriesSubmitButtonStyle,
+                    ...submitButtonStyle,
                     ...(submittingSeries ? { opacity: 0.6, cursor: "not-allowed" } : {}),
                   }}
                 >

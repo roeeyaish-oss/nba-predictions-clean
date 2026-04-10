@@ -2,16 +2,20 @@ import { useCallback, useEffect, useState } from "react";
 
 export default function usePlayoffSeries(supabase, userId) {
   const [series, setSeries] = useState([]);
-  const [userPicks, setUserPicks] = useState({});  // { [series_id]: team_name }
+  const [userPicks, setUserPicks] = useState({});
   const [loading, setLoading] = useState(true);
 
   const fetchSeries = useCallback(async () => {
     if (!userId) {
+      setSeries([]);
+      setUserPicks({});
       setLoading(false);
-      return;
+      return { series: [], userPicks: {} };
     }
 
     try {
+      setLoading(true);
+
       const [seriesRes, picksRes] = await Promise.all([
         supabase
           .from("series")
@@ -27,34 +31,42 @@ export default function usePlayoffSeries(supabase, userId) {
       if (seriesRes.error) throw seriesRes.error;
       if (picksRes.error) throw picksRes.error;
 
-      // TEST ONLY - remove before playoffs
       const liveSeries = seriesRes.data || [];
-      setSeries(
-        liveSeries.length > 0
-          ? liveSeries
-          : [
-              {
-                id: "TEST_R1_S1",
-                round: 1,
-                home_team: "Oklahoma City Thunder",
-                away_team: "Memphis Grizzlies",
-                home_wins: 0,
-                away_wins: 0,
-                winner: null,
-                status: "active",
-                first_game_time: null,
-              },
-            ]
-      );
+      const nextSeries = liveSeries.length > 0
+        ? liveSeries
+        : [
+            {
+              id: "TEST_R1_S1",
+              round: 1,
+              home_team: "Oklahoma City Thunder",
+              away_team: "Memphis Grizzlies",
+              home_wins: 0,
+              away_wins: 0,
+              winner: null,
+              status: "active",
+              first_game_time: null,
+            },
+          ];
 
+      setSeries(nextSeries);
+
+      const activeSeriesIds = new Set(nextSeries.map((item) => item.id));
       const picksMap = {};
-      for (const p of picksRes.data || []) {
-        picksMap[p.series_id] = p.pick;
+
+      for (const pickRow of picksRes.data || []) {
+        if (!activeSeriesIds.has(pickRow.series_id) || !pickRow.pick) continue;
+        picksMap[pickRow.series_id] = pickRow.pick;
       }
+
+      console.log("[usePlayoffSeries] fetched savedSeriesPicks:", picksMap);
       setUserPicks(picksMap);
+
+      return { series: nextSeries, userPicks: picksMap };
     } catch (err) {
       console.error("Failed to load playoff series:", err);
-      // Leave series as [] — section simply won't render during regular season
+      setSeries([]);
+      setUserPicks({});
+      return { series: [], userPicks: {} };
     } finally {
       setLoading(false);
     }
