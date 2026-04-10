@@ -124,7 +124,12 @@ export default function Scoreboard() {
                       <span>{row.user}</span>
                     </div>
                   </td>
-                  <td className="px-3 py-4 text-right font-700 text-white">{row.score}</td>
+                  <td className="px-3 py-4 text-right">
+                    <span style={{ fontWeight: 700, color: "#fff", fontSize: "16px" }}>{row.score}</span>
+                    <div style={{ fontSize: "9px", color: "rgba(255,255,255,0.35)", marginTop: "2px" }}>
+                      {row.gameScore}g · {row.seriesScore}s · {row.championshipScore}c
+                    </div>
+                  </td>
                 </tr>
               );
             })}

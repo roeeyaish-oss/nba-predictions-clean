@@ -139,3 +139,34 @@
     Upserted scores for 2 users.
     Done. Games, results, and scores are up to date.
     Email notification sent to roeeyaish@gmail.com.
+
+[2026-04-10 15:00:03] SUCCESS
+    Fetching games for yesterday (04/09/2026), today (04/10/2026), tomorrow (04/11/2026)
+    Saved 21 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final          6
+    7:00 pm ET     3
+    7:30 pm ET     3
+    8:00 pm ET     3
+    9:30 pm ET     2
+    10:00 pm ET    2
+    9:00 pm ET     1
+    10:30 pm ET    1
+    Found 6 final games.
+    Game 0022501165 | Toronto Raptors 128 vs Miami Heat 114 | Winner: Toronto Raptors
+    Game 0022501166 | Washington Wizards 108 vs Chicago Bulls 119 | Winner: Chicago Bulls
+    Game 0022501167 | Brooklyn Nets 94 vs Indiana Pacers 123 | Winner: Indiana Pacers
+    Game 0022501168 | New York Knicks 112 vs Boston Celtics 106 | Winner: New York Knicks
+    Game 0022501169 | Houston Rockets 113 vs Philadelphia 76ers 102 | Winner: Houston Rockets
+    Game 0022501170 | Golden State Warriors 103 vs Los Angeles Lakers 119 | Winner: Los Angeles Lakers
+    Upserted 6 results.
+    Fetching playoff series...
+    Attempt 1 failed (HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=60)). Retrying in 5s...
+    Attempt 2 failed (Expecting value: line 1 column 1 (char 0)). Retrying in 5s...
+    Warning: Could not fetch playoff series: Expecting value: line 1 column 1 (char 0)
+    No series to upsert.
+    Calculating scores...
+    Upserted scores for 2 users.
+    Done. Games, results, series, and scores are up to date.
+    Email notification sent to roeeyaish@gmail.com.

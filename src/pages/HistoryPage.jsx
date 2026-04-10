@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import SkeletonBlock from "@/components/SkeletonBlock";
 import UserAvatar from "@/components/UserAvatar";
 import AvatarModal from "@/components/AvatarModal";
+import NBA_TEAMS from "@/lib/nbaTeams";
 
 const historyCache = new Map();
 
@@ -92,6 +93,37 @@ function DateDividerRow({ label, colSpan }) {
   );
 }
 
+const SERIES_POINTS = { 1: 5, 2: 9, 3: 14, 4: 20 };
+
+// championship_pick stores short IDs ("BOS"); series.winner stores full names ("Boston Celtics")
+const teamIdToFullName = new Map(NBA_TEAMS.map((t) => [t.id, t.name]));
+
+function buildSeriesRows(allSeries, seriesPicksData) {
+  // Build a map of seriesId → picks per user email
+  const picksMap = {};
+  for (const item of seriesPicksData) {
+    const sid = item.series_id;
+    const email = item.users?.email?.toLowerCase();
+    if (!sid || !email) continue;
+    if (!picksMap[sid]) picksMap[sid] = {};
+    picksMap[sid][email] = {
+      pick: item.pick,
+      avatarUrl: item.users?.avatar_url ?? null,
+      name: item.users?.display_name ?? "",
+    };
+  }
+
+  return allSeries.map((s) => ({
+    seriesId: s.id,
+    round: s.round,
+    label: `${toTricode(s.away_team)} vs ${toTricode(s.home_team)}`,
+    winner: s.winner,
+    status: s.status,
+    pts: SERIES_POINTS[s.round] ?? 5,
+    picks: picksMap[s.id] ?? {},
+  }));
+}
+
 function PickCell({ value, onAvatarClick }) {
   if (!value) {
     return <span style={{ color: "rgba(255,255,255,0.25)", fontSize: "10px" }}>—</span>;
@@ -121,6 +153,8 @@ export default function HistoryPage({ currentUserId, supabase }) {
   const cachedItems = historyCache.get(currentUserId) ?? [];
   const hadCache = useRef(cachedItems.length > 0).current;
   const [items, setItems] = useState(cachedItems);
+  const [seriesRows, setSeriesRows] = useState([]);
+  const [champRow, setChampRow] = useState(null);
   const [ready, setReady] = useState(hadCache);
   const [animate, setAnimate] = useState(false);
   const [error, setError] = useState(false);
@@ -129,15 +163,51 @@ export default function HistoryPage({ currentUserId, supabase }) {
   useEffect(() => {
     async function loadHistory() {
       try {
-        const { data, error } = await supabase
-          .from("predictions")
-          .select("game_id, pick, created_at, users!inner(email, name, display_name, avatar_url), games!inner(away_team, home_team, date, results!inner(winner))")
-          .not("games.results.winner", "is", null);
+        const [predsRes, seriesPicksRes, champRes, allSeriesRes] = await Promise.all([
+          supabase
+            .from("predictions")
+            .select("game_id, pick, created_at, users!inner(email, name, display_name, avatar_url), games!inner(away_team, home_team, date, results!inner(winner))")
+            .not("games.results.winner", "is", null),
+          supabase
+            .from("series_predictions")
+            .select("series_id, pick, user_id, users!inner(email, display_name, avatar_url)"),
+          supabase
+            .from("users")
+            .select("email, display_name, avatar_url, championship_pick")
+            .in("email", USER_COLUMNS.map((u) => u.email)),
+          supabase
+            .from("series")
+            .select("id, round, home_team, away_team, winner, status")
+            .order("round", { ascending: true }),
+        ]);
 
-        if (error) throw error;
-        const nextItems = data || [];
+        if (predsRes.error) throw predsRes.error;
+
+        const nextItems = predsRes.data || [];
         historyCache.set(currentUserId, nextItems);
         setItems(nextItems);
+
+        // Series rows
+        const allSeries = allSeriesRes.data || [];
+        const seriesPicks = seriesPicksRes.data || [];
+        setSeriesRows(buildSeriesRows(allSeries, seriesPicks));
+
+        // Championship row
+        const champUsers = champRes.data || [];
+        const actualChampion = allSeries.find((s) => s.round === 4 && s.winner)?.winner ?? null;
+        const champPicks = {};
+        for (const u of champUsers) {
+          const email = u.email?.toLowerCase();
+          if (email) {
+            champPicks[email] = {
+              pick: u.championship_pick ?? null,
+              avatarUrl: u.avatar_url ?? null,
+              name: u.display_name ?? "",
+            };
+          }
+        }
+        setChampRow({ actualChampion, picks: champPicks });
+
         setError(false);
       } catch (err) {
         console.error("Failed to load all prediction history:", err);
@@ -273,6 +343,124 @@ export default function HistoryPage({ currentUserId, supabase }) {
                         </React.Fragment>
                       );
                     })}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* ── Series Picks section ── */}
+        {(seriesRows.length > 0 || champRow) && (
+          <Card style={cardStyle}>
+            <CardContent className="p-0">
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed", minWidth: "360px" }}>
+                  <colgroup>
+                    <col style={{ width: "28%" }} />
+                    <col style={{ width: "12%" }} />
+                    <col style={{ width: "15%" }} />
+                    <col style={{ width: "15%" }} />
+                    <col style={{ width: "15%" }} />
+                    <col style={{ width: "15%" }} />
+                  </colgroup>
+                  <thead>
+                    <tr style={{ background: "rgba(255,255,255,0.03)" }}>
+                      <th style={{ padding: "10px 8px", textAlign: "left", color: "rgba(201,176,55,0.7)", fontSize: "10px", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                        Series
+                      </th>
+                      <th style={{ padding: "10px 4px", textAlign: "center", color: "rgba(255,255,255,0.35)", fontSize: "10px", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                        Pts
+                      </th>
+                      {USER_COLUMNS.map((user) => {
+                        const firstSeriesMatch = seriesRows.find((r) => r.picks[user.email]);
+                        const seriesProfile = firstSeriesMatch?.picks[user.email] ?? champRow?.picks[user.email];
+                        return (
+                          <th key={user.email} style={{ padding: "8px 4px", textAlign: "center" }}>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+                              <UserAvatar
+                                avatarUrl={seriesProfile?.avatarUrl ?? null}
+                                name={seriesProfile?.name ?? user.label}
+                                size={16}
+                                textSize={9}
+                                border="1px solid rgba(201,176,55,0.8)"
+                              />
+                              <span style={{ color: "#fff", fontSize: "10px", fontWeight: 600, lineHeight: 1 }}>{user.label}</span>
+                            </div>
+                          </th>
+                        );
+                      })}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {seriesRows.map((row, index) => {
+                      const striped = index % 2 === 1;
+                      const revealed = row.status === "completed";
+                      return (
+                        <tr key={row.seriesId} style={{ background: striped ? "rgba(255,255,255,0.02)" : "transparent" }}>
+                          <td style={{ padding: "10px 8px", color: "#fff", fontWeight: 600, fontSize: "11px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                            {row.label}
+                          </td>
+                          <td style={{ padding: "10px 4px", textAlign: "center", color: "rgba(255,255,255,0.35)", fontSize: "10px", fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                            {row.pts}
+                          </td>
+                          {USER_COLUMNS.map((user) => {
+                            const p = row.picks[user.email];
+                            let content;
+                            if (!revealed || !p) {
+                              content = <span style={{ color: "rgba(255,255,255,0.25)", fontSize: "10px" }}>—</span>;
+                            } else {
+                              const correct = p.pick === row.winner;
+                              content = (
+                                <span style={{ color: correct ? "#4ade80" : "#f87171", fontWeight: 600, fontSize: "10px" }}>
+                                  {toTricode(p.pick)}
+                                </span>
+                              );
+                            }
+                            return (
+                              <td key={user.email} style={{ padding: "10px 4px", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                                {content}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+
+                    {/* Championship row */}
+                    {champRow && (
+                      <tr style={{ background: "rgba(201,176,55,0.05)" }}>
+                        <td style={{ padding: "10px 8px", color: "#C9B037", fontWeight: 700, fontSize: "11px", borderTop: "1px solid rgba(201,176,55,0.25)" }}>
+                          🏆 Champion
+                        </td>
+                        <td style={{ padding: "10px 4px", textAlign: "center", color: "rgba(255,255,255,0.35)", fontSize: "10px", fontWeight: 600, borderTop: "1px solid rgba(201,176,55,0.25)" }}>
+                          25
+                        </td>
+                        {USER_COLUMNS.map((user) => {
+                          const p = champRow.picks[user.email];
+                          let content;
+                          if (!p?.pick) {
+                            content = <span style={{ color: "rgba(255,255,255,0.25)", fontSize: "10px" }}>—</span>;
+                          } else if (!champRow.actualChampion) {
+                            // Champion not yet known — show pick in neutral color
+                            content = <span style={{ color: "rgba(255,255,255,0.45)", fontSize: "10px" }}>{p.pick}</span>;
+                          } else {
+                            // p.pick is a short ID ("BOS"); actualChampion is a full name ("Boston Celtics")
+                            const correct = teamIdToFullName.get(p.pick) === champRow.actualChampion;
+                            content = (
+                              <span style={{ color: correct ? "#4ade80" : "#f87171", fontWeight: 600, fontSize: "10px" }}>
+                                {p.pick}
+                              </span>
+                            );
+                          }
+                          return (
+                            <td key={user.email} style={{ padding: "10px 4px", textAlign: "center", borderTop: "1px solid rgba(201,176,55,0.25)" }}>
+                              {content}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

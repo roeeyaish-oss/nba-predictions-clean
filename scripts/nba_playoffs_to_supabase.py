@@ -116,6 +116,42 @@ GAME_POINTS = {1: 1, 2: 2, 3: 3, 4: 4}
 SERIES_POINTS = {1: 5, 2: 9, 3: 14, 4: 20}
 CHAMPIONSHIP_POINTS = 25
 
+# championship_pick in the DB stores ESPN-style short IDs (e.g. "BOS", "LAL")
+# series.winner stores full team names (e.g. "Boston Celtics")
+# This map bridges the two so champion scoring works correctly.
+TEAM_SHORT_ID_TO_NAME = {
+    "ATL": "Atlanta Hawks",
+    "BOS": "Boston Celtics",
+    "BKN": "Brooklyn Nets",
+    "CHA": "Charlotte Hornets",
+    "CHI": "Chicago Bulls",
+    "CLE": "Cleveland Cavaliers",
+    "DAL": "Dallas Mavericks",
+    "DEN": "Denver Nuggets",
+    "DET": "Detroit Pistons",
+    "GSW": "Golden State Warriors",
+    "HOU": "Houston Rockets",
+    "IND": "Indiana Pacers",
+    "LAC": "LA Clippers",
+    "LAL": "Los Angeles Lakers",
+    "MEM": "Memphis Grizzlies",
+    "MIA": "Miami Heat",
+    "MIL": "Milwaukee Bucks",
+    "MIN": "Minnesota Timberwolves",
+    "NOP": "New Orleans Pelicans",
+    "NYK": "New York Knicks",
+    "OKC": "Oklahoma City Thunder",
+    "ORL": "Orlando Magic",
+    "PHI": "Philadelphia 76ers",
+    "PHX": "Phoenix Suns",
+    "POR": "Portland Trail Blazers",
+    "SAC": "Sacramento Kings",
+    "SAS": "San Antonio Spurs",
+    "TOR": "Toronto Raptors",
+    "UTA": "Utah Jazz",
+    "WAS": "Washington Wizards",
+}
+
 
 # === Step 1: Fetch games for yesterday, today, and tomorrow (ET) ===
 est = timezone('US/Eastern')
@@ -467,14 +503,19 @@ def recalculate_all_scores():
             series_scores[uid] = series_scores.get(uid, 0) + pts
 
     # 3. Championship score
-    # Actual champion = winner of the round-4 (NBA Finals) series
+    # Actual champion = winner of the round-4 (NBA Finals) series (full team name)
     actual_champion = next(
         (s["winner"] for s in series_data if s["round"] == 4 and s["winner"]),
         None
     )
     if actual_champion:
         for user in users_data:
-            if user.get("championship_pick") == actual_champion:
+            pick_id = user.get("championship_pick")
+            if not pick_id:
+                continue
+            # championship_pick stores short IDs ("BOS"); actual_champion is full name
+            pick_full_name = TEAM_SHORT_ID_TO_NAME.get(pick_id, pick_id)
+            if pick_full_name == actual_champion:
                 champ_scores[user["id"]] = CHAMPIONSHIP_POINTS
 
     # 4. Build payload for all known users

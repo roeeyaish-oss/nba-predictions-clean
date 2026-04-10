@@ -5,6 +5,8 @@ import AvatarModal from "@/components/AvatarModal";
 import NBA_TEAMS from "@/lib/nbaTeams";
 import { CHAMPIONSHIP_LOCK_DATE } from "@/lib/constants";
 
+const SERIES_POINTS = { 1: 5, 2: 9, 3: 14, 4: 20 };
+
 const inputStyle = {
   width: "100%",
   background: "rgba(255,255,255,0.06)",
@@ -80,6 +82,8 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
   const hadCache = useRef(cachedItems.length > 0).current;
   const [items, setItems] = useState(cachedItems);
   const [predictionsLoaded, setPredictionsLoaded] = useState(hadCache);
+  const [seriesData, setSeriesData] = useState([]);
+  const [actualChampion, setActualChampion] = useState(null);
   const [error, setError] = useState(false);
   const [avatarLoaded, setAvatarLoaded] = useState(!avatarUrl);
   const ready = predictionsLoaded && avatarLoaded;
@@ -100,16 +104,36 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
   useEffect(() => {
     async function loadHistory() {
       try {
-        const { data, error } = await supabase
-          .from("predictions")
-          .select("pick, created_at, games!inner(home_team, away_team, date, results!inner(winner))")
-          .eq("user_id", user.id)
-          .not("games.results.winner", "is", null);
+        const [predsRes, seriesRes, champSeriesRes] = await Promise.all([
+          supabase
+            .from("predictions")
+            .select("pick, created_at, games!inner(home_team, away_team, date, results!inner(winner))")
+            .eq("user_id", user.id)
+            .not("games.results.winner", "is", null),
+          supabase
+            .from("series_predictions")
+            .select("series_id, pick, series!inner(home_team, away_team, winner, round, status)")
+            .eq("user_id", user.id),
+          supabase
+            .from("series")
+            .select("winner")
+            .eq("round", 4)
+            .not("winner", "is", null)
+            .limit(1),
+        ]);
 
-        if (error) throw error;
-        const nextItems = data || [];
+        if (predsRes.error) throw predsRes.error;
+        const nextItems = predsRes.data || [];
         profileHistoryCache.set(user.id, nextItems);
         setItems(nextItems);
+
+        // Sort series picks by round ascending
+        const sp = (seriesRes.data || []).sort(
+          (a, b) => (a.series?.round ?? 0) - (b.series?.round ?? 0)
+        );
+        setSeriesData(sp);
+        setActualChampion(champSeriesRes.data?.[0]?.winner ?? null);
+
         setError(false);
       } catch (err) {
         console.error("Failed to load profile history:", err);
@@ -543,6 +567,98 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
                 </tbody>
               </table>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── Personal Series Picks section ── */}
+      {(seriesData.length > 0 || championshipPick) && (
+        <Card style={{
+          border: "1px solid rgba(201,176,55,0.3)",
+          background: "rgba(8,5,0,0.45)",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,215,0,0.1)",
+          backdropFilter: "blur(8px)",
+        }}>
+          <CardContent className="p-0">
+            <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+              <colgroup>
+                <col style={{ width: "50%" }} />
+                <col style={{ width: "20%" }} />
+                <col style={{ width: "30%" }} />
+              </colgroup>
+              <thead>
+                <tr style={{ background: "rgba(255,255,255,0.03)" }}>
+                  <th style={{ padding: "10px 8px", textAlign: "left", color: "rgba(201,176,55,0.7)", fontSize: "10px", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                    Series
+                  </th>
+                  <th style={{ padding: "10px 4px", textAlign: "center", color: "rgba(255,255,255,0.35)", fontSize: "10px", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                    Pts
+                  </th>
+                  <th style={{ padding: "10px 8px", textAlign: "left", color: "rgba(255,255,255,0.45)", fontSize: "10px", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                    Your Pick
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {seriesData.map((item, index) => {
+                  const s = item.series;
+                  const revealed = s?.status === "completed";
+                  const correct = revealed && item.pick === s?.winner;
+                  const striped = index % 2 === 1;
+                  const label = `${toTricode(s?.away_team)} vs ${toTricode(s?.home_team)}`;
+                  const pts = SERIES_POINTS[s?.round] ?? 5;
+
+                  return (
+                    <tr key={item.series_id} style={{ background: striped ? "rgba(255,255,255,0.02)" : "transparent" }}>
+                      <td style={{ padding: "10px 8px", color: "#fff", fontWeight: 600, fontSize: "11px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                        {label}
+                      </td>
+                      <td style={{ padding: "10px 4px", textAlign: "center", color: "rgba(255,255,255,0.35)", fontSize: "10px", fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                        {pts}
+                      </td>
+                      <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                        {revealed ? (
+                          <span style={{ color: correct ? "#4ade80" : "#f87171", fontWeight: 600, fontSize: "10px" }}>
+                            {toTricode(item.pick)}
+                          </span>
+                        ) : (
+                          <span style={{ color: "rgba(255,255,255,0.45)", fontSize: "10px" }}>
+                            {toTricode(item.pick)}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+
+                {/* Championship row */}
+                {championshipPick && (() => {
+                  // championshipPick is a team ID ("BOS"); actualChampion is a full name ("Boston Celtics")
+                  const pickedTeam = NBA_TEAMS.find((t) => t.id === championshipPick);
+                  const champCorrect = actualChampion && pickedTeam && pickedTeam.name === actualChampion;
+                  const champWrong = actualChampion && pickedTeam && pickedTeam.name !== actualChampion;
+                  return (
+                    <tr style={{ background: "rgba(201,176,55,0.05)" }}>
+                      <td style={{ padding: "10px 8px", color: "#C9B037", fontWeight: 700, fontSize: "11px", borderTop: "1px solid rgba(201,176,55,0.25)" }}>
+                        🏆 Champion
+                      </td>
+                      <td style={{ padding: "10px 4px", textAlign: "center", color: "rgba(255,255,255,0.35)", fontSize: "10px", fontWeight: 600, borderTop: "1px solid rgba(201,176,55,0.25)" }}>
+                        25
+                      </td>
+                      <td style={{ padding: "10px 8px", borderTop: "1px solid rgba(201,176,55,0.25)" }}>
+                        <span style={{
+                          color: champCorrect ? "#4ade80" : champWrong ? "#f87171" : "rgba(255,255,255,0.6)",
+                          fontWeight: champCorrect || champWrong ? 600 : 400,
+                          fontSize: "10px",
+                        }}>
+                          {championshipPick}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })()}
+              </tbody>
+            </table>
           </CardContent>
         </Card>
       )}

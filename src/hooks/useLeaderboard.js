@@ -12,7 +12,10 @@ function formatScores(data) {
     .map((row) => ({
       user: row.users?.display_name ?? row.users?.name ?? "",
       avatarUrl: row.users?.avatar_url ?? null,
-      score: row.score,
+      score: row.score ?? 0,
+      gameScore: row.game_score ?? 0,
+      seriesScore: row.series_score ?? 0,
+      championshipScore: row.championship_score ?? 0,
     }))
     .sort((a, b) => b.score - a.score);
 }
@@ -33,7 +36,7 @@ export default function useLeaderboard(supabase) {
       try {
         const { data, error } = await supabase
           .from("scores")
-          .select("score, users(name, display_name, avatar_url)");
+          .select("score, game_score, series_score, championship_score, users(name, display_name, avatar_url)");
 
         if (error) throw error;
 
