@@ -18,7 +18,57 @@ function getRankChange(user, currentRank, prevRanks) {
   return "=";
 }
 
-function ScoringTooltip({ tooltipOpen, tooltipBtnRef, tooltipRef, toggleTooltip }) {
+function TooltipContent({ tooltipRef, style }) {
+  return (
+    <div
+      ref={tooltipRef}
+      style={{
+        width: "min(240px, calc(100vw - 24px))",
+        maxWidth: "240px",
+        background: "rgba(8,5,0,0.95)",
+        border: "1.5px solid #C9B037",
+        borderRadius: "12px",
+        padding: "16px",
+        zIndex: 9999,
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.8)",
+        ...style,
+      }}
+    >
+      <p style={{ margin: "0 0 12px", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.2em", color: "#C9B037", fontWeight: 700 }}>
+        Scoring System
+      </p>
+      <p style={{ margin: "0 0 6px", fontSize: "11px", fontWeight: 700, color: "rgba(201,176,55,0.85)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+        Game Picks
+      </p>
+      {[["Round 1", "1 pt"], ["Round 2", "2 pts"], ["Conf Finals", "3 pts"], ["NBA Finals", "4 pts"]].map(([label, pts]) => (
+        <div key={label} style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "rgba(255,255,255,0.75)", marginBottom: "3px" }}>
+          <span>{label}</span>
+          <span style={{ color: "#fff", fontWeight: 600 }}>{pts}</span>
+        </div>
+      ))}
+      <p style={{ margin: "12px 0 6px", fontSize: "11px", fontWeight: 700, color: "rgba(201,176,55,0.85)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+        Series Winner
+      </p>
+      {[["Round 1", "5 pts"], ["Round 2", "9 pts"], ["Conf Finals", "14 pts"], ["NBA Finals", "20 pts"]].map(([label, pts]) => (
+        <div key={label} style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "rgba(255,255,255,0.75)", marginBottom: "3px" }}>
+          <span>{label}</span>
+          <span style={{ color: "#fff", fontWeight: 600 }}>{pts}</span>
+        </div>
+      ))}
+      <p style={{ margin: "12px 0 6px", fontSize: "11px", fontWeight: 700, color: "rgba(201,176,55,0.85)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+        Championship Pick
+      </p>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "rgba(255,255,255,0.75)" }}>
+        <span>Locks April 18</span>
+        <span style={{ color: "#fff", fontWeight: 600 }}>25 pts</span>
+      </div>
+    </div>
+  );
+}
+
+function ScoringTooltip({ isMobile, tooltipOpen, tooltipBtnRef, tooltipRef, toggleTooltip, closeTooltip }) {
   return (
     <div style={{ position: "relative" }}>
       <p className="text-[11px] uppercase tracking-[0.3em] text-[#C9B037]/75">Rankings</p>
@@ -46,57 +96,44 @@ function ScoringTooltip({ tooltipOpen, tooltipBtnRef, tooltipRef, toggleTooltip 
         >
           <Info size={16} strokeWidth={2.1} />
         </button>
-        {tooltipOpen && (
-          <div
-            ref={tooltipRef}
+        {tooltipOpen && !isMobile && (
+          <TooltipContent
+            tooltipRef={tooltipRef}
             style={{
               position: "absolute",
               top: "calc(100% + 12px)",
               right: 0,
-              width: "min(240px, calc(100vw - 24px))",
-              maxWidth: "240px",
-              background: "rgba(8,5,0,0.95)",
-              border: "1.5px solid #C9B037",
-              borderRadius: "12px",
-              padding: "16px",
-              zIndex: 9999,
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.8)",
             }}
-            className="max-sm:bottom-[calc(100%+12px)] max-sm:top-auto"
-          >
-            <p style={{ margin: "0 0 12px", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.2em", color: "#C9B037", fontWeight: 700 }}>
-              Scoring System
-            </p>
-            <p style={{ margin: "0 0 6px", fontSize: "11px", fontWeight: 700, color: "rgba(201,176,55,0.85)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-              Game Picks
-            </p>
-            {[["Round 1", "1 pt"], ["Round 2", "2 pts"], ["Conf Finals", "3 pts"], ["NBA Finals", "4 pts"]].map(([label, pts]) => (
-              <div key={label} style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "rgba(255,255,255,0.75)", marginBottom: "3px" }}>
-                <span>{label}</span>
-                <span style={{ color: "#fff", fontWeight: 600 }}>{pts}</span>
-              </div>
-            ))}
-            <p style={{ margin: "12px 0 6px", fontSize: "11px", fontWeight: 700, color: "rgba(201,176,55,0.85)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-              Series Winner
-            </p>
-            {[["Round 1", "5 pts"], ["Round 2", "9 pts"], ["Conf Finals", "14 pts"], ["NBA Finals", "20 pts"]].map(([label, pts]) => (
-              <div key={label} style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "rgba(255,255,255,0.75)", marginBottom: "3px" }}>
-                <span>{label}</span>
-                <span style={{ color: "#fff", fontWeight: 600 }}>{pts}</span>
-              </div>
-            ))}
-            <p style={{ margin: "12px 0 6px", fontSize: "11px", fontWeight: 700, color: "rgba(201,176,55,0.85)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-              Championship Pick
-            </p>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "rgba(255,255,255,0.75)" }}>
-              <span>Locks April 18</span>
-              <span style={{ color: "#fff", fontWeight: 600 }}>25 pts</span>
-            </div>
-          </div>
+          />
         )}
       </div>
+      {tooltipOpen && isMobile && (
+        <div
+          onClick={closeTooltip}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9998,
+            background: "rgba(0,0,0,0.72)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "24px",
+          }}
+        >
+          <div onClick={(event) => event.stopPropagation()}>
+            <TooltipContent
+              tooltipRef={tooltipRef}
+              style={{
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -108,6 +145,7 @@ export default function Scoreboard() {
   const [animate, setAnimate] = useState(false);
   const [modalTarget, setModalTarget] = useState(null);
   const [tooltipOpen, setTooltipOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const tooltipBtnRef = useRef(null);
   const tooltipRef = useRef(null);
   const prevRanks = useRef((() => {
@@ -135,9 +173,19 @@ export default function Scoreboard() {
   }, [scores]);
 
   useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth < 768);
+    }
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
     if (!tooltipOpen) return;
 
     function handleClickOutside(event) {
+      if (isMobile) return;
       if (
         tooltipRef.current && !tooltipRef.current.contains(event.target) &&
         tooltipBtnRef.current && !tooltipBtnRef.current.contains(event.target)
@@ -153,18 +201,24 @@ export default function Scoreboard() {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
     };
-  }, [tooltipOpen]);
+  }, [tooltipOpen, isMobile]);
 
   function toggleTooltip() {
     setTooltipOpen((current) => !current);
   }
 
+  function closeTooltip() {
+    setTooltipOpen(false);
+  }
+
   const leaderboardHeading = (
     <ScoringTooltip
+      isMobile={isMobile}
       tooltipOpen={tooltipOpen}
       tooltipBtnRef={tooltipBtnRef}
       tooltipRef={tooltipRef}
       toggleTooltip={toggleTooltip}
+      closeTooltip={closeTooltip}
     />
   );
 

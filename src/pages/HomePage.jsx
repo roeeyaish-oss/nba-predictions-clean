@@ -19,6 +19,13 @@ const titleSectionStyle = {
   padding: "20px",
 };
 
+const tabsWrapStyle = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "12px",
+  width: "100%",
+};
+
 const pickButtonBase = {
   width: "100%",
   borderRadius: "10px",
@@ -61,11 +68,77 @@ const submitButtonStyle = {
 };
 
 const SERIES_POINTS = { 1: 5, 2: 9, 3: 14, 4: 20 };
-const ROUND_LABELS  = { 1: "ROUND 1", 2: "ROUND 2", 3: "CONF FINALS", 4: "NBA FINALS" };
+const ROUND_LABELS = { 1: "ROUND 1", 2: "ROUND 2", 3: "CONF FINALS", 4: "NBA FINALS" };
 
-// Map full team name → ESPN logo URL, built once from NBA_TEAMS
-const teamLogoMap = new Map(NBA_TEAMS.map((t) => [t.name, t.logo]));
+const teamLogoMap = new Map(NBA_TEAMS.map((team) => [team.name, team.logo]));
 
+function hasAnyTruthyValue(values) {
+  return Object.values(values).some(Boolean);
+}
+
+function TabButton({ active, label, onClick, showDirtyDot, showAlert }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        position: "relative",
+        borderRadius: "12px",
+        border: active ? "1.5px solid #C9B037" : "1.5px solid rgba(201,176,55,0.5)",
+        background: active ? "#C9B037" : "transparent",
+        color: active ? "#000" : "#C9B037",
+        fontWeight: active ? 800 : 600,
+        fontSize: "13px",
+        letterSpacing: "0.08em",
+        padding: "14px 12px",
+        cursor: "pointer",
+        width: "100%",
+        opacity: active ? 1 : 0.8,
+      }}
+    >
+      {label}
+      {showDirtyDot && (
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: "8px",
+            right: showAlert ? "30px" : "10px",
+            width: "8px",
+            height: "8px",
+            borderRadius: "50%",
+            background: "#C9B037",
+            boxShadow: "0 0 10px rgba(201,176,55,0.8)",
+          }}
+        />
+      )}
+      {showAlert && (
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: "5px",
+            right: "8px",
+            minWidth: "18px",
+            height: "18px",
+            borderRadius: "999px",
+            background: "#dc2626",
+            color: "#fff",
+            fontSize: "11px",
+            fontWeight: 800,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            lineHeight: 1,
+            padding: "0 5px",
+          }}
+        >
+          !
+        </span>
+      )}
+    </button>
+  );
+}
 
 export default function HomePage({ user, supabase, oracleData, onReopenOracle }) {
   const { games, loading: gamesLoading } = useTodayGames(supabase);
@@ -73,6 +146,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   const hadCache = useRef(games.length > 0).current;
   const [ready, setReady] = useState(hadCache);
   const [animate, setAnimate] = useState(false);
+  const [activeTab, setActiveTab] = useState("game");
   const [predictions, setPredictions] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
@@ -80,8 +154,11 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   const [seriesPredictions, setSeriesPredictions] = useState({});
   const [submittingSeries, setSubmittingSeries] = useState(false);
   const [seriesMessage, setSeriesMessage] = useState(null);
+
   const submittableGames = games.filter((game) => !isGameStarted(game.gameTimeIL, game.date));
   const hasSubmittableGames = submittableGames.length > 0;
+  const hasUnsavedGamePicks = hasAnyTruthyValue(predictions);
+  const hasSavedSeriesPicks = hasAnyTruthyValue(savedSeriesPicks);
 
   useEffect(() => {
     setSeriesPredictions(savedSeriesPicks);
@@ -127,14 +204,14 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
     return seriesPredictions[seriesItem.id] !== savedSeriesPicks[seriesItem.id];
   }
 
+  const hasUnsavedSeriesPicks = series.some((seriesItem) => !isSeriesLocked(seriesItem) && hasSeriesDraftChange(seriesItem));
+
   async function handleSeriesSubmit() {
     if (!user) return;
 
     const picks = series
-      .filter((s) => {
-        return !isSeriesLocked(s) && hasSeriesDraftChange(s) && seriesPredictions[s.id];
-      })
-      .map((s) => ({ seriesId: s.id, pick: seriesPredictions[s.id] }));
+      .filter((seriesItem) => !isSeriesLocked(seriesItem) && hasSeriesDraftChange(seriesItem) && seriesPredictions[seriesItem.id])
+      .map((seriesItem) => ({ seriesId: seriesItem.id, pick: seriesPredictions[seriesItem.id] }));
 
     if (picks.length === 0) {
       setSeriesMessage({ type: "error", text: "Please select at least one series pick before submitting." });
@@ -150,7 +227,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.access_token}`,
+          Authorization: `Bearer ${session?.access_token}`,
         },
         body: JSON.stringify(picks),
       });
@@ -175,7 +252,6 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
     if (!user) return;
 
     const hasPick = submittableGames.some((game) => predictions[game.gameId]);
-
     if (!hasPick) {
       setMessage({ type: "error", text: "Please select at least one prediction before submitting." });
       return;
@@ -192,32 +268,32 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
         pick: predictions[game.gameId],
       }));
 
-    fetch("/api/submit", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session?.access_token}`,
-      },
-      body: JSON.stringify(output),
-    })
-      .then((res) =>
-        res.text().then((text) => {
-          if (res.ok) {
-            setMessage({ type: "success", text: "Predictions submitted successfully!" });
-            setPredictions({});
-            setPredictionsRefreshKey((k) => k + 1);
-          } else {
-            setMessage({ type: "error", text: text || "Failed to submit predictions." });
-          }
-        })
-      )
-      .catch((err) => {
-        console.error("Error submitting predictions:", err);
-        setMessage({ type: "error", text: "Network error. Please try again." });
-      })
-      .finally(() => {
-        setSubmitting(false);
+    try {
+      const res = await fetch("/api/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify(output),
       });
+
+      const text = await res.text();
+
+      if (!res.ok) {
+        setMessage({ type: "error", text: text || "Failed to submit predictions." });
+        return;
+      }
+
+      setMessage({ type: "success", text: "Predictions submitted successfully!" });
+      setPredictions({});
+      setPredictionsRefreshKey((current) => current + 1);
+    } catch (err) {
+      console.error("Error submitting predictions:", err);
+      setMessage({ type: "error", text: "Network error. Please try again." });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (!ready) {
@@ -226,7 +302,11 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
         <section style={titleSectionStyle}>
           <SkeletonBlock style={{ width: "80px", height: "10px", marginBottom: "10px" }} />
           <SkeletonBlock style={{ width: "220px", height: "32px", marginBottom: "14px" }} />
-          <SkeletonBlock style={{ width: "280px", height: "14px" }} />
+          <SkeletonBlock style={{ width: "280px", height: "14px", marginBottom: "20px" }} />
+          <div style={tabsWrapStyle}>
+            <SkeletonBlock style={{ height: "48px" }} />
+            <SkeletonBlock style={{ height: "48px" }} />
+          </div>
         </section>
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           {[0, 1].map((index) => (
@@ -271,207 +351,241 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
         <p style={{ margin: "0 0 8px", fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(201,176,55,0.7)" }}>Game Night</p>
         <h1 style={{ margin: 0, fontSize: "28px", fontWeight: 700, color: "#fff" }}>NBA Predictions</h1>
         <p style={{ margin: "12px 0 0", fontSize: "13px", lineHeight: 1.6, color: "rgba(255,255,255,0.45)", maxWidth: "600px" }}>
-          Pick winners before tip-off, track the live board, and check how the field is leaning once games begin.
+          Pick winners before tip-off, track the live board, and lock in your playoff bracket before each series starts.
         </p>
       </section>
 
-      {games.length === 0 ? (
-        <Card>
-          <CardContent>
-            <p style={{ textAlign: "center", color: "rgba(255,255,255,0.5)", margin: 0 }}>No games scheduled for today or tomorrow.</p>
-          </CardContent>
-        </Card>
-      ) : (
+      <div style={tabsWrapStyle}>
+        <TabButton
+          active={activeTab === "game"}
+          label="GAME PICKS"
+          onClick={() => setActiveTab("game")}
+          showDirtyDot={hasUnsavedGamePicks}
+          showAlert={false}
+        />
+        <TabButton
+          active={activeTab === "series"}
+          label="SERIES PICKS"
+          onClick={() => setActiveTab("series")}
+          showDirtyDot={hasUnsavedSeriesPicks}
+          showAlert={!hasSavedSeriesPicks}
+        />
+      </div>
+
+      {activeTab === "game" ? (
         <>
-          {[
-            { key: getIsraelToday(), label: "Today" },
-            { key: getIsraelTomorrow(), label: "Tomorrow" },
-          ].map(({ key: dateKey, label }) => {
-            const dateGames = games.filter((g) => g.date === dateKey);
-            if (dateGames.length === 0) return null;
-            return (
-              <div key={dateKey} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                <p style={{ margin: 0, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.18em", color: "rgba(201,176,55,0.7)", fontWeight: 600 }}>{label}</p>
-                {dateGames.map((game) => {
-                  const started = isGameStarted(game.gameTimeIL, game.date);
-                  return (
-                    <Card
-                      key={game.gameId}
-                      style={started ? { opacity: 0.7 } : undefined}
-                    >
-                      <CardContent>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", marginBottom: "16px" }}>
-                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
-                            <img src={game.homeImg} width="56" height="56" alt={game.home} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
-                            <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{game.home}</span>
-                          </div>
-                          <span style={{ fontSize: "18px", fontWeight: 700, color: "#C9B037", letterSpacing: "0.15em" }}>VS</span>
-                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
-                            <img src={game.awayImg} width="56" height="56" alt={game.away} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
-                            <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{game.away}</span>
-                          </div>
-                        </div>
+          {games.length === 0 ? (
+            <Card>
+              <CardContent>
+                <p style={{ textAlign: "center", color: "rgba(255,255,255,0.5)", margin: 0 }}>No games scheduled for today or tomorrow.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {[
+                { key: getIsraelToday(), label: "Today" },
+                { key: getIsraelTomorrow(), label: "Tomorrow" },
+              ].map(({ key: dateKey, label }) => {
+                const dateGames = games.filter((game) => game.date === dateKey);
+                if (dateGames.length === 0) return null;
 
-                        {started ? (
-                          <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 700, color: "#C9B037", margin: 0 }}>Predictions locked. Game already started.</p>
-                        ) : (
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
-                            <button
-                              onClick={() => handlePrediction(game.gameId, game.home)}
-                              style={predictions[game.gameId] === game.home ? pickButtonSelected : pickButtonUnselected}
-                            >
-                              {game.home}
-                            </button>
-                            <button
-                              onClick={() => handlePrediction(game.gameId, game.away)}
-                              style={predictions[game.gameId] === game.away ? pickButtonSelected : pickButtonUnselected}
-                            >
-                              {game.away}
-                            </button>
-                          </div>
-                        )}
+                return (
+                  <div key={dateKey} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                    <p style={{ margin: 0, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.18em", color: "rgba(201,176,55,0.7)", fontWeight: 600 }}>
+                      {label}
+                    </p>
+                    {dateGames.map((game) => {
+                      const started = isGameStarted(game.gameTimeIL, game.date);
+                      return (
+                        <Card key={game.gameId} style={started ? { opacity: 0.7 } : undefined}>
+                          <CardContent>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", marginBottom: "16px" }}>
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
+                                <img src={game.homeImg} width="56" height="56" alt={game.home} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
+                                <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{game.home}</span>
+                              </div>
+                              <span style={{ fontSize: "18px", fontWeight: 700, color: "#C9B037", letterSpacing: "0.15em" }}>VS</span>
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
+                                <img src={game.awayImg} width="56" height="56" alt={game.away} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
+                                <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{game.away}</span>
+                              </div>
+                            </div>
 
-                        {game.gameTimeIL && (
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginTop: started ? "12px" : "0" }}>
-                            <Clock3 style={{ width: "14px", height: "14px", color: "#C9B037" }} strokeWidth={2.3} />
-                            <span style={{ fontSize: "12px", fontWeight: 600, color: "#C9B037" }}>{game.gameTimeIL}</span>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            );
-          })}
-          {hasSubmittableGames && (
-            <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              style={{
-                ...submitButtonStyle,
-                ...(submitting ? { opacity: 0.6, cursor: "not-allowed" } : {}),
-              }}
-            >
-              {submitting ? "SUBMITTING..." : "SUBMIT PREDICTIONS"}
-            </button>
+                            {started ? (
+                              <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 700, color: "#C9B037", margin: 0 }}>
+                                Predictions locked. Game already started.
+                              </p>
+                            ) : (
+                              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handlePrediction(game.gameId, game.home)}
+                                  style={predictions[game.gameId] === game.home ? pickButtonSelected : pickButtonUnselected}
+                                >
+                                  {game.home}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handlePrediction(game.gameId, game.away)}
+                                  style={predictions[game.gameId] === game.away ? pickButtonSelected : pickButtonUnselected}
+                                >
+                                  {game.away}
+                                </button>
+                              </div>
+                            )}
+
+                            {game.gameTimeIL && (
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginTop: started ? "12px" : "0" }}>
+                                <Clock3 style={{ width: "14px", height: "14px", color: "#C9B037" }} strokeWidth={2.3} />
+                                <span style={{ fontSize: "12px", fontWeight: 600, color: "#C9B037" }}>{game.gameTimeIL}</span>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+
+              {hasSubmittableGames && (
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                  style={{
+                    ...submitButtonStyle,
+                    ...(submitting ? { opacity: 0.6, cursor: "not-allowed" } : {}),
+                  }}
+                >
+                  {submitting ? "SUBMITTING..." : "SUBMIT PREDICTIONS"}
+                </button>
+              )}
+
+              {message && (
+                <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 700, color: message.type === "success" ? "#e8cb68" : "#fca5a5", margin: 0 }}>
+                  {message.text}
+                </p>
+              )}
+            </>
           )}
 
-          {message && (
-            <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 700, color: message.type === "success" ? "#e8cb68" : "#fca5a5", margin: 0 }}>
-              {message.text}
-            </p>
-          )}
+          <DailyPredictions currentUserId={user.id} refreshKey={predictionsRefreshKey} />
         </>
-      )}
-
-      {series.length > 0 && (
+      ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           <p style={{ margin: 0, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.18em", color: "rgba(201,176,55,0.7)", fontWeight: 600 }}>
             Playoff Series Picks
           </p>
 
-          {series.map((s) => {
-            const isLocked = isSeriesLocked(s);
-            const savedPick = savedSeriesPicks[s.id];
-            const draftPick = seriesPredictions[s.id];
-            const pts = SERIES_POINTS[s.round] ?? 5;
-            const roundLabel = ROUND_LABELS[s.round] ?? `ROUND ${s.round}`;
-            const homeLogo = teamLogoMap.get(s.home_team);
-            const awayLogo = teamLogoMap.get(s.away_team);
+          {series.length === 0 ? (
+            <Card>
+              <CardContent>
+                <p style={{ textAlign: "center", color: "rgba(255,255,255,0.5)", margin: 0 }}>No active playoff series available right now.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {series.map((seriesItem) => {
+                const isLocked = isSeriesLocked(seriesItem);
+                const savedPick = savedSeriesPicks[seriesItem.id];
+                const draftPick = seriesPredictions[seriesItem.id];
+                const pts = SERIES_POINTS[seriesItem.round] ?? 5;
+                const roundLabel = ROUND_LABELS[seriesItem.round] ?? `ROUND ${seriesItem.round}`;
+                const homeLogo = teamLogoMap.get(seriesItem.home_team);
+                const awayLogo = teamLogoMap.get(seriesItem.away_team);
 
-            return (
-              <Card key={s.id}>
-                <CardContent>
-                  {/* Round + points header */}
-                  <p style={{ margin: "0 0 14px", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.18em", color: "rgba(201,176,55,0.7)", fontWeight: 600 }}>
-                    {roundLabel} · {pts} pts if correct
-                  </p>
+                return (
+                  <Card key={seriesItem.id}>
+                    <CardContent>
+                      <p style={{ margin: "0 0 14px", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.18em", color: "rgba(201,176,55,0.7)", fontWeight: 600 }}>
+                        {roundLabel} · {pts} pts if correct
+                      </p>
 
-                  {/* Teams */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", marginBottom: "16px" }}>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
-                      {homeLogo && (
-                        <img src={homeLogo} width="56" height="56" alt={s.home_team} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
-                      )}
-                      <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{s.home_team}</span>
-                    </div>
-                    <span style={{ fontSize: "18px", fontWeight: 700, color: "#C9B037", letterSpacing: "0.15em" }}>VS</span>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
-                      {awayLogo && (
-                        <img src={awayLogo} width="56" height="56" alt={s.away_team} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
-                      )}
-                      <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{s.away_team}</span>
-                    </div>
-                  </div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", marginBottom: "16px" }}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
+                          {homeLogo && (
+                            <img src={homeLogo} width="56" height="56" alt={seriesItem.home_team} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
+                          )}
+                          <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{seriesItem.home_team}</span>
+                        </div>
+                        <span style={{ fontSize: "18px", fontWeight: 700, color: "#C9B037", letterSpacing: "0.15em" }}>VS</span>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
+                          {awayLogo && (
+                            <img src={awayLogo} width="56" height="56" alt={seriesItem.away_team} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
+                          )}
+                          <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{seriesItem.away_team}</span>
+                        </div>
+                      </div>
 
-                  {/* Pick area */}
-                  {isLocked ? (
-                    <div style={{ textAlign: "center" }}>
-                      {savedPick ? (
-                        <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#C9B037" }}>
-                          Your pick: {savedPick}
-                        </p>
+                      {isLocked ? (
+                        <div style={{ textAlign: "center" }}>
+                          {savedPick ? (
+                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#C9B037" }}>
+                              Your pick: {savedPick}
+                            </p>
+                          ) : (
+                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#C9B037" }}>
+                              Series pick locked.
+                            </p>
+                          )}
+                        </div>
                       ) : (
-                        <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#C9B037" }}>
-                          Series pick locked.
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                          <button
+                            type="button"
+                            onClick={() => handleSeriesPrediction(seriesItem.id, seriesItem.home_team)}
+                            style={draftPick === seriesItem.home_team ? pickButtonSelected : pickButtonUnselected}
+                          >
+                            {seriesItem.home_team}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSeriesPrediction(seriesItem.id, seriesItem.away_team)}
+                            style={draftPick === seriesItem.away_team ? pickButtonSelected : pickButtonUnselected}
+                          >
+                            {seriesItem.away_team}
+                          </button>
+                        </div>
+                      )}
+
+                      {(seriesItem.home_wins > 0 || seriesItem.away_wins > 0) && (
+                        <p style={{ margin: "10px 0 0", textAlign: "center", fontSize: "11px", color: "rgba(255,255,255,0.4)" }}>
+                          {seriesItem.home_team.split(" ").pop()} {seriesItem.home_wins} - {seriesItem.away_wins} {seriesItem.away_team.split(" ").pop()}
                         </p>
                       )}
-                    </div>
-                  ) : (
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                      <button
-                        onClick={() => handleSeriesPrediction(s.id, s.home_team)}
-                        style={draftPick === s.home_team ? pickButtonSelected : pickButtonUnselected}
-                      >
-                        {s.home_team}
-                      </button>
-                      <button
-                        onClick={() => handleSeriesPrediction(s.id, s.away_team)}
-                        style={draftPick === s.away_team ? pickButtonSelected : pickButtonUnselected}
-                      >
-                        {s.away_team}
-                      </button>
-                    </div>
-                  )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
 
-                  {/* Win counts once series has games */}
-                  {(s.home_wins > 0 || s.away_wins > 0) && (
-                    <p style={{ margin: "10px 0 0", textAlign: "center", fontSize: "11px", color: "rgba(255,255,255,0.4)" }}>
-                      {s.home_team.split(" ").pop()} {s.home_wins} – {s.away_wins} {s.away_team.split(" ").pop()}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
+              {hasUnsavedSeriesPicks && (
+                <button
+                  type="button"
+                  onClick={handleSeriesSubmit}
+                  disabled={submittingSeries}
+                  style={{
+                    ...submitButtonStyle,
+                    ...(submittingSeries ? { opacity: 0.6, cursor: "not-allowed" } : {}),
+                  }}
+                >
+                  {submittingSeries ? "SUBMITTING..." : "SUBMIT SERIES PICKS"}
+                </button>
+              )}
 
-          {/* Submit button — only if there are unlocked series with a changed pending pick */}
-          {series.some((s) => !isSeriesLocked(s) && hasSeriesDraftChange(s)) && (
-            <button
-              onClick={handleSeriesSubmit}
-              disabled={submittingSeries}
-              style={{
-                ...submitButtonStyle,
-                ...(submittingSeries ? { opacity: 0.6, cursor: "not-allowed" } : {}),
-              }}
-            >
-              {submittingSeries ? "SUBMITTING..." : "SUBMIT SERIES PICKS"}
-            </button>
-          )}
-
-          {seriesMessage && (
-            <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 700, color: seriesMessage.type === "success" ? "#e8cb68" : "#fca5a5", margin: 0 }}>
-              {seriesMessage.text}
-            </p>
+              {seriesMessage && (
+                <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 700, color: seriesMessage.type === "success" ? "#e8cb68" : "#fca5a5", margin: 0 }}>
+                  {seriesMessage.text}
+                </p>
+              )}
+            </>
           )}
         </div>
       )}
 
-      <DailyPredictions currentUserId={user.id} refreshKey={predictionsRefreshKey} />
-
       {oracleData && (
         <button
+          type="button"
           onClick={onReopenOracle}
           aria-label="Reopen Game Night Recap"
           style={{
