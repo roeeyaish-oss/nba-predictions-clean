@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import SkeletonBlock from "@/components/SkeletonBlock";
 import AvatarModal from "@/components/AvatarModal";
 import NBA_TEAMS from "@/lib/nbaTeams";
+import { CHAMPIONSHIP_LOCK_DATE } from "@/lib/constants";
 
 const inputStyle = {
   width: "100%",
@@ -90,6 +91,7 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
   const [editTeam, setEditTeam] = useState(championshipPick);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
+  const isChampionshipLocked = new Date() >= CHAMPIONSHIP_LOCK_DATE;
 
   useEffect(() => {
     if (imgRef.current?.complete) setAvatarLoaded(true);
@@ -141,9 +143,15 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
     setSaving(true);
     setSaveError(null);
 
+    const updates = { display_name: editName.trim() };
+    // Server-side guard: never write championship_pick after the lock date
+    if (!isChampionshipLocked) {
+      updates.championship_pick = editTeam;
+    }
+
     const { error } = await supabase
       .from("users")
-      .update({ display_name: editName.trim(), championship_pick: editTeam })
+      .update(updates)
       .eq("id", user.id);
 
     if (error) {
@@ -152,7 +160,10 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
       return;
     }
 
-    onProfileUpdate({ displayName: editName.trim(), championshipPick: editTeam });
+    onProfileUpdate({
+      displayName: editName.trim(),
+      championshipPick: isChampionshipLocked ? championshipPick : editTeam,
+    });
     setEditMode(false);
     setSaving(false);
   }
@@ -243,45 +254,68 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
             <label style={{ display: "block", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(201,176,55,0.8)", marginBottom: "4px", fontWeight: 600 }}>
               Championship Pick
             </label>
-            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", margin: "0 0 12px" }}>
-              Which team will win it all?
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px" }}>
-              {NBA_TEAMS.map((team) => {
-                const isSelected = editTeam === team.id;
-                return (
-                  <button
-                    key={team.id}
-                    onClick={() => setEditTeam(team.id)}
-                    title={team.name}
-                    style={{
-                      background: isSelected ? "rgba(201,176,55,0.15)" : "rgba(255,255,255,0.04)",
-                      border: isSelected ? "1.5px solid #C9B037" : "1.5px solid rgba(255,255,255,0.08)",
-                      borderRadius: "10px",
-                      padding: "8px 4px",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      boxShadow: isSelected ? "0 0 12px rgba(201,176,55,0.4)" : "none",
-                      transition: "all 0.15s ease",
-                      aspectRatio: "1",
-                    }}
-                  >
-                    <img
-                      src={team.logo}
-                      alt={team.name}
-                      style={{ width: "100%", maxWidth: "36px", height: "auto", display: "block" }}
-                      loading="lazy"
-                    />
-                  </button>
-                );
-              })}
-            </div>
-            {editTeam && (
-              <p style={{ marginTop: "10px", fontSize: "12px", color: "#C9B037", textAlign: "center" }}>
-                {NBA_TEAMS.find((t) => t.id === editTeam)?.name}
-              </p>
+            {isChampionshipLocked ? (
+              <>
+                <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", margin: "0 0 12px" }}>
+                  🔒 Locked on April 18, 2026. Cannot be changed.
+                </p>
+                {championshipPick && (() => {
+                  const lockedTeam = NBA_TEAMS.find((t) => t.id === championshipPick);
+                  return lockedTeam ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <img
+                        src={lockedTeam.logo}
+                        alt={lockedTeam.name}
+                        style={{ width: "36px", height: "36px", objectFit: "contain", opacity: 0.6 }}
+                      />
+                      <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)" }}>{lockedTeam.name}</span>
+                    </div>
+                  ) : null;
+                })()}
+              </>
+            ) : (
+              <>
+                <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", margin: "0 0 12px" }}>
+                  Locks April 18 · Worth 25 pts
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px" }}>
+                  {NBA_TEAMS.map((team) => {
+                    const isSelected = editTeam === team.id;
+                    return (
+                      <button
+                        key={team.id}
+                        onClick={() => setEditTeam(team.id)}
+                        title={team.name}
+                        style={{
+                          background: isSelected ? "rgba(201,176,55,0.15)" : "rgba(255,255,255,0.04)",
+                          border: isSelected ? "1.5px solid #C9B037" : "1.5px solid rgba(255,255,255,0.08)",
+                          borderRadius: "10px",
+                          padding: "8px 4px",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: isSelected ? "0 0 12px rgba(201,176,55,0.4)" : "none",
+                          transition: "all 0.15s ease",
+                          aspectRatio: "1",
+                        }}
+                      >
+                        <img
+                          src={team.logo}
+                          alt={team.name}
+                          style={{ width: "100%", maxWidth: "36px", height: "auto", display: "block" }}
+                          loading="lazy"
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+                {editTeam && (
+                  <p style={{ marginTop: "10px", fontSize: "12px", color: "#C9B037", textAlign: "center" }}>
+                    {NBA_TEAMS.find((t) => t.id === editTeam)?.name}
+                  </p>
+                )}
+              </>
             )}
           </div>
 
@@ -392,6 +426,32 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
               </div>
             )}
           </div>
+
+          {isChampionshipLocked ? (
+            <div style={{
+              marginBottom: "16px",
+              padding: "10px 14px",
+              borderRadius: "10px",
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              fontSize: "12px",
+              color: "rgba(255,255,255,0.4)",
+            }}>
+              🔒 Championship pick is locked.
+            </div>
+          ) : (
+            <div style={{
+              marginBottom: "16px",
+              padding: "10px 14px",
+              borderRadius: "10px",
+              background: "rgba(201,176,55,0.07)",
+              border: "1px solid rgba(201,176,55,0.45)",
+              fontSize: "12px",
+              color: "#C9B037",
+            }}>
+              ⚠️ Championship pick locks April 18, 2026. Change it before then.
+            </div>
+          )}
 
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" }}>
             <div>
