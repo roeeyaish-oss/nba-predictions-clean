@@ -255,6 +255,41 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    async function handleOracleResume() {
+      if (!user || !profile.onboardingComplete) return;
+      if (document.visibilityState === "hidden") return;
+
+      const today = getIsraelToday();
+      if (localStorage.getItem("oracle_last_shown") === today) return;
+
+      setOracleData(null);
+      setShowOracle(false);
+
+      const fetchCount = parseInt(lsGet("oracle_fetch_count") ?? "0", 10);
+      const ann = fetchCount % 2 === 0 ? "breen" : "barak";
+      lsSet("oracle_fetch_count", String(fetchCount + 1));
+
+      const headers = await getAuthHeaders();
+      const data = await fetch(`/api/oracle?announcer=${ann}`, { headers }).then((r) => r.json());
+      const isReal = !data.skip && data.title && data.recap;
+      const payload = isReal
+        ? { title: data.title, recap: data.recap, announcer: ann, skip: false }
+        : { title: "QUIET NIGHT", recap: "No games last night. Stay ready. ðŸ€", announcer: ann, skip: true };
+
+      lsSet("oracle_data_today", JSON.stringify({ date: today, ...payload }));
+      setOracleData({ title: payload.title, recap: payload.recap, announcer: ann, avatarUrl: announcerToAvatarUrl(ann) });
+      if (isReal) setShowOracle(true);
+    }
+
+    window.addEventListener("pageshow", handleOracleResume);
+    document.addEventListener("visibilitychange", handleOracleResume);
+    return () => {
+      window.removeEventListener("pageshow", handleOracleResume);
+      document.removeEventListener("visibilitychange", handleOracleResume);
+    };
+  }, [user, profile.onboardingComplete]);
+
   function handleProfileUpdate({ displayName, championshipPick }) {
     setProfile((prev) => ({ ...prev, displayName, championshipPick }));
   }
