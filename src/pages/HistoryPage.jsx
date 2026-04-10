@@ -384,6 +384,7 @@ export default function HistoryPage({ currentUserId, supabase }) {
                                 size={16}
                                 textSize={9}
                                 border="1px solid rgba(201,176,55,0.8)"
+                                onClick={seriesProfile ? () => setModalTarget({ avatarUrl: seriesProfile.avatarUrl, name: seriesProfile.name }) : undefined}
                               />
                               <span style={{ color: "#fff", fontSize: "10px", fontWeight: 600, lineHeight: 1 }}>{user.label}</span>
                             </div>

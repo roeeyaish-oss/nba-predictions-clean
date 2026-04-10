@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AvatarModal from "@/components/AvatarModal";
 import NBA_TEAMS from "@/lib/nbaTeams";
 
 const courtBackgroundStyle = {
@@ -73,6 +74,7 @@ const avatarFallbackStyle = {
 
 export default function OnboardingPage({ user, supabase, avatarUrl, onComplete }) {
   const navigate = useNavigate();
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [displayName, setDisplayName] = useState(
     user?.user_metadata?.full_name ?? ""
   );
@@ -116,6 +118,10 @@ export default function OnboardingPage({ user, supabase, avatarUrl, onComplete }
       <div className="absolute inset-0" style={courtBackgroundStyle} />
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.5) 100%)", pointerEvents: "none" }} />
 
+      {showAvatarModal && (
+        <AvatarModal avatarUrl={avatarUrl} name={displayName || user?.user_metadata?.full_name} onClose={() => setShowAvatarModal(false)} />
+      )}
+
       <div style={{ position: "relative", height: "100%", overflowY: "auto", zIndex: 1 }}>
         <div style={{ minHeight: "100%", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "40px 16px 60px" }}>
           <div style={cardStyle}>
@@ -131,10 +137,11 @@ export default function OnboardingPage({ user, supabase, avatarUrl, onComplete }
                   <img
                     src={avatarUrl}
                     alt="Your avatar"
-                    style={avatarStyle}
+                    onClick={() => setShowAvatarModal(true)}
+                    style={{ ...avatarStyle, cursor: "pointer" }}
                   />
                 ) : (
-                  <div style={avatarFallbackStyle}>
+                  <div onClick={() => setShowAvatarModal(true)} style={{ ...avatarFallbackStyle, cursor: "pointer" }}>
                     {initials}
                   </div>
                 )}

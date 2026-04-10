@@ -196,19 +196,23 @@ export default function AppLayout({ onSignOut, backgroundStyle, avatarUrl, displ
         <header style={headerStyle}>
           <div style={{ maxWidth: "1152px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
             <div ref={dropdownRef} style={{ minWidth: 0, display: "flex", alignItems: "center", gap: "12px", position: "relative" }}>
+              <UserAvatar
+                avatarUrl={avatarUrl}
+                name={displayName}
+                size={36}
+                textSize={14}
+                onClick={() => setShowAvatarModal(true)}
+              />
               <button
                 onClick={() => setDropdownOpen((o) => !o)}
                 aria-label="User menu"
-                style={{ background: "transparent", border: "none", padding: 0, cursor: "pointer", flexShrink: 0 }}
+                style={{ background: "transparent", border: "none", padding: 0, cursor: "pointer", minWidth: 0, textAlign: "left" }}
               >
-                <UserAvatar avatarUrl={avatarUrl} name={displayName} size={36} textSize={14} />
-              </button>
-              <div style={{ minWidth: 0 }}>
                 <p style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.15em", color: "rgba(201,176,55,0.6)", margin: 0 }}>Court Access</p>
                 <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.8)", margin: "2px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   <span style={{ fontWeight: 600, color: "#C9B037" }}>{displayName}</span>
                 </p>
-              </div>
+              </button>
               {dropdownOpen && (
                 <div style={dropdownStyle}>
                   <button

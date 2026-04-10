@@ -84,6 +84,10 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   const hasSubmittableGames = submittableGames.length > 0;
 
   useEffect(() => {
+    setSeriesPredictions(savedSeriesPicks);
+  }, [savedSeriesPicks]);
+
+  useEffect(() => {
     if (!message) return;
     const timer = setTimeout(() => setMessage(null), 5000);
     return () => clearTimeout(timer);
@@ -113,13 +117,22 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
     }));
   }
 
+  function isSeriesLocked(seriesItem) {
+    return (seriesItem.first_game_time && new Date() >= new Date(seriesItem.first_game_time)) ||
+      seriesItem.home_wins > 0 ||
+      seriesItem.away_wins > 0;
+  }
+
+  function hasSeriesDraftChange(seriesItem) {
+    return seriesPredictions[seriesItem.id] !== savedSeriesPicks[seriesItem.id];
+  }
+
   async function handleSeriesSubmit() {
     if (!user) return;
 
     const picks = series
       .filter((s) => {
-        const isLocked = (s.first_game_time && new Date() >= new Date(s.first_game_time)) || s.home_wins > 0 || s.away_wins > 0;
-        return !isLocked && seriesPredictions[s.id] && seriesPredictions[s.id] !== savedSeriesPicks[s.id];
+        return !isSeriesLocked(s) && hasSeriesDraftChange(s) && seriesPredictions[s.id];
       })
       .map((s) => ({ seriesId: s.id, pick: seriesPredictions[s.id] }));
 
@@ -132,33 +145,30 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
 
     const { data: { session } } = await supabase.auth.getSession();
 
-    fetch("/api/submitSeries", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session?.access_token}`,
-      },
-      body: JSON.stringify(picks),
-    })
-      .then((res) =>
-        res.text().then((text) => {
-          if (res.ok) {
-            setSeriesMessage({ type: "success", text: "Series picks submitted!" });
-            const submittedMap = {};
-            for (const p of picks) submittedMap[p.seriesId] = p.pick;
-            setSeriesPredictions(submittedMap);
-            refreshSeries();
-          } else {
-            setSeriesMessage({ type: "error", text: text || "Failed to submit series picks." });
-          }
-        })
-      )
-      .catch(() => {
-        setSeriesMessage({ type: "error", text: "Network error. Please try again." });
-      })
-      .finally(() => {
-        setSubmittingSeries(false);
+    try {
+      const res = await fetch("/api/submitSeries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify(picks),
       });
+
+      const text = await res.text();
+
+      if (!res.ok) {
+        setSeriesMessage({ type: "error", text: text || "Failed to submit series picks." });
+        return;
+      }
+
+      await refreshSeries();
+      setSeriesMessage({ type: "success", text: "Series picks submitted!" });
+    } catch {
+      setSeriesMessage({ type: "error", text: "Network error. Please try again." });
+    } finally {
+      setSubmittingSeries(false);
+    }
   }
 
   async function handleSubmit() {
@@ -362,10 +372,9 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
           </p>
 
           {series.map((s) => {
-            const isLocked = (s.first_game_time && new Date() >= new Date(s.first_game_time)) || s.home_wins > 0 || s.away_wins > 0;
+            const isLocked = isSeriesLocked(s);
             const savedPick = savedSeriesPicks[s.id];
-            const pendingPick = seriesPredictions[s.id];
-            const activePick = pendingPick ?? savedPick;
+            const draftPick = seriesPredictions[s.id];
             const pts = SERIES_POINTS[s.round] ?? 5;
             const roundLabel = ROUND_LABELS[s.round] ?? `ROUND ${s.round}`;
             const homeLogo = teamLogoMap.get(s.home_team);
@@ -413,13 +422,13 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                       <button
                         onClick={() => handleSeriesPrediction(s.id, s.home_team)}
-                        style={activePick === s.home_team ? pickButtonSelected : pickButtonUnselected}
+                        style={draftPick === s.home_team ? pickButtonSelected : pickButtonUnselected}
                       >
                         {s.home_team}
                       </button>
                       <button
                         onClick={() => handleSeriesPrediction(s.id, s.away_team)}
-                        style={activePick === s.away_team ? pickButtonSelected : pickButtonUnselected}
+                        style={draftPick === s.away_team ? pickButtonSelected : pickButtonUnselected}
                       >
                         {s.away_team}
                       </button>
@@ -438,10 +447,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
           })}
 
           {/* Submit button — only if there are unlocked series with a changed pending pick */}
-          {series.some((s) => {
-            const isLocked = (s.first_game_time && new Date() >= new Date(s.first_game_time)) || s.home_wins > 0 || s.away_wins > 0;
-            return !isLocked && seriesPredictions[s.id] && seriesPredictions[s.id] !== savedSeriesPicks[s.id];
-          }) && (
+          {series.some((s) => !isSeriesLocked(s) && hasSeriesDraftChange(s)) && (
             <button
               onClick={handleSeriesSubmit}
               disabled={submittingSeries}
