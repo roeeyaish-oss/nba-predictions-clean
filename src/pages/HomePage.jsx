@@ -22,8 +22,15 @@ const titleSectionStyle = {
 const tabsWrapStyle = {
   display: "grid",
   gridTemplateColumns: "1fr 1fr",
-  gap: "12px",
+  gap: "6px",
   width: "100%",
+  padding: "6px",
+  borderRadius: "999px",
+  background: "rgba(12,10,18,0.78)",
+  border: "1px solid rgba(255,255,255,0.08)",
+  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.32)",
+  backdropFilter: "blur(18px)",
+  WebkitBackdropFilter: "blur(18px)",
 };
 
 const pickButtonBase = {
@@ -67,6 +74,43 @@ const submitButtonStyle = {
   cursor: "pointer",
 };
 
+const seriesCardStyle = {
+  background: "rgba(10,8,22,0.72)",
+  border: "1.5px solid rgba(99,102,241,0.55)",
+  boxShadow: "0 10px 32px rgba(0,0,0,0.42), inset 0 1px 0 rgba(129,140,248,0.1)",
+};
+
+const seriesPickButtonUnselected = {
+  ...pickButtonBase,
+  background: "rgba(99,102,241,0.08)",
+  border: "1.5px solid rgba(99,102,241,0.45)",
+  color: "#fff",
+  fontWeight: 500,
+};
+
+const seriesPickButtonSelected = {
+  ...pickButtonBase,
+  background: "linear-gradient(135deg, #818cf8 0%, #6366f1 55%, #4338ca 100%)",
+  border: "1.5px solid transparent",
+  color: "#f8fafc",
+  fontWeight: 700,
+  boxShadow: "0 6px 20px rgba(99,102,241,0.38)",
+};
+
+const seriesSubmitButtonStyle = {
+  background: "linear-gradient(135deg, #818cf8 0%, #6366f1 55%, #4338ca 100%)",
+  color: "#f8fafc",
+  fontWeight: 700,
+  fontSize: "15px",
+  letterSpacing: "0.05em",
+  borderRadius: "12px",
+  padding: "14px",
+  width: "100%",
+  border: "none",
+  boxShadow: "0 6px 20px rgba(99,102,241,0.35)",
+  cursor: "pointer",
+};
+
 const SERIES_POINTS = { 1: 5, 2: 9, 3: 14, 4: 20 };
 const ROUND_LABELS = { 1: "ROUND 1", 2: "ROUND 2", 3: "CONF FINALS", 4: "NBA FINALS" };
 
@@ -83,17 +127,20 @@ function TabButton({ active, label, onClick, showDirtyDot, showAlert }) {
       onClick={onClick}
       style={{
         position: "relative",
-        borderRadius: "12px",
-        border: active ? "1.5px solid #C9B037" : "1.5px solid rgba(201,176,55,0.5)",
-        background: active ? "#C9B037" : "transparent",
-        color: active ? "#000" : "#C9B037",
+        borderRadius: "999px",
+        border: "none",
+        background: active ? "linear-gradient(135deg, #f0d77a 0%, #C9B037 48%, #8B6914 100%)" : "transparent",
+        color: active ? "#050200" : "rgba(201,176,55,0.72)",
         fontWeight: active ? 800 : 600,
         fontSize: "13px",
         letterSpacing: "0.08em",
-        padding: "14px 12px",
+        padding: "14px 14px",
         cursor: "pointer",
         width: "100%",
-        opacity: active ? 1 : 0.8,
+        opacity: active ? 1 : 0.88,
+        boxShadow: active ? "0 8px 18px rgba(201,176,55,0.28), inset 0 1px 0 rgba(255,245,200,0.35)" : "none",
+        transform: active ? "translateY(-1px)" : "translateY(0)",
+        transition: "all 180ms ease",
       }}
     >
       {label}
@@ -147,6 +194,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   const [ready, setReady] = useState(hadCache);
   const [animate, setAnimate] = useState(false);
   const [activeTab, setActiveTab] = useState("game");
+  const [tabAnimationKey, setTabAnimationKey] = useState(0);
   const [predictions, setPredictions] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
@@ -159,6 +207,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   const hasSubmittableGames = submittableGames.length > 0;
   const hasUnsavedGamePicks = hasAnyTruthyValue(predictions);
   const hasSavedSeriesPicks = hasAnyTruthyValue(savedSeriesPicks);
+  const shouldShowSeriesAlert = series.length > 0 && !hasSavedSeriesPicks;
 
   useEffect(() => {
     setSeriesPredictions(savedSeriesPicks);
@@ -182,6 +231,10 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
       setReady(true);
     }
   }, [ready, gamesLoading, hadCache]);
+
+  useEffect(() => {
+    setTabAnimationKey((current) => current + 1);
+  }, [activeTab]);
 
   function handlePrediction(gameId, team) {
     setPredictions((prev) => ({ ...prev, [gameId]: prev[gameId] === team ? undefined : team }));
@@ -368,10 +421,20 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
           label="SERIES PICKS"
           onClick={() => setActiveTab("series")}
           showDirtyDot={hasUnsavedSeriesPicks}
-          showAlert={!hasSavedSeriesPicks}
+          showAlert={shouldShowSeriesAlert}
         />
       </div>
 
+      <div
+        key={`${activeTab}-${tabAnimationKey}`}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "24px",
+          animation: "fadeIn 220ms ease both",
+          transform: "translateY(0)",
+        }}
+      >
       {activeTab === "game" ? (
         <>
           {games.length === 0 ? (
@@ -496,11 +559,28 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
                 const awayLogo = teamLogoMap.get(seriesItem.away_team);
 
                 return (
-                  <Card key={seriesItem.id}>
+                  <Card key={seriesItem.id} style={seriesCardStyle}>
                     <CardContent>
-                      <p style={{ margin: "0 0 14px", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.18em", color: "rgba(201,176,55,0.7)", fontWeight: 600 }}>
-                        {roundLabel} · {pts} pts if correct
-                      </p>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "14px" }}>
+                        <p style={{ margin: 0, fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.18em", color: "rgba(165,180,252,0.8)", fontWeight: 700 }}>
+                          {roundLabel} · {pts} pts if correct
+                        </p>
+                        <span
+                          style={{
+                            flexShrink: 0,
+                            padding: "5px 10px",
+                            borderRadius: "999px",
+                            background: "rgba(99,102,241,0.16)",
+                            border: "1px solid rgba(129,140,248,0.35)",
+                            color: "#c7d2fe",
+                            fontSize: "10px",
+                            fontWeight: 800,
+                            letterSpacing: "0.14em",
+                          }}
+                        >
+                          SERIES
+                        </span>
+                      </div>
 
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", marginBottom: "16px" }}>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
@@ -509,7 +589,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
                           )}
                           <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{seriesItem.home_team}</span>
                         </div>
-                        <span style={{ fontSize: "18px", fontWeight: 700, color: "#C9B037", letterSpacing: "0.15em" }}>VS</span>
+                        <span style={{ fontSize: "18px", fontWeight: 700, color: "#818cf8", letterSpacing: "0.15em" }}>VS</span>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
                           {awayLogo && (
                             <img src={awayLogo} width="56" height="56" alt={seriesItem.away_team} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
@@ -521,11 +601,11 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
                       {isLocked ? (
                         <div style={{ textAlign: "center" }}>
                           {savedPick ? (
-                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#C9B037" }}>
+                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#a5b4fc" }}>
                               Your pick: {savedPick}
                             </p>
                           ) : (
-                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#C9B037" }}>
+                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#a5b4fc" }}>
                               Series pick locked.
                             </p>
                           )}
@@ -535,14 +615,14 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
                           <button
                             type="button"
                             onClick={() => handleSeriesPrediction(seriesItem.id, seriesItem.home_team)}
-                            style={draftPick === seriesItem.home_team ? pickButtonSelected : pickButtonUnselected}
+                            style={draftPick === seriesItem.home_team ? seriesPickButtonSelected : seriesPickButtonUnselected}
                           >
                             {seriesItem.home_team}
                           </button>
                           <button
                             type="button"
                             onClick={() => handleSeriesPrediction(seriesItem.id, seriesItem.away_team)}
-                            style={draftPick === seriesItem.away_team ? pickButtonSelected : pickButtonUnselected}
+                            style={draftPick === seriesItem.away_team ? seriesPickButtonSelected : seriesPickButtonUnselected}
                           >
                             {seriesItem.away_team}
                           </button>
@@ -550,7 +630,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
                       )}
 
                       {(seriesItem.home_wins > 0 || seriesItem.away_wins > 0) && (
-                        <p style={{ margin: "10px 0 0", textAlign: "center", fontSize: "11px", color: "rgba(255,255,255,0.4)" }}>
+                        <p style={{ margin: "10px 0 0", textAlign: "center", fontSize: "11px", color: "rgba(224,231,255,0.45)" }}>
                           {seriesItem.home_team.split(" ").pop()} {seriesItem.home_wins} - {seriesItem.away_wins} {seriesItem.away_team.split(" ").pop()}
                         </p>
                       )}
@@ -565,7 +645,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
                   onClick={handleSeriesSubmit}
                   disabled={submittingSeries}
                   style={{
-                    ...submitButtonStyle,
+                    ...seriesSubmitButtonStyle,
                     ...(submittingSeries ? { opacity: 0.6, cursor: "not-allowed" } : {}),
                   }}
                 >
@@ -582,6 +662,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
           )}
         </div>
       )}
+      </div>
 
       {oracleData && (
         <button
