@@ -5,6 +5,8 @@ import DailyPredictions from "@/components/DailyPredictions";
 import SkeletonBlock from "@/components/SkeletonBlock";
 import { getIsraelToday, getIsraelTomorrow, isGameStarted } from "@/lib/time";
 import useTodayGames from "@/hooks/useTodayGames";
+import usePlayoffSeries from "@/hooks/usePlayoffSeries";
+import NBA_TEAMS from "@/lib/nbaTeams";
 import { ANNOUNCER_URL } from "@/lib/constants";
 
 const titleSectionStyle = {
@@ -58,9 +60,16 @@ const submitButtonStyle = {
   cursor: "pointer",
 };
 
+const SERIES_POINTS = { 1: 5, 2: 9, 3: 14, 4: 20 };
+const ROUND_LABELS  = { 1: "ROUND 1", 2: "ROUND 2", 3: "CONF FINALS", 4: "NBA FINALS" };
+
+// Map full team name → ESPN logo URL, built once from NBA_TEAMS
+const teamLogoMap = new Map(NBA_TEAMS.map((t) => [t.name, t.logo]));
+
 
 export default function HomePage({ user, supabase, oracleData, onReopenOracle }) {
   const { games, loading: gamesLoading } = useTodayGames(supabase);
+  const { series, userPicks: savedSeriesPicks, refresh: refreshSeries } = usePlayoffSeries(supabase, user?.id);
   const hadCache = useRef(games.length > 0).current;
   const [ready, setReady] = useState(hadCache);
   const [animate, setAnimate] = useState(false);
@@ -68,6 +77,9 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
   const [predictionsRefreshKey, setPredictionsRefreshKey] = useState(0);
+  const [seriesPredictions, setSeriesPredictions] = useState({});
+  const [submittingSeries, setSubmittingSeries] = useState(false);
+  const [seriesMessage, setSeriesMessage] = useState(null);
   const submittableGames = games.filter((game) => !isGameStarted(game.gameTimeIL, game.date));
   const hasSubmittableGames = submittableGames.length > 0;
 
@@ -78,6 +90,12 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   }, [message]);
 
   useEffect(() => {
+    if (!seriesMessage) return;
+    const timer = setTimeout(() => setSeriesMessage(null), 5000);
+    return () => clearTimeout(timer);
+  }, [seriesMessage]);
+
+  useEffect(() => {
     if (!ready && !gamesLoading) {
       if (!hadCache) setAnimate(true);
       setReady(true);
@@ -86,6 +104,59 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
 
   function handlePrediction(gameId, team) {
     setPredictions((prev) => ({ ...prev, [gameId]: prev[gameId] === team ? undefined : team }));
+  }
+
+  function handleSeriesPrediction(seriesId, team) {
+    setSeriesPredictions((prev) => ({
+      ...prev,
+      [seriesId]: prev[seriesId] === team ? undefined : team,
+    }));
+  }
+
+  async function handleSeriesSubmit() {
+    if (!user) return;
+
+    const picks = series
+      .filter((s) => {
+        const isLocked = s.first_game_time && new Date() >= new Date(s.first_game_time);
+        return !isLocked && seriesPredictions[s.id];
+      })
+      .map((s) => ({ seriesId: s.id, pick: seriesPredictions[s.id] }));
+
+    if (picks.length === 0) {
+      setSeriesMessage({ type: "error", text: "Please select at least one series pick before submitting." });
+      return;
+    }
+
+    setSubmittingSeries(true);
+
+    const { data: { session } } = await supabase.auth.getSession();
+
+    fetch("/api/submitSeries", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session?.access_token}`,
+      },
+      body: JSON.stringify(picks),
+    })
+      .then((res) =>
+        res.text().then((text) => {
+          if (res.ok) {
+            setSeriesMessage({ type: "success", text: "Series picks submitted!" });
+            setSeriesPredictions({});
+            refreshSeries();
+          } else {
+            setSeriesMessage({ type: "error", text: text || "Failed to submit series picks." });
+          }
+        })
+      )
+      .catch(() => {
+        setSeriesMessage({ type: "error", text: "Network error. Please try again." });
+      })
+      .finally(() => {
+        setSubmittingSeries(false);
+      });
   }
 
   async function handleSubmit() {
@@ -280,6 +351,113 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
             </p>
           )}
         </>
+      )}
+
+      {series.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <p style={{ margin: 0, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.18em", color: "rgba(201,176,55,0.7)", fontWeight: 600 }}>
+            Playoff Series Picks
+          </p>
+
+          {series.map((s) => {
+            const isLocked = s.first_game_time && new Date() >= new Date(s.first_game_time);
+            const savedPick = savedSeriesPicks[s.id];
+            const pendingPick = seriesPredictions[s.id];
+            const activePick = pendingPick ?? savedPick;
+            const pts = SERIES_POINTS[s.round] ?? 5;
+            const roundLabel = ROUND_LABELS[s.round] ?? `ROUND ${s.round}`;
+            const homeLogo = teamLogoMap.get(s.home_team);
+            const awayLogo = teamLogoMap.get(s.away_team);
+
+            return (
+              <Card key={s.id}>
+                <CardContent>
+                  {/* Round + points header */}
+                  <p style={{ margin: "0 0 14px", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.18em", color: "rgba(201,176,55,0.7)", fontWeight: 600 }}>
+                    {roundLabel} · {pts} pts if correct
+                  </p>
+
+                  {/* Teams */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", marginBottom: "16px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
+                      {homeLogo && (
+                        <img src={homeLogo} width="56" height="56" alt={s.home_team} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
+                      )}
+                      <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{s.home_team}</span>
+                    </div>
+                    <span style={{ fontSize: "18px", fontWeight: 700, color: "#C9B037", letterSpacing: "0.15em" }}>VS</span>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
+                      {awayLogo && (
+                        <img src={awayLogo} width="56" height="56" alt={s.away_team} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
+                      )}
+                      <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{s.away_team}</span>
+                    </div>
+                  </div>
+
+                  {/* Pick area */}
+                  {isLocked ? (
+                    <div style={{ textAlign: "center" }}>
+                      {savedPick ? (
+                        <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#C9B037" }}>
+                          Your pick: {savedPick}
+                        </p>
+                      ) : (
+                        <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#C9B037" }}>
+                          Series pick locked.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                      <button
+                        onClick={() => handleSeriesPrediction(s.id, s.home_team)}
+                        style={activePick === s.home_team ? pickButtonSelected : pickButtonUnselected}
+                      >
+                        {s.home_team}
+                      </button>
+                      <button
+                        onClick={() => handleSeriesPrediction(s.id, s.away_team)}
+                        style={activePick === s.away_team ? pickButtonSelected : pickButtonUnselected}
+                      >
+                        {s.away_team}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Win counts once series has games */}
+                  {(s.home_wins > 0 || s.away_wins > 0) && (
+                    <p style={{ margin: "10px 0 0", textAlign: "center", fontSize: "11px", color: "rgba(255,255,255,0.4)" }}>
+                      {s.home_team.split(" ").pop()} {s.home_wins} – {s.away_wins} {s.away_team.split(" ").pop()}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+
+          {/* Submit button — only if there are unlocked series with a pending pick */}
+          {series.some((s) => {
+            const isLocked = s.first_game_time && new Date() >= new Date(s.first_game_time);
+            return !isLocked && seriesPredictions[s.id];
+          }) && (
+            <button
+              onClick={handleSeriesSubmit}
+              disabled={submittingSeries}
+              style={{
+                ...submitButtonStyle,
+                ...(submittingSeries ? { opacity: 0.6, cursor: "not-allowed" } : {}),
+              }}
+            >
+              {submittingSeries ? "SUBMITTING..." : "SUBMIT SERIES PICKS"}
+            </button>
+          )}
+
+          {seriesMessage && (
+            <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 700, color: seriesMessage.type === "success" ? "#e8cb68" : "#fca5a5", margin: 0 }}>
+              {seriesMessage.text}
+            </p>
+          )}
+        </div>
       )}
 
       <DailyPredictions currentUserId={user.id} refreshKey={predictionsRefreshKey} />
