@@ -194,13 +194,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   const hasUnsavedGamePicks = hasAnyTruthyValue(predictions);
   const hasSavedSeriesPicks = hasAnyTruthyValue(savedSeriesPicks);
   const shouldShowSeriesAlert = series.length > 0 && !hasSavedSeriesPicks;
-
-  useEffect(() => {
-    console.log("[HomePage] savedSeriesPicks on mount/update:", savedSeriesPicks);
-    const nextSeriesPredictions = { ...savedSeriesPicks };
-    console.log("[HomePage] seriesPredictions initialized from server:", nextSeriesPredictions);
-    setSeriesPredictions(nextSeriesPredictions);
-  }, [savedSeriesPicks]);
+  const hasSubmittableSeriesPicks = hasAnyTruthyValue(seriesPredictions);
 
   useEffect(() => {
     if (!message) return;
@@ -242,17 +236,11 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
       seriesItem.away_wins > 0;
   }
 
-  function hasSeriesDraftChange(seriesItem) {
-    return seriesPredictions[seriesItem.id] !== savedSeriesPicks[seriesItem.id];
-  }
-
-  const hasUnsavedSeriesPicks = series.some((seriesItem) => !isSeriesLocked(seriesItem) && hasSeriesDraftChange(seriesItem));
-
   async function handleSeriesSubmit() {
     if (!user) return;
 
     const picks = series
-      .filter((seriesItem) => !isSeriesLocked(seriesItem) && hasSeriesDraftChange(seriesItem) && seriesPredictions[seriesItem.id])
+      .filter((seriesItem) => !isSeriesLocked(seriesItem) && seriesPredictions[seriesItem.id])
       .map((seriesItem) => ({ seriesId: seriesItem.id, pick: seriesPredictions[seriesItem.id] }));
 
     if (picks.length === 0) {
@@ -281,11 +269,8 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
         return;
       }
 
-      const freshSeriesData = await refreshSeries();
-      const freshServerPicks = freshSeriesData?.userPicks ?? {};
-      console.log("[HomePage] savedSeriesPicks after submit refresh:", freshServerPicks);
-      console.log("[HomePage] seriesPredictions reinitialized after submit:", freshServerPicks);
-      setSeriesPredictions({ ...freshServerPicks });
+      setSeriesPredictions({});
+      await refreshSeries();
       setSeriesMessage({ type: "success", text: "Series picks submitted!" });
     } catch {
       setSeriesMessage({ type: "error", text: "Network error. Please try again." });
@@ -413,7 +398,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
           active={activeTab === "series"}
           label="SERIES PICKS"
           onClick={() => setActiveTab("series")}
-          showDirtyDot={hasUnsavedSeriesPicks}
+          showDirtyDot={hasSubmittableSeriesPicks}
           showAlert={shouldShowSeriesAlert}
         />
       </div>
@@ -544,7 +529,6 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
             <>
               {series.map((seriesItem) => {
                 const isLocked = isSeriesLocked(seriesItem);
-                const savedPick = savedSeriesPicks[seriesItem.id];
                 const draftPick = seriesPredictions[seriesItem.id];
                 const pts = SERIES_POINTS[seriesItem.round] ?? 5;
                 const roundLabel = ROUND_LABELS[seriesItem.round] ?? `ROUND ${seriesItem.round}`;
@@ -593,15 +577,9 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
 
                       {isLocked ? (
                         <div style={{ textAlign: "center" }}>
-                          {savedPick ? (
-                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#a5b4fc" }}>
-                              Your pick: {savedPick}
-                            </p>
-                          ) : (
-                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#a5b4fc" }}>
-                              Series pick locked.
-                            </p>
-                          )}
+                          <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#a5b4fc" }}>
+                            🔒 Series pick locked
+                          </p>
                         </div>
                       ) : (
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
@@ -632,7 +610,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
                 );
               })}
 
-              {hasUnsavedSeriesPicks && (
+              {hasSubmittableSeriesPicks && (
                 <button
                   type="button"
                   onClick={handleSeriesSubmit}

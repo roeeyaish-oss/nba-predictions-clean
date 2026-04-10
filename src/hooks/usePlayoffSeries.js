@@ -58,7 +58,6 @@ export default function usePlayoffSeries(supabase, userId) {
         picksMap[pickRow.series_id] = pickRow.pick;
       }
 
-      console.log("[usePlayoffSeries] fetched savedSeriesPicks:", picksMap);
       setUserPicks(picksMap);
 
       return { series: nextSeries, userPicks: picksMap };
