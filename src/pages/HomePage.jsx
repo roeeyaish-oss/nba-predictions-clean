@@ -119,7 +119,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
     const picks = series
       .filter((s) => {
         const isLocked = (s.first_game_time && new Date() >= new Date(s.first_game_time)) || s.home_wins > 0 || s.away_wins > 0;
-        return !isLocked && seriesPredictions[s.id];
+        return !isLocked && seriesPredictions[s.id] && seriesPredictions[s.id] !== savedSeriesPicks[s.id];
       })
       .map((s) => ({ seriesId: s.id, pick: seriesPredictions[s.id] }));
 
@@ -144,7 +144,9 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
         res.text().then((text) => {
           if (res.ok) {
             setSeriesMessage({ type: "success", text: "Series picks submitted!" });
-            setSeriesPredictions({});
+            const submittedMap = {};
+            for (const p of picks) submittedMap[p.seriesId] = p.pick;
+            setSeriesPredictions(submittedMap);
             refreshSeries();
           } else {
             setSeriesMessage({ type: "error", text: text || "Failed to submit series picks." });
@@ -435,10 +437,10 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
             );
           })}
 
-          {/* Submit button — only if there are unlocked series with a pending pick */}
+          {/* Submit button — only if there are unlocked series with a changed pending pick */}
           {series.some((s) => {
             const isLocked = (s.first_game_time && new Date() >= new Date(s.first_game_time)) || s.home_wins > 0 || s.away_wins > 0;
-            return !isLocked && seriesPredictions[s.id];
+            return !isLocked && seriesPredictions[s.id] && seriesPredictions[s.id] !== savedSeriesPicks[s.id];
           }) && (
             <button
               onClick={handleSeriesSubmit}
