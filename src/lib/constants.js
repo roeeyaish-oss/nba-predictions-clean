@@ -7,3 +7,6 @@ export const ANNOUNCER_HE_URL =
 export const ESPN_LOGO_BASE = "https://a.espncdn.com/i/teamlogos/nba/500";
 
 export const CLAUDE_MODEL = "claude-sonnet-4-6";
+
+// Championship pick locks at midnight ET on April 18, 2026 (04:00 UTC)
+export const CHAMPIONSHIP_LOCK_DATE = new Date("2026-04-18T04:00:00Z");

@@ -1,7 +1,7 @@
 # === nba_playoffs_to_supabase.py ===
 
 import pandas as pd
-from nba_api.stats.endpoints import scoreboardv3, boxscoretraditionalv3
+from nba_api.stats.endpoints import scoreboardv3, boxscoretraditionalv3, commonplayoffseries
 from datetime import datetime, timedelta
 from pytz import timezone, utc
 from supabase import create_client, Client
@@ -109,6 +109,12 @@ team_id_to_image = {
     1610612762: "https://cdn.nba.com/logos/nba/1610612762/global/L/logo.svg",
     1610612764: "https://cdn.nba.com/logos/nba/1610612764/global/L/logo.svg",
 }
+
+
+# === Scoring constants ===
+GAME_POINTS = {1: 1, 2: 2, 3: 3, 4: 4}
+SERIES_POINTS = {1: 5, 2: 9, 3: 14, 4: 20}
+CHAMPIONSHIP_POINTS = 25
 
 
 # === Step 1: Fetch games for yesterday, today, and tomorrow (ET) ===
@@ -254,31 +260,255 @@ except Exception as e:
     print(f"Error updating results: {e}")
 
 
-# === Step 6: Recalculate scores ===
+# === Step 6: Fetch and upsert playoff series, tag games with round/series_id ===
+
+def extract_playoff_info(game_id: str):
+    """
+    Returns (round_num, series_num, game_num) if game_id is a playoff game, else None.
+    NBA playoff game ID format: 0042YYRRSGG
+      [0:3]  = '004' (playoff prefix)
+      [3:5]  = season year (e.g. '25' for 2024-25)
+      [5:7]  = round (e.g. '01' = Round 1)
+      [7]    = series number within round
+      [8:]   = game number within series
+    """
+    s = str(game_id).strip()
+    if not s.startswith("004"):
+        return None
+    try:
+        round_num = int(s[5:7])
+        series_num = int(s[7])
+        game_num = int(s[8:])
+        if round_num < 1 or round_num > 4:
+            return None
+        return round_num, series_num, game_num
+    except (ValueError, IndexError):
+        return None
+
+
+def determine_series_winner(home_team: str, away_team: str, home_wins: int, away_wins: int):
+    """Returns the winner's team name if either team has 4 wins, else None."""
+    if home_wins >= 4:
+        return home_team
+    if away_wins >= 4:
+        return away_team
+    return None
+
+
+def fetch_playoff_series(season="2024-25"):
+    """
+    Fetches all playoff series for the given season using CommonPlayoffSeries.
+    Returns a list of series dicts keyed by NBA series_id.
+    Each dict: {id, round, home_team, away_team, home_wins, away_wins, game_ids}
+    """
+    try:
+        endpoint = call_with_retry(
+            commonplayoffseries.CommonPlayoffSeries,
+            season=season,
+            timeout=NBA_TIMEOUT,
+        )
+        df = endpoint.get_data_frames()[0]
+        if df.empty:
+            print("No playoff series data returned.")
+            return []
+    except Exception as e:
+        print(f"Warning: Could not fetch playoff series: {e}")
+        return []
+
+    series_map = {}
+    for _, row in df.iterrows():
+        sid = str(row["SERIES_ID"])
+        game_id = str(row["GAME_ID"])
+
+        if sid not in series_map:
+            info = extract_playoff_info(game_id)
+            round_num = info[0] if info else 1
+            home_team = team_id_to_name.get(int(row["HOME_TEAM_ID"]), "")
+            away_team = team_id_to_name.get(int(row["VISITOR_TEAM_ID"]), "")
+            series_map[sid] = {
+                "id": sid,
+                "round": round_num,
+                "home_team": home_team,
+                "away_team": away_team,
+                "home_wins": 0,
+                "away_wins": 0,
+                "game_ids": [],
+            }
+
+        # Always update win counts from the latest row for this series
+        series_map[sid]["home_wins"] = int(row["HOME_TEAM_WINS"])
+        series_map[sid]["away_wins"] = int(row["VISITOR_TEAM_WINS"])
+        series_map[sid]["game_ids"].append(game_id)
+
+    print(f"Fetched {len(series_map)} playoff series.")
+    return list(series_map.values())
+
+
+def upsert_series(series_list, game_time_map):
+    """
+    Upserts each series into the series table and tags corresponding games
+    in the games table with playoff_round and series_id.
+
+    game_time_map: dict of game_id (str) -> UTC ISO time string
+    """
+    if not series_list:
+        print("No series to upsert.")
+        return
+
+    series_payload = []
+    for s in series_list:
+        winner = determine_series_winner(
+            s["home_team"], s["away_team"], s["home_wins"], s["away_wins"]
+        )
+
+        # Find the earliest game time for this series to use as the lock time
+        first_game_time = None
+        for gid in s["game_ids"]:
+            t = game_time_map.get(gid)
+            if t and (first_game_time is None or t < first_game_time):
+                first_game_time = t
+
+        series_payload.append({
+            "id": s["id"],
+            "round": s["round"],
+            "home_team": s["home_team"],
+            "away_team": s["away_team"],
+            "home_wins": s["home_wins"],
+            "away_wins": s["away_wins"],
+            "winner": winner,
+            "status": "completed" if winner else "active",
+            "first_game_time": first_game_time,
+            "updated_at": datetime.now(utc).isoformat(),
+        })
+
+    supabase.table("series").upsert(series_payload).execute()
+    print(f"Upserted {len(series_payload)} series.")
+
+    # Tag games with their playoff_round and series_id
+    tagged = 0
+    for s in series_list:
+        for gid in s["game_ids"]:
+            try:
+                supabase.table("games").update({
+                    "playoff_round": s["round"],
+                    "series_id": s["id"],
+                }).eq("id", gid).execute()
+                tagged += 1
+            except Exception as e:
+                print(f"Warning: Could not tag game {gid}: {e}")
+    print(f"Tagged {tagged} games with playoff round/series.")
+
+
 try:
-    print("Calculating scores...")
-    predictions_resp = supabase.table('predictions').select('user_id, game_id, pick').execute()
-    results_resp = supabase.table('results').select('game_id, winner').execute()
+    print("Fetching playoff series...")
+    # Build a game_id -> UTC time map from the scoreboards we already fetched
+    game_time_map = {}
+    for _, row in all_games.iterrows():
+        gid = str(row["gameId"])
+        t = row.get("gameTimeUTC", "")
+        if t:
+            game_time_map[gid] = t
 
-    results_map = {r['game_id']: r['winner'] for r in (results_resp.data or [])}
+    playoff_series = fetch_playoff_series(season="2024-25")
+    upsert_series(playoff_series, game_time_map)
+except Exception as e:
+    print(f"Error updating playoff series: {e}")
 
-    score_counts = {}
-    for pred in (predictions_resp.data or []):
-        uid = pred['user_id']
-        game_id = pred['game_id']
-        if game_id in results_map:
-            score_counts.setdefault(uid, 0)
-            if pred['pick'] == results_map[game_id]:
-                score_counts[uid] += 1
 
-    if score_counts:
-        scores_payload = [{'user_id': uid, 'score': count} for uid, count in score_counts.items()]
-        supabase.table('scores').upsert(scores_payload).execute()
+# === Step 7: Recalculate all scores ===
+def recalculate_all_scores():
+    """
+    Full recalculation of all scores using Scoring System B:
+      - Game picks:        Round 1=1pt, Round 2=2pt, Conf Finals=3pt, NBA Finals=4pt
+      - Series winner:     Round 1=5pt, Round 2=9pt, Conf Finals=14pt, NBA Finals=20pt
+      - Championship pick: 25pt (locked April 18)
+    Writes game_score, series_score, championship_score, and total score to scores table.
+    """
+    # --- Fetch all data ---
+    preds_resp = supabase.table("predictions").select("user_id, game_id, pick").execute()
+    results_resp = supabase.table("results").select("game_id, winner").execute()
+    games_resp = supabase.table("games").select("id, playoff_round").execute()
+    series_preds_resp = supabase.table("series_predictions").select("user_id, series_id, pick").execute()
+    series_resp = supabase.table("series").select("id, round, winner").execute()
+    users_resp = supabase.table("users").select("id, championship_pick").execute()
+
+    preds = preds_resp.data or []
+    results = results_resp.data or []
+    games_data = games_resp.data or []
+    series_preds = series_preds_resp.data or []
+    series_data = series_resp.data or []
+    users_data = users_resp.data or []
+
+    results_map = {r["game_id"]: r["winner"] for r in results}
+    # playoff_round is None for regular season games; default to 0 (will use fallback of 1pt)
+    game_round_map = {g["id"]: g["playoff_round"] for g in games_data}
+    series_map = {s["id"]: s for s in series_data}
+
+    game_scores = {}
+    series_scores = {}
+    champ_scores = {}
+
+    # 1. Game scores with round multiplier
+    for pred in preds:
+        uid = pred["user_id"]
+        gid = pred["game_id"]
+        if gid in results_map and pred["pick"] == results_map[gid]:
+            round_num = game_round_map.get(gid)
+            pts = GAME_POINTS.get(round_num, 1)  # default 1pt for regular season / untagged
+            game_scores[uid] = game_scores.get(uid, 0) + pts
+
+    # 2. Series winner scores
+    for sp in series_preds:
+        uid = sp["user_id"]
+        sid = sp["series_id"]
+        series = series_map.get(sid)
+        if series and series["winner"] and sp["pick"] == series["winner"]:
+            pts = SERIES_POINTS.get(series["round"], 0)
+            series_scores[uid] = series_scores.get(uid, 0) + pts
+
+    # 3. Championship score
+    # Actual champion = winner of the round-4 (NBA Finals) series
+    actual_champion = next(
+        (s["winner"] for s in series_data if s["round"] == 4 and s["winner"]),
+        None
+    )
+    if actual_champion:
+        for user in users_data:
+            if user.get("championship_pick") == actual_champion:
+                champ_scores[user["id"]] = CHAMPIONSHIP_POINTS
+
+    # 4. Build payload for all known users
+    all_user_ids = (
+        {p["user_id"] for p in preds}
+        | {sp["user_id"] for sp in series_preds}
+        | {u["id"] for u in users_data}
+    )
+
+    scores_payload = []
+    for uid in all_user_ids:
+        gs = game_scores.get(uid, 0)
+        ss = series_scores.get(uid, 0)
+        cs = champ_scores.get(uid, 0)
+        scores_payload.append({
+            "user_id": uid,
+            "score": gs + ss + cs,
+            "game_score": gs,
+            "series_score": ss,
+            "championship_score": cs,
+        })
+
+    if scores_payload:
+        supabase.table("scores").upsert(scores_payload, on_conflict="user_id").execute()
         print(f"Upserted scores for {len(scores_payload)} users.")
     else:
         print("No scores to calculate.")
+
+
+try:
+    print("Calculating scores...")
+    recalculate_all_scores()
 except Exception as e:
     print(f"Error calculating scores: {e}")
 
 
-print("Done. Games, results, and scores are up to date.")
+print("Done. Games, results, series, and scores are up to date.")
