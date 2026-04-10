@@ -44,7 +44,6 @@ const loadingSpinnerStyle = {
   animation: "spin 0.8s linear infinite",
 };
 
-
 function App() {
   const [user, setUser] = useState(null);
   const [accessDenied, setAccessDenied] = useState(false);
@@ -59,6 +58,9 @@ function App() {
 
   function handleOracleClose() {
     setShowOracle(false);
+    if (oracleData?.contentVersion) {
+      lsSet("oracle_last_seen_version", oracleData.contentVersion);
+    }
   }
 
   async function getAuthHeaders() {
@@ -197,41 +199,51 @@ function App() {
       if (profile?.onboarding_complete) {
         try {
           const today = getIsraelToday();
-          let stored = lsGetJson("oracle_data_today");
+          const stored = lsGetJson("oracle_data_today");
 
-          // If today's cache is a skip day, clear it so PATH 2 re-fetches fresh data
-          if (stored?.date === today && stored.skip === true) {
-            try { localStorage.removeItem("oracle_data_today"); } catch (e) { void e; }
-            stored = null;
-          }
-
-          // PATH 1 - Restore cached data; show popup only for real content (not a skip day)
-          if (stored?.date === today && stored.title && stored.recap) {
+          if (stored?.date === today && stored.ready && stored.title && stored.recap && stored.contentVersion) {
             const ann = stored.announcer ?? "breen";
-            setOracleData({ title: stored.title, recap: stored.recap, announcer: ann, avatarUrl: announcerToAvatarUrl(ann) });
-            if (!stored.skip) {
+            setOracleData({
+              title: stored.title,
+              recap: stored.recap,
+              announcer: ann,
+              avatarUrl: announcerToAvatarUrl(ann),
+              contentVersion: stored.contentVersion,
+            });
+            if (lsGet("oracle_last_seen_version") !== stored.contentVersion) {
               setShowOracle(true);
             }
           }
 
-          // PATH 2 - Fetch new data once per Israel day
-          if (stored?.date !== today && oracleLastFetchedDate !== today) {
+          if ((!stored || stored.date !== today || !stored.ready || !stored.contentVersion) && oracleLastFetchedDate !== today) {
             oracleLastFetchedDate = today;
-            const fetchCount = parseInt(lsGet("oracle_fetch_count") ?? "0", 10);
-            const ann = fetchCount % 2 === 0 ? "breen" : "barak";
-            lsSet("oracle_fetch_count", String(fetchCount + 1));
             getAuthHeaders()
-              .then((headers) => fetch(`/api/oracle?announcer=${ann}`, { headers }))
+              .then((headers) => fetch("/api/oracle", { headers }))
               .then((r) => r.json())
               .then((data) => {
-                const isReal = !data.skip && data.title && data.recap;
-                const payload = isReal
-                  ? { title: data.title, recap: data.recap, announcer: ann, skip: false }
-                  : { title: "QUIET NIGHT", recap: "No games last night. Stay ready. 🏀", announcer: ann, skip: true };
+                if (!data.ready || !data.title || !data.recap || !data.content_version) {
+                  try { localStorage.removeItem("oracle_data_today"); } catch (e) { void e; }
+                  return;
+                }
+
+                const ann = data.announcer ?? "breen";
+                const payload = {
+                  ready: true,
+                  title: data.title,
+                  recap: data.recap,
+                  announcer: ann,
+                  contentVersion: data.content_version,
+                };
 
                 lsSet("oracle_data_today", JSON.stringify({ date: today, ...payload }));
-                setOracleData({ title: payload.title, recap: payload.recap, announcer: ann, avatarUrl: announcerToAvatarUrl(ann) });
-                if (isReal) {
+                setOracleData({
+                  title: payload.title,
+                  recap: payload.recap,
+                  announcer: ann,
+                  avatarUrl: announcerToAvatarUrl(ann),
+                  contentVersion: payload.contentVersion,
+                });
+                if (lsGet("oracle_last_seen_version") !== payload.contentVersion) {
                   setShowOracle(true);
                 }
               })
@@ -254,41 +266,6 @@ function App() {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  useEffect(() => {
-    async function handleOracleResume() {
-      if (!user || !profile.onboardingComplete) return;
-      if (document.visibilityState === "hidden") return;
-
-      const today = getIsraelToday();
-      if (localStorage.getItem("oracle_last_shown") === today) return;
-
-      setOracleData(null);
-      setShowOracle(false);
-
-      const fetchCount = parseInt(lsGet("oracle_fetch_count") ?? "0", 10);
-      const ann = fetchCount % 2 === 0 ? "breen" : "barak";
-      lsSet("oracle_fetch_count", String(fetchCount + 1));
-
-      const headers = await getAuthHeaders();
-      const data = await fetch(`/api/oracle?announcer=${ann}`, { headers }).then((r) => r.json());
-      const isReal = !data.skip && data.title && data.recap;
-      const payload = isReal
-        ? { title: data.title, recap: data.recap, announcer: ann, skip: false }
-        : { title: "QUIET NIGHT", recap: "No games last night. Stay ready. ðŸ€", announcer: ann, skip: true };
-
-      lsSet("oracle_data_today", JSON.stringify({ date: today, ...payload }));
-      setOracleData({ title: payload.title, recap: payload.recap, announcer: ann, avatarUrl: announcerToAvatarUrl(ann) });
-      if (isReal) setShowOracle(true);
-    }
-
-    window.addEventListener("pageshow", handleOracleResume);
-    document.addEventListener("visibilitychange", handleOracleResume);
-    return () => {
-      window.removeEventListener("pageshow", handleOracleResume);
-      document.removeEventListener("visibilitychange", handleOracleResume);
-    };
-  }, [user, profile.onboardingComplete]);
 
   function handleProfileUpdate({ displayName, championshipPick }) {
     setProfile((prev) => ({ ...prev, displayName, championshipPick }));

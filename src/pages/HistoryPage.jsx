@@ -7,10 +7,10 @@ import AvatarModal from "@/components/AvatarModal";
 const historyCache = new Map();
 
 const USER_COLUMNS = [
-  { email: "roeeyaish@gmail.com", label: "Roee Yaish" },
-  { email: "yuvaldagan95@gmail.com", label: "Yuval Dagan" },
-  { email: "yuvalsaban9@gmail.com", label: "Yuval Saban" },
-  { email: "doronnoam3@gmail.com", label: "Noam Doron" },
+  { email: "roeeyaish@gmail.com", label: "Roee" },
+  { email: "yuvaldagan95@gmail.com", label: "Dagan" },
+  { email: "yuvalsaban9@gmail.com", label: "Saban" },
+  { email: "doronnoam3@gmail.com", label: "Doron" },
 ];
 
 const cardStyle = {
@@ -28,6 +28,11 @@ function formatDateLabel(dateString) {
   }).format(new Date(dateString)).toUpperCase();
 }
 
+function toTricode(teamName) {
+  if (!teamName) return "—";
+  return teamName.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase() || "—";
+}
+
 function buildHistoryRows(items) {
   const gamesMap = new Map();
 
@@ -40,7 +45,7 @@ function buildHistoryRows(items) {
         gameId,
         date: item.games?.date ?? "",
         createdAt: item.created_at ?? "",
-        gameLabel: `${item.games?.away_team ?? "TBD"} vs ${item.games?.home_team ?? "TBD"}`,
+        gameLabel: `${toTricode(item.games?.away_team)} vs ${toTricode(item.games?.home_team)}`,
         winner: item.games?.results?.winner ?? null,
         picks: {},
       });
@@ -51,7 +56,7 @@ function buildHistoryRows(items) {
     if (!email) continue;
 
     gameRow.picks[email] = {
-      pick: item.pick,
+      pick: toTricode(item.pick),
       correct: item.pick === gameRow.winner,
       avatarUrl: item.users?.avatar_url ?? null,
       name: item.users?.display_name ?? item.users?.name ?? USER_COLUMNS.find((user) => user.email === email)?.label ?? "",
@@ -70,13 +75,14 @@ function DateDividerRow({ label, colSpan }) {
       <td
         colSpan={colSpan}
         style={{
-          padding: "14px 16px 10px",
+          padding: "10px 12px 8px",
           color: "#C9B037",
-          fontSize: "13px",
+          fontSize: "12px",
           fontWeight: 800,
           letterSpacing: "0.16em",
           textTransform: "uppercase",
-          borderBottom: "1px solid rgba(201,176,55,0.2)",
+          borderTop: "2px solid rgba(201,176,55,0.4)",
+          borderBottom: "1px solid rgba(201,176,55,0.16)",
           background: "rgba(201,176,55,0.08)",
         }}
       >
@@ -88,23 +94,26 @@ function DateDividerRow({ label, colSpan }) {
 
 function PickCell({ value, onAvatarClick }) {
   if (!value) {
-    return <span style={{ color: "rgba(255,255,255,0.35)" }}>—</span>;
+    return <span style={{ color: "rgba(255,255,255,0.25)", fontSize: "10px" }}>—</span>;
   }
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-      <UserAvatar
-        avatarUrl={value.avatarUrl}
-        name={value.name}
-        size={20}
-        textSize={9}
-        border="1.5px solid rgba(201,176,55,0.8)"
-        onClick={onAvatarClick}
-      />
-      <span style={{ color: value.correct ? "#4ade80" : "#f87171", fontWeight: 700 }}>
-        {value.pick} {value.correct ? "(+1)" : "(0)"}
-      </span>
-    </div>
+    <button
+      type="button"
+      onClick={onAvatarClick}
+      style={{
+        background: "none",
+        border: "none",
+        padding: 0,
+        margin: 0,
+        color: value.correct ? "#4ade80" : "#f87171",
+        fontWeight: 600,
+        fontSize: "10px",
+        cursor: onAvatarClick ? "pointer" : "default",
+      }}
+    >
+      {value.pick}
+    </button>
   );
 }
 
@@ -197,28 +206,35 @@ export default function HistoryPage({ currentUserId, supabase }) {
         ) : (
           <Card style={cardStyle}>
             <CardContent className="p-0">
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 920 }}>
+              <div style={{ width: "100%" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+                  <colgroup>
+                    <col style={{ width: "32%" }} />
+                    <col style={{ width: "17%" }} />
+                    <col style={{ width: "17%" }} />
+                    <col style={{ width: "17%" }} />
+                    <col style={{ width: "17%" }} />
+                  </colgroup>
                   <thead>
                     <tr style={{ background: "rgba(255,255,255,0.03)" }}>
-                      <th style={{ padding: "16px", textAlign: "left", color: "#C9B037", fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                      <th style={{ padding: "10px 8px", textAlign: "left", color: "rgba(255,255,255,0.45)", fontSize: "10px", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                         Game
                       </th>
                       {USER_COLUMNS.map((user) => {
                         const firstMatch = rows.find((row) => row.picks[user.email]);
                         const profile = firstMatch?.picks[user.email];
                         return (
-                          <th key={user.email} style={{ padding: "16px", textAlign: "left", minWidth: 150 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <th key={user.email} style={{ padding: "8px 4px", textAlign: "center" }}>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
                               <UserAvatar
                                 avatarUrl={profile?.avatarUrl ?? null}
                                 name={profile?.name ?? user.label}
-                                size={20}
+                                size={16}
                                 textSize={9}
-                                border="1.5px solid rgba(201,176,55,0.8)"
+                                border="1px solid rgba(201,176,55,0.8)"
                                 onClick={profile ? () => setModalTarget({ avatarUrl: profile.avatarUrl, name: profile.name }) : undefined}
                               />
-                              <span style={{ color: "#fff", fontSize: "12px", fontWeight: 700 }}>{user.label}</span>
+                              <span style={{ color: "#fff", fontSize: "10px", fontWeight: 600, lineHeight: 1 }}>{user.label}</span>
                             </div>
                           </th>
                         );
@@ -234,12 +250,12 @@ export default function HistoryPage({ currentUserId, supabase }) {
                       return (
                         <React.Fragment key={row.gameId}>
                           {isNewDate && <DateDividerRow label={formatDateLabel(row.date)} colSpan={USER_COLUMNS.length + 1} />}
-                          <tr style={{ background: striped ? "rgba(255,255,255,0.025)" : "transparent" }}>
-                            <td style={{ padding: "14px 16px", color: "#fff", fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                          <tr style={{ background: striped ? "rgba(255,255,255,0.02)" : "transparent" }}>
+                            <td style={{ padding: "10px 8px", color: "#fff", fontWeight: 600, fontSize: "11px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                               {row.gameLabel}
                             </td>
                             {USER_COLUMNS.map((user) => (
-                              <td key={user.email} style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                              <td key={user.email} style={{ padding: "10px 4px", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                                 <PickCell
                                   value={row.picks[user.email]}
                                   onAvatarClick={

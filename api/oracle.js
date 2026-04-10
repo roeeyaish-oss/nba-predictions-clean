@@ -54,19 +54,26 @@ export default async function handler(req, res) {
       return;
     }
 
-    const { today, yesterday } = getIsraelDates();
+    const { yesterday } = getIsraelDates();
 
     const { data: results, error: resultsError } = await supabase
       .from("results")
-      .select("game_id, winner, games!inner(home_team, away_team, date)")
-      .in("games.date", [yesterday, today]);
+      .select("game_id, winner, updated_at, games!inner(home_team, away_team, date)")
+      .eq("games.date", yesterday);
 
     if (resultsError) throw resultsError;
-    console.log(`[Oracle] found ${results?.length ?? 0} results for ${yesterday} / ${today}`);
+    console.log(`[Oracle] found ${results?.length ?? 0} results for ${yesterday}`);
     if (!results || results.length === 0) {
       console.log("[Oracle] skip: no results found for yesterday");
-      return res.status(200).json({ skip: true });
+      return res.status(200).json({ ready: false });
     }
+
+    const latestUpdatedAt = results.reduce((latest, row) => {
+      const nextValue = row.updated_at || "";
+      return nextValue > latest ? nextValue : latest;
+    }, "");
+
+    const contentVersion = `oracle:${yesterday}:${latestUpdatedAt}`;
 
     const gameIds = results.map((r) => r.game_id);
 
@@ -156,18 +163,24 @@ Choose CALLED IT if someone got everything right.`,
       parsed = JSON.parse(cleaned);
     } catch (parseErr) {
       console.error("[Oracle] skip: JSON parse failed:", parseErr.message);
-      return res.status(200).json({ skip: true });
+      return res.status(200).json({ ready: false });
     }
 
     if (!parsed.title || !parsed.recap) {
       console.error("[Oracle] skip: missing title or recap in parsed response");
-      return res.status(200).json({ skip: true });
+      return res.status(200).json({ ready: false });
     }
 
     console.log("[Oracle] recap generated successfully");
-    return res.status(200).json({ title: parsed.title, recap: parsed.recap });
+    return res.status(200).json({
+      ready: true,
+      content_version: contentVersion,
+      title: parsed.title,
+      recap: parsed.recap,
+      announcer,
+    });
   } catch (err) {
     console.error("Oracle error:", err);
-    return res.status(500).json({ skip: true });
+    return res.status(500).json({ ready: false });
   }
 }

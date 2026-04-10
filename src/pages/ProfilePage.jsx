@@ -37,6 +37,11 @@ function formatDateLabel(dateString) {
   }).format(new Date(dateString)).toUpperCase();
 }
 
+function toTricode(teamName) {
+  if (!teamName) return "—";
+  return teamName.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase() || "—";
+}
+
 function buildProfileRows(items) {
   return [...items].sort((a, b) => {
     const dateA = a.games?.date ?? "";
@@ -52,13 +57,14 @@ function DateDividerRow({ label }) {
       <td
         colSpan={2}
         style={{
-          padding: "14px 16px 10px",
+          padding: "10px 12px 8px",
           color: "#C9B037",
-          fontSize: "13px",
+          fontSize: "12px",
           fontWeight: 800,
           letterSpacing: "0.16em",
           textTransform: "uppercase",
-          borderBottom: "1px solid rgba(201,176,55,0.2)",
+          borderTop: "2px solid rgba(201,176,55,0.4)",
+          borderBottom: "1px solid rgba(201,176,55,0.16)",
           background: "rgba(201,176,55,0.08)",
         }}
       >
@@ -435,13 +441,17 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
         }}>
           <CardContent className="p-0">
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+                <colgroup>
+                  <col style={{ width: "50%" }} />
+                  <col style={{ width: "50%" }} />
+                </colgroup>
                 <thead>
                   <tr style={{ background: "rgba(255,255,255,0.03)" }}>
-                    <th style={{ padding: "16px", textAlign: "left", color: "#C9B037", fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                    <th style={{ padding: "10px 8px", textAlign: "left", color: "rgba(255,255,255,0.45)", fontSize: "10px", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                       Game
                     </th>
-                    <th style={{ padding: "16px", textAlign: "left", color: "#C9B037", fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                    <th style={{ padding: "10px 8px", textAlign: "left", color: "rgba(255,255,255,0.45)", fontSize: "10px", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                       Pick
                     </th>
                   </tr>
@@ -457,13 +467,13 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
                     return (
                       <React.Fragment key={`${item.created_at}-${index}`}>
                         {isNewDate && <DateDividerRow label={formatDateLabel(date)} />}
-                        <tr style={{ background: striped ? "rgba(255,255,255,0.025)" : "transparent" }}>
-                          <td style={{ padding: "14px 16px", color: "#fff", fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                            {item.games?.away_team} vs {item.games?.home_team}
+                        <tr style={{ background: striped ? "rgba(255,255,255,0.02)" : "transparent" }}>
+                          <td style={{ padding: "10px 8px", color: "#fff", fontWeight: 600, fontSize: "11px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                            {toTricode(item.games?.away_team)} vs {toTricode(item.games?.home_team)}
                           </td>
-                          <td style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                            <span style={{ color: correct ? "#4ade80" : "#f87171", fontWeight: 700 }}>
-                              {item.pick} {correct ? "(+1)" : "(0)"}
+                          <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                            <span style={{ color: correct ? "#4ade80" : "#f87171", fontWeight: 600, fontSize: "10px" }}>
+                              {toTricode(item.pick)}
                             </span>
                           </td>
                         </tr>

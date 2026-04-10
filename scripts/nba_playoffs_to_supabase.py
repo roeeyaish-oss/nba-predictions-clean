@@ -230,6 +230,7 @@ try:
     final_games = games[games['gameStatusText'] == 'Final']
     print(f"Found {len(final_games)} final games.")
 
+    results_updated_at = datetime.now(utc).isoformat()
     results_payload = []
     for _, row in final_games.iterrows():
         game_id = str(row['gameId'])
@@ -240,6 +241,7 @@ try:
                 'winner': winner,
                 'home_score': home_score,
                 'away_score': away_score,
+                'updated_at': results_updated_at,
             })
         time.sleep(1.5)
 
