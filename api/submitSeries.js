@@ -5,9 +5,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
-// April 18 2026 04:00 UTC = midnight ET on April 18
-const CHAMPIONSHIP_LOCK_DATE = new Date("2026-04-18T04:00:00Z");
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).send("Method Not Allowed");
@@ -45,7 +42,7 @@ export default async function handler(req, res) {
     // Fetch the series records to validate existence and lock status
     const { data: seriesData, error: seriesError } = await supabase
       .from("series")
-      .select("id, round, first_game_time, status")
+      .select("id, round, home_wins, away_wins, first_game_time, status")
       .in("id", seriesIds);
 
     if (seriesError) {
@@ -74,8 +71,10 @@ export default async function handler(req, res) {
         continue;
       }
 
-      // Lock: once the first game of the series has tipped off
-      if (series.first_game_time && now >= new Date(series.first_game_time)) {
+      // Lock: once the first game of the series has tipped off, or if any games have been played
+      const firstGamePassed = series.first_game_time && now >= new Date(series.first_game_time);
+      const gamesPlayed = (series.home_wins ?? 0) > 0 || (series.away_wins ?? 0) > 0;
+      if (firstGamePassed || gamesPlayed) {
         skipped.push(`${seriesId}: series has already started`);
         continue;
       }

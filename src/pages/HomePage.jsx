@@ -118,7 +118,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
 
     const picks = series
       .filter((s) => {
-        const isLocked = s.first_game_time && new Date() >= new Date(s.first_game_time);
+        const isLocked = (s.first_game_time && new Date() >= new Date(s.first_game_time)) || s.home_wins > 0 || s.away_wins > 0;
         return !isLocked && seriesPredictions[s.id];
       })
       .map((s) => ({ seriesId: s.id, pick: seriesPredictions[s.id] }));
@@ -360,7 +360,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
           </p>
 
           {series.map((s) => {
-            const isLocked = s.first_game_time && new Date() >= new Date(s.first_game_time);
+            const isLocked = (s.first_game_time && new Date() >= new Date(s.first_game_time)) || s.home_wins > 0 || s.away_wins > 0;
             const savedPick = savedSeriesPicks[s.id];
             const pendingPick = seriesPredictions[s.id];
             const activePick = pendingPick ?? savedPick;
@@ -437,7 +437,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
 
           {/* Submit button — only if there are unlocked series with a pending pick */}
           {series.some((s) => {
-            const isLocked = s.first_game_time && new Date() >= new Date(s.first_game_time);
+            const isLocked = (s.first_game_time && new Date() >= new Date(s.first_game_time)) || s.home_wins > 0 || s.away_wins > 0;
             return !isLocked && seriesPredictions[s.id];
           }) && (
             <button

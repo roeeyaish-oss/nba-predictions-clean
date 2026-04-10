@@ -350,8 +350,8 @@ export default function HistoryPage({ currentUserId, supabase }) {
           </Card>
         )}
 
-        {/* ── Series Picks section ── */}
-        {(seriesRows.length > 0 || champRow) && (
+        {/* ── Series Picks section — only shown once playoff series exist ── */}
+        {seriesRows.length > 0 && (
           <Card style={cardStyle}>
             <CardContent className="p-0">
               <div style={{ overflowX: "auto" }}>

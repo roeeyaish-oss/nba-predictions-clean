@@ -397,12 +397,18 @@ def upsert_series(series_list, game_time_map):
             s["home_team"], s["away_team"], s["home_wins"], s["away_wins"]
         )
 
-        # Find the earliest game time for this series to use as the lock time
+        # Find the earliest game time for this series to use as the lock time.
+        # Only games in the 3-day scoreboard window are in game_time_map.
+        # If the series has already had games played (wins > 0) but no game_time was
+        # found (Game 1 was earlier than yesterday), use a sentinel past timestamp so
+        # the lock check always triggers correctly.
         first_game_time = None
         for gid in s["game_ids"]:
             t = game_time_map.get(gid)
             if t and (first_game_time is None or t < first_game_time):
                 first_game_time = t
+        if first_game_time is None and (s["home_wins"] > 0 or s["away_wins"] > 0):
+            first_game_time = "1970-01-01T00:00:00Z"  # sentinel: already started
 
         series_payload.append({
             "id": s["id"],
