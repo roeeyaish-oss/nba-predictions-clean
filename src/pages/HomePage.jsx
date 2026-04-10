@@ -372,12 +372,28 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   return (
     <div
       style={{
+        position: "relative",
+        zIndex: 1,
         display: "flex",
         flexDirection: "column",
         gap: "24px",
         ...(animate ? { animation: "fadeIn 250ms ease both" } : {}),
       }}
     >
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          zIndex: 0,
+          pointerEvents: "none",
+          background: "rgba(99, 102, 241, 0.15)",
+          opacity: activeTab === "series" ? 1 : 0,
+          transition: "opacity 400ms ease",
+        }}
+      />
       <section style={titleSectionStyle}>
         <p style={{ margin: "0 0 8px", fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(201,176,55,0.7)" }}>Game Night</p>
         <h1 style={{ margin: 0, fontSize: "28px", fontWeight: 700, color: "#fff" }}>NBA Predictions</h1>
