@@ -1,19 +1,112 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import SkeletonBlock from "@/components/SkeletonBlock";
 import UserAvatar from "@/components/UserAvatar";
 import AvatarModal from "@/components/AvatarModal";
 
-function formatDate(dateString) {
+const historyCache = new Map();
+
+const USER_COLUMNS = [
+  { email: "roeeyaish@gmail.com", label: "Roee Yaish" },
+  { email: "yuvaldagan95@gmail.com", label: "Yuval Dagan" },
+  { email: "yuvalsaban9@gmail.com", label: "Yuval Saban" },
+  { email: "doronnoam3@gmail.com", label: "Noam Doron" },
+];
+
+const cardStyle = {
+  border: "1px solid rgba(201,176,55,0.3)",
+  background: "rgba(8,5,0,0.45)",
+  boxShadow: "0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,215,0,0.1)",
+  backdropFilter: "blur(8px)",
+};
+
+function formatDateLabel(dateString) {
   if (!dateString) return "";
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
+  return new Intl.DateTimeFormat("en-US", {
     month: "short",
-    year: "numeric",
-  }).format(new Date(dateString));
+    day: "numeric",
+  }).format(new Date(dateString)).toUpperCase();
 }
 
-const historyCache = new Map();
+function buildHistoryRows(items) {
+  const gamesMap = new Map();
+
+  for (const item of items) {
+    const gameId = item.game_id;
+    if (!gameId) continue;
+
+    if (!gamesMap.has(gameId)) {
+      gamesMap.set(gameId, {
+        gameId,
+        date: item.games?.date ?? "",
+        createdAt: item.created_at ?? "",
+        gameLabel: `${item.games?.away_team ?? "TBD"} vs ${item.games?.home_team ?? "TBD"}`,
+        winner: item.games?.results?.winner ?? null,
+        picks: {},
+      });
+    }
+
+    const gameRow = gamesMap.get(gameId);
+    const email = item.users?.email?.toLowerCase();
+    if (!email) continue;
+
+    gameRow.picks[email] = {
+      pick: item.pick,
+      correct: item.pick === gameRow.winner,
+      avatarUrl: item.users?.avatar_url ?? null,
+      name: item.users?.display_name ?? item.users?.name ?? USER_COLUMNS.find((user) => user.email === email)?.label ?? "",
+    };
+  }
+
+  return [...gamesMap.values()].sort((a, b) => {
+    if (a.date !== b.date) return a.date > b.date ? -1 : 1;
+    return a.createdAt > b.createdAt ? -1 : 1;
+  });
+}
+
+function DateDividerRow({ label, colSpan }) {
+  return (
+    <tr>
+      <td
+        colSpan={colSpan}
+        style={{
+          padding: "14px 16px 10px",
+          color: "#C9B037",
+          fontSize: "13px",
+          fontWeight: 800,
+          letterSpacing: "0.16em",
+          textTransform: "uppercase",
+          borderBottom: "1px solid rgba(201,176,55,0.2)",
+          background: "rgba(201,176,55,0.08)",
+        }}
+      >
+        {label}
+      </td>
+    </tr>
+  );
+}
+
+function PickCell({ value, onAvatarClick }) {
+  if (!value) {
+    return <span style={{ color: "rgba(255,255,255,0.35)" }}>—</span>;
+  }
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <UserAvatar
+        avatarUrl={value.avatarUrl}
+        name={value.name}
+        size={20}
+        textSize={9}
+        border="1.5px solid rgba(201,176,55,0.8)"
+        onClick={onAvatarClick}
+      />
+      <span style={{ color: value.correct ? "#4ade80" : "#f87171", fontWeight: 700 }}>
+        {value.pick} {value.correct ? "(+1)" : "(0)"}
+      </span>
+    </div>
+  );
+}
 
 export default function HistoryPage({ currentUserId, supabase }) {
   const cachedItems = historyCache.get(currentUserId) ?? [];
@@ -29,10 +122,8 @@ export default function HistoryPage({ currentUserId, supabase }) {
       try {
         const { data, error } = await supabase
           .from("predictions")
-          .select("user_id, pick, created_at, users(name, display_name, avatar_url), games!inner(home_team, away_team, date, game_time, results!inner(winner))")
-          .not("games.results.winner", "is", null)
-          .order("created_at", { ascending: false })
-          .limit(100);
+          .select("game_id, pick, created_at, users!inner(email, name, display_name, avatar_url), games!inner(away_team, home_team, date, results!inner(winner))")
+          .not("games.results.winner", "is", null);
 
         if (error) throw error;
         const nextItems = data || [];
@@ -51,6 +142,8 @@ export default function HistoryPage({ currentUserId, supabase }) {
     loadHistory();
   }, [supabase, hadCache, currentUserId]);
 
+  const rows = useMemo(() => buildHistoryRows(items), [items]);
+
   if (!ready) {
     return (
       <div className="space-y-6">
@@ -59,27 +152,13 @@ export default function HistoryPage({ currentUserId, supabase }) {
           <SkeletonBlock style={{ width: "220px", height: "36px", marginBottom: "14px" }} />
           <SkeletonBlock style={{ width: "260px", height: "14px" }} />
         </section>
-        <div className="grid gap-4">
-          {[0, 1, 2].map((index) => (
-            <Card key={`history-skeleton-${index}`}>
-              <CardContent className="space-y-3 p-5 sm:p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                    <SkeletonBlock style={{ width: "36px", height: "36px", borderRadius: "50%" }} />
-                    <div>
-                      <SkeletonBlock style={{ width: "84px", height: "12px", marginBottom: "12px" }} />
-                      <SkeletonBlock style={{ width: "150px", height: "18px", marginBottom: "10px" }} />
-                      <SkeletonBlock style={{ width: "120px", height: "14px" }} />
-                    </div>
-                  </div>
-                  <SkeletonBlock style={{ width: "56px", height: "28px", borderRadius: "999px" }} />
-                </div>
-                <SkeletonBlock style={{ width: "56px", height: "12px" }} />
-                <SkeletonBlock style={{ width: "140px", height: "18px" }} />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Card style={cardStyle}>
+          <CardContent className="p-0">
+            {[0, 1, 2, 3, 4].map((index) => (
+              <SkeletonBlock key={`history-table-skeleton-${index}`} style={{ height: "52px", borderRadius: 0 }} />
+            ))}
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -94,66 +173,97 @@ export default function HistoryPage({ currentUserId, supabase }) {
 
   return (
     <>
-    {modalTarget && (
-      <AvatarModal avatarUrl={modalTarget.avatarUrl} name={modalTarget.name} onClose={() => setModalTarget(null)} />
-    )}
-    <div
-      className="space-y-6"
-      style={animate ? { animation: "fadeIn 250ms ease both" } : undefined}
-    >
-      <section className="rounded-4 border border-[#C9B037]/35 bg-black/45 p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,215,0,0.1)] backdrop-blur-[8px] sm:p-7">
-        <p className="mb-2 text-[11px] uppercase tracking-[0.35em] text-[#C9B037]/85">History</p>
-        <h1 className="text-3xl font-800 text-white sm:text-5xl">All Predictions</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/60 sm:text-base">
-          Recent picks across every user in the pool.
-        </p>
-      </section>
-
-      {items.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center text-white/65">
-            No history available yet.
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {items.map((item, index) => (
-            <Card key={`${item.created_at}-${index}`}>
-              <CardContent className="space-y-3 p-5 sm:p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                    <UserAvatar
-                      avatarUrl={item.users?.avatar_url ?? null}
-                      name={item.users?.display_name || item.users?.name || "Unknown User"}
-                      size={36}
-                      textSize={14}
-                      onClick={() => setModalTarget({ avatarUrl: item.users?.avatar_url ?? null, name: item.users?.display_name || item.users?.name || "Unknown User" })}
-                    />
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.25em] text-[#C9B037]/80">{formatDate(item.games?.date)}</p>
-                      <h2 className="mt-2 text-base font-700 text-white">
-                        {item.users?.display_name || item.users?.name || "Unknown User"}
-                        {item.user_id === currentUserId ? " · You" : ""}
-                      </h2>
-                      <p className="mt-1 text-sm text-white/55">
-                        {item.games?.away_team} vs {item.games?.home_team}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="rounded-full border border-[#C9B037]/35 px-3 py-1 text-xs font-700 text-[#C9B037]">
-                    {item.games?.game_time || "--:--"}
-                  </span>
-                </div>
-                <div className="rounded-3 bg-white/4 px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.24em] text-white/40">Pick</p>
-                  <p className="mt-2 text-base font-700 text-white">{item.pick}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      {modalTarget && (
+        <AvatarModal avatarUrl={modalTarget.avatarUrl} name={modalTarget.name} onClose={() => setModalTarget(null)} />
       )}
-    </div>
+      <div
+        className="space-y-6"
+        style={animate ? { animation: "fadeIn 250ms ease both" } : undefined}
+      >
+        <section className="rounded-4 border border-[#C9B037]/35 bg-black/45 p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,215,0,0.1)] backdrop-blur-[8px] sm:p-7">
+          <p className="mb-2 text-[11px] uppercase tracking-[0.35em] text-[#C9B037]/85">History</p>
+          <h1 className="text-3xl font-800 text-white sm:text-5xl">All Predictions</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/60 sm:text-base">
+            Completed-game picks across every user in the pool.
+          </p>
+        </section>
+
+        {rows.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center text-white/65">
+              No history available yet.
+            </CardContent>
+          </Card>
+        ) : (
+          <Card style={cardStyle}>
+            <CardContent className="p-0">
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 920 }}>
+                  <thead>
+                    <tr style={{ background: "rgba(255,255,255,0.03)" }}>
+                      <th style={{ padding: "16px", textAlign: "left", color: "#C9B037", fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                        Game
+                      </th>
+                      {USER_COLUMNS.map((user) => {
+                        const firstMatch = rows.find((row) => row.picks[user.email]);
+                        const profile = firstMatch?.picks[user.email];
+                        return (
+                          <th key={user.email} style={{ padding: "16px", textAlign: "left", minWidth: 150 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <UserAvatar
+                                avatarUrl={profile?.avatarUrl ?? null}
+                                name={profile?.name ?? user.label}
+                                size={20}
+                                textSize={9}
+                                border="1.5px solid rgba(201,176,55,0.8)"
+                                onClick={profile ? () => setModalTarget({ avatarUrl: profile.avatarUrl, name: profile.name }) : undefined}
+                              />
+                              <span style={{ color: "#fff", fontSize: "12px", fontWeight: 700 }}>{user.label}</span>
+                            </div>
+                          </th>
+                        );
+                      })}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, index) => {
+                      const prevDate = index > 0 ? rows[index - 1].date : null;
+                      const isNewDate = row.date !== prevDate;
+                      const striped = index % 2 === 1;
+
+                      return (
+                        <React.Fragment key={row.gameId}>
+                          {isNewDate && <DateDividerRow label={formatDateLabel(row.date)} colSpan={USER_COLUMNS.length + 1} />}
+                          <tr style={{ background: striped ? "rgba(255,255,255,0.025)" : "transparent" }}>
+                            <td style={{ padding: "14px 16px", color: "#fff", fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                              {row.gameLabel}
+                            </td>
+                            {USER_COLUMNS.map((user) => (
+                              <td key={user.email} style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                                <PickCell
+                                  value={row.picks[user.email]}
+                                  onAvatarClick={
+                                    row.picks[user.email]
+                                      ? () => setModalTarget({
+                                          avatarUrl: row.picks[user.email].avatarUrl,
+                                          name: row.picks[user.email].name,
+                                        })
+                                      : undefined
+                                  }
+                                />
+                              </td>
+                            ))}
+                          </tr>
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </>
   );
 }

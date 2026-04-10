@@ -1,28 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import SkeletonBlock from "@/components/SkeletonBlock";
 import AvatarModal from "@/components/AvatarModal";
 import NBA_TEAMS from "@/lib/nbaTeams";
-
-function formatDate(dateString) {
-  if (!dateString) return "";
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(dateString));
-}
-
-function getInitials(name) {
-  return (name || "?")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase() || "?";
-}
 
 const inputStyle = {
   width: "100%",
@@ -38,6 +18,56 @@ const inputStyle = {
 
 const profileHistoryCache = new Map();
 
+function getInitials(name) {
+  return (name || "?")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "?";
+}
+
+function formatDateLabel(dateString) {
+  if (!dateString) return "";
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(new Date(dateString)).toUpperCase();
+}
+
+function buildProfileRows(items) {
+  return [...items].sort((a, b) => {
+    const dateA = a.games?.date ?? "";
+    const dateB = b.games?.date ?? "";
+    if (dateA !== dateB) return dateA > dateB ? -1 : 1;
+    return (a.created_at ?? "") > (b.created_at ?? "") ? -1 : 1;
+  });
+}
+
+function DateDividerRow({ label }) {
+  return (
+    <tr>
+      <td
+        colSpan={2}
+        style={{
+          padding: "14px 16px 10px",
+          color: "#C9B037",
+          fontSize: "13px",
+          fontWeight: 800,
+          letterSpacing: "0.16em",
+          textTransform: "uppercase",
+          borderBottom: "1px solid rgba(201,176,55,0.2)",
+          background: "rgba(201,176,55,0.08)",
+        }}
+      >
+        {label}
+      </td>
+    </tr>
+  );
+}
+
 export default function ProfilePage({ user, supabase, avatarUrl, displayName, championshipPick, onProfileUpdate }) {
   const cachedItems = profileHistoryCache.get(user.id) ?? [];
   const hadCache = useRef(cachedItems.length > 0).current;
@@ -48,8 +78,6 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
   const ready = predictionsLoaded && avatarLoaded;
   const [animate, setAnimate] = useState(false);
   const imgRef = useRef(null);
-
-  // Edit mode state
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editName, setEditName] = useState(displayName);
@@ -57,7 +85,6 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
 
-  // Fallback for already-cached images: onLoad won't fire if complete is already true
   useEffect(() => {
     if (imgRef.current?.complete) setAvatarLoaded(true);
   }, []);
@@ -67,9 +94,9 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
       try {
         const { data, error } = await supabase
           .from("predictions")
-          .select("pick, created_at, games(home_team, away_team, date, game_time)")
+          .select("pick, created_at, games!inner(home_team, away_team, date, results!inner(winner))")
           .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
+          .not("games.results.winner", "is", null);
 
         if (error) throw error;
         const nextItems = data || [];
@@ -125,9 +152,8 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
   }
 
   const currentChampionshipTeam = NBA_TEAMS.find((t) => t.id === championshipPick);
+  const rows = useMemo(() => buildProfileRows(items), [items]);
 
-  // Always render the avatar img hidden so it loads in the background
-  // regardless of whether the skeleton or real content is showing.
   const hiddenAvatar = avatarUrl ? (
     <img
       ref={imgRef}
@@ -155,24 +181,13 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
             <SkeletonBlock style={{ width: "200px", height: "36px", marginBottom: "12px" }} />
             <SkeletonBlock style={{ width: "260px", height: "14px" }} />
           </section>
-          <div className="grid gap-4">
-            {[0, 1, 2].map((index) => (
-              <Card key={`profile-history-skeleton-${index}`}>
-                <CardContent className="space-y-3 p-5 sm:p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <SkeletonBlock style={{ width: "84px", height: "12px", marginBottom: "12px" }} />
-                      <SkeletonBlock style={{ width: "180px", height: "20px", marginBottom: "10px" }} />
-                      <SkeletonBlock style={{ width: "120px", height: "14px" }} />
-                    </div>
-                    <SkeletonBlock style={{ width: "56px", height: "28px", borderRadius: "999px" }} />
-                  </div>
-                  <SkeletonBlock style={{ width: "56px", height: "12px" }} />
-                  <SkeletonBlock style={{ width: "140px", height: "18px" }} />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <Card>
+            <CardContent className="p-0">
+              {[0, 1, 2, 3, 4].map((index) => (
+                <SkeletonBlock key={`profile-table-skeleton-${index}`} style={{ height: "52px", borderRadius: 0 }} />
+              ))}
+            </CardContent>
+          </Card>
         </div>
       </>
     );
@@ -188,7 +203,6 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
         <AvatarModal avatarUrl={avatarUrl} name={displayName} onClose={() => setShowAvatarModal(false)} />
       )}
 
-      {/* ── Edit Mode ── */}
       {editMode ? (
         <section
           style={{
@@ -205,7 +219,6 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
             Edit Profile
           </p>
 
-          {/* Display name */}
           <div style={{ marginBottom: "24px" }}>
             <label htmlFor="edit-display-name" style={{ display: "block", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(201,176,55,0.8)", marginBottom: "8px", fontWeight: 600 }}>
               Display Name
@@ -220,7 +233,6 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
             />
           </div>
 
-          {/* Championship pick */}
           <div style={{ marginBottom: "28px" }}>
             <label style={{ display: "block", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(201,176,55,0.8)", marginBottom: "4px", fontWeight: 600 }}>
               Championship Pick
@@ -273,7 +285,6 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
             </p>
           )}
 
-          {/* Save / Cancel */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
             <button
               onClick={handleCancelEdit}
@@ -314,7 +325,6 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
           </div>
         </section>
       ) : (
-        /* ── View Mode ── */
         <section className="rounded-4 border border-[#C9B037]/35 bg-black/45 p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,215,0,0.1)] backdrop-blur-[8px] sm:p-7">
           <div
             style={{
@@ -381,7 +391,7 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
             <div>
               <h1 className="text-3xl font-800 text-white sm:text-5xl">Your Picks</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-white/60 sm:text-base">
-                Full prediction history for <span className="text-[#C9B037]">{displayName}</span>.
+                Completed-game history for <span className="text-[#C9B037]">{displayName}</span>.
               </p>
             </div>
             <button
@@ -410,36 +420,61 @@ export default function ProfilePage({ user, supabase, avatarUrl, displayName, ch
         <p style={{ textAlign: "center", color: "#C9B037", marginTop: "16px" }}>
           Failed to load picks. Please refresh.
         </p>
-      ) : items.length === 0 ? (
+      ) : rows.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center text-white/65">
-            No predictions submitted yet.
+            No completed picks yet.
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
-          {items.map((item, index) => (
-            <Card key={`${item.created_at}-${index}`}>
-              <CardContent className="space-y-3 p-5 sm:p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.25em] text-[#C9B037]/80">{formatDate(item.games?.date)}</p>
-                    <h2 className="mt-2 text-lg font-700 text-white">
-                      {item.games?.away_team} vs {item.games?.home_team}
-                    </h2>
-                  </div>
-                  <span className="rounded-full border border-[#C9B037]/35 px-3 py-1 text-xs font-700 text-[#C9B037]">
-                    {item.games?.game_time || "--:--"}
-                  </span>
-                </div>
-                <div className="rounded-3 bg-white/4 px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.24em] text-white/40">Your pick</p>
-                  <p className="mt-2 text-base font-700 text-white">{item.pick}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Card style={{
+          border: "1px solid rgba(201,176,55,0.3)",
+          background: "rgba(8,5,0,0.45)",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,215,0,0.1)",
+          backdropFilter: "blur(8px)",
+        }}>
+          <CardContent className="p-0">
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
+                <thead>
+                  <tr style={{ background: "rgba(255,255,255,0.03)" }}>
+                    <th style={{ padding: "16px", textAlign: "left", color: "#C9B037", fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                      Game
+                    </th>
+                    <th style={{ padding: "16px", textAlign: "left", color: "#C9B037", fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                      Pick
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((item, index) => {
+                    const date = item.games?.date ?? "";
+                    const prevDate = index > 0 ? rows[index - 1].games?.date ?? "" : null;
+                    const isNewDate = date !== prevDate;
+                    const correct = item.pick === item.games?.results?.winner;
+                    const striped = index % 2 === 1;
+
+                    return (
+                      <React.Fragment key={`${item.created_at}-${index}`}>
+                        {isNewDate && <DateDividerRow label={formatDateLabel(date)} />}
+                        <tr style={{ background: striped ? "rgba(255,255,255,0.025)" : "transparent" }}>
+                          <td style={{ padding: "14px 16px", color: "#fff", fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                            {item.games?.away_team} vs {item.games?.home_team}
+                          </td>
+                          <td style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                            <span style={{ color: correct ? "#4ade80" : "#f87171", fontWeight: 700 }}>
+                              {item.pick} {correct ? "(+1)" : "(0)"}
+                            </span>
+                          </td>
+                        </tr>
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
