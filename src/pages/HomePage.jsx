@@ -9,6 +9,9 @@ import usePlayoffSeries from "@/hooks/usePlayoffSeries";
 import NBA_TEAMS from "@/lib/nbaTeams";
 import { ANNOUNCER_URL } from "@/lib/constants";
 
+const GAME_COLOR = "#C9B037";
+const SERIES_COLOR = "#6366f1";
+
 const titleSectionStyle = {
   background: "rgba(8,5,0,0.65)",
   border: "1.5px solid rgba(201,176,55,0.8)",
@@ -106,7 +109,7 @@ function hasAnyTruthyValue(values) {
   return Object.values(values).some(Boolean);
 }
 
-function TabButton({ active, label, onClick, showDirtyDot, showAlert }) {
+function TabButton({ active, label, onClick, showDirtyDot, showAlert, accentColor, activeGradient }) {
   return (
     <button
       type="button"
@@ -115,7 +118,7 @@ function TabButton({ active, label, onClick, showDirtyDot, showAlert }) {
         position: "relative",
         borderRadius: "999px",
         border: "none",
-        background: active ? "linear-gradient(135deg, #f0d77a 0%, #C9B037 48%, #8B6914 100%)" : "transparent",
+        background: active ? activeGradient : "transparent",
         color: active ? "#050200" : "rgba(201,176,55,0.72)",
         fontWeight: active ? 800 : 600,
         fontSize: "13px",
@@ -124,9 +127,9 @@ function TabButton({ active, label, onClick, showDirtyDot, showAlert }) {
         cursor: "pointer",
         width: "100%",
         opacity: active ? 1 : 0.88,
-        boxShadow: active ? "0 8px 18px rgba(201,176,55,0.28), inset 0 1px 0 rgba(255,245,200,0.35)" : "none",
+        boxShadow: active ? `0 8px 18px ${accentColor}47, inset 0 1px 0 rgba(255,245,200,0.35)` : "none",
         transform: active ? "translateY(-1px)" : "translateY(0)",
-        transition: "all 180ms ease",
+        transition: "color 300ms ease, background 300ms ease, border-color 300ms ease, box-shadow 300ms ease, transform 180ms ease",
       }}
     >
       {label}
@@ -140,8 +143,9 @@ function TabButton({ active, label, onClick, showDirtyDot, showAlert }) {
             width: "8px",
             height: "8px",
             borderRadius: "50%",
-            background: "#C9B037",
-            boxShadow: "0 0 10px rgba(201,176,55,0.8)",
+            background: accentColor,
+            boxShadow: `0 0 10px ${accentColor}`,
+            transition: "color 300ms ease, background 300ms ease, border-color 300ms ease",
           }}
         />
       )}
@@ -195,6 +199,10 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   const hasSavedSeriesPicks = hasAnyTruthyValue(savedSeriesPicks);
   const shouldShowSeriesAlert = series.length > 0 && !hasSavedSeriesPicks;
   const hasSubmittableSeriesPicks = hasAnyTruthyValue(seriesPredictions);
+  const accentColor = activeTab === "series" ? SERIES_COLOR : GAME_COLOR;
+  const activeTabGradient = activeTab === "series"
+    ? "linear-gradient(135deg, #a5b4fc 0%, #6366f1 48%, #4338ca 100%)"
+    : "linear-gradient(135deg, #f0d77a 0%, #C9B037 48%, #8B6914 100%)";
 
   useEffect(() => {
     if (!message) return;
@@ -409,6 +417,8 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
           onClick={() => setActiveTab("game")}
           showDirtyDot={hasUnsavedGamePicks}
           showAlert={false}
+          accentColor={accentColor}
+          activeGradient={activeTabGradient}
         />
         <TabButton
           active={activeTab === "series"}
@@ -416,6 +426,8 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
           onClick={() => setActiveTab("series")}
           showDirtyDot={hasSubmittableSeriesPicks}
           showAlert={shouldShowSeriesAlert}
+          accentColor={accentColor}
+          activeGradient={activeTabGradient}
         />
       </div>
 
@@ -461,7 +473,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
                                 <img src={game.homeImg} width="56" height="56" alt={game.home} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
                                 <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{game.home}</span>
                               </div>
-                              <span style={{ fontSize: "18px", fontWeight: 700, color: "#C9B037", letterSpacing: "0.15em" }}>VS</span>
+                              <span style={{ fontSize: "18px", fontWeight: 700, color: accentColor, letterSpacing: "0.15em", transition: "color 300ms ease, background 300ms ease, border-color 300ms ease" }}>VS</span>
                               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, minWidth: 0 }}>
                                 <img src={game.awayImg} width="56" height="56" alt={game.away} style={{ width: "56px", height: "56px", objectFit: "contain", marginBottom: "8px" }} />
                                 <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", textAlign: "center" }}>{game.away}</span>
@@ -493,8 +505,8 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
 
                             {game.gameTimeIL && (
                               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginTop: started ? "12px" : "0" }}>
-                                <Clock3 style={{ width: "14px", height: "14px", color: "#C9B037" }} strokeWidth={2.3} />
-                                <span style={{ fontSize: "12px", fontWeight: 600, color: "#C9B037" }}>{game.gameTimeIL}</span>
+                                <Clock3 style={{ width: "14px", height: "14px", color: accentColor, transition: "color 300ms ease, background 300ms ease, border-color 300ms ease" }} strokeWidth={2.3} />
+                                <span style={{ fontSize: "12px", fontWeight: 600, color: accentColor, transition: "color 300ms ease, background 300ms ease, border-color 300ms ease" }}>{game.gameTimeIL}</span>
                               </div>
                             )}
                           </CardContent>
@@ -531,7 +543,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
         </>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          <p style={{ margin: 0, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.18em", color: "rgba(201,176,55,0.7)", fontWeight: 600 }}>
+          <p style={{ margin: 0, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.18em", color: accentColor, fontWeight: 600, transition: "color 300ms ease, background 300ms ease, border-color 300ms ease" }}>
             Playoff Series Picks
           </p>
 
@@ -565,10 +577,11 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
                             borderRadius: "999px",
                             background: "rgba(99,102,241,0.16)",
                             border: "1px solid rgba(129,140,248,0.35)",
-                            color: "#c7d2fe",
+                            color: accentColor,
                             fontSize: "10px",
                             fontWeight: 800,
                             letterSpacing: "0.14em",
+                            transition: "color 300ms ease, background 300ms ease, border-color 300ms ease",
                           }}
                         >
                           SERIES
@@ -633,6 +646,10 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
                   disabled={submittingSeries}
                   style={{
                     ...submitButtonStyle,
+                    background: activeTab === "series" ? "linear-gradient(135deg, #a5b4fc 0%, #6366f1 55%, #4338ca 100%)" : submitButtonStyle.background,
+                    color: activeTab === "series" ? "#f8fafc" : submitButtonStyle.color,
+                    boxShadow: activeTab === "series" ? "0 6px 20px rgba(99,102,241,0.35)" : submitButtonStyle.boxShadow,
+                    transition: "color 300ms ease, background 300ms ease, border-color 300ms ease, box-shadow 300ms ease",
                     ...(submittingSeries ? { opacity: 0.6, cursor: "not-allowed" } : {}),
                   }}
                 >
