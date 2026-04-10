@@ -27,7 +27,25 @@ export default function usePlayoffSeries(supabase, userId) {
       if (seriesRes.error) throw seriesRes.error;
       if (picksRes.error) throw picksRes.error;
 
-      setSeries(seriesRes.data || []);
+      // TEST ONLY - remove before playoffs
+      const liveSeries = seriesRes.data || [];
+      setSeries(
+        liveSeries.length > 0
+          ? liveSeries
+          : [
+              {
+                id: "TEST_R1_S1",
+                round: 1,
+                home_team: "Oklahoma City Thunder",
+                away_team: "Memphis Grizzlies",
+                home_wins: 0,
+                away_wins: 0,
+                winner: null,
+                status: "active",
+                first_game_time: null,
+              },
+            ]
+      );
 
       const picksMap = {};
       for (const p of picksRes.data || []) {
