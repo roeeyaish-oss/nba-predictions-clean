@@ -137,26 +137,14 @@ function App() {
       const hasStoredSupabaseAvatar = currentAvatarUrl?.startsWith(SUPABASE_STORAGE_BASE) ?? false;
 
       let finalAvatarUrl = currentAvatarUrl;
-      let avatarDecision = "using_db_avatar";
 
       if (mappedAvatarUrl) {
         finalAvatarUrl = mappedAvatarUrl;
-        avatarDecision = "using_email_map";
       } else if (hasStoredSupabaseAvatar) {
         finalAvatarUrl = currentAvatarUrl;
-        avatarDecision = "keeping_existing_supabase_avatar";
       } else {
         finalAvatarUrl = null;
-        avatarDecision = currentAvatarUrl ? "ignoring_non_supabase_avatar" : "no_avatar_available";
       }
-
-      console.log("[Avatar] decision:", {
-        email: authUser.email ?? null,
-        currentAvatarUrl,
-        mappedAvatarUrl,
-        finalAvatarUrl,
-        avatarDecision,
-      });
 
       if (mappedAvatarUrl && currentAvatarUrl !== mappedAvatarUrl) {
         try {
@@ -169,19 +157,9 @@ function App() {
             throw avatarUpdateError;
           }
 
-          console.log("[Avatar] updated DB avatar_url from email map:", {
-            email: authUser.email ?? null,
-            avatarUrl: mappedAvatarUrl,
-          });
         } catch (error) {
           console.error("[Avatar] Failed to update mapped avatar_url:", error);
         }
-      } else {
-        console.log("[Avatar] no avatar DB update needed:", {
-          email: authUser.email ?? null,
-          currentAvatarUrl,
-          mappedAvatarUrl,
-        });
       }
 
       setProfile({
