@@ -63,6 +63,28 @@ function App() {
     }
   }
 
+  async function handleRegenerateOracle() {
+    try { localStorage.removeItem("oracle_last_seen_version"); } catch (e) { void e; }
+    oracleLastFetchedDate = null;
+    try {
+      const headers = await getAuthHeaders();
+      const data = await fetch("/api/oracle?force=true", { headers }).then((r) => r.json());
+      if (!data.ready || !data.title || !data.recap || !data.content_version) return;
+      const ann = data.announcer ?? "breen";
+      setOracleData({
+        title: data.title,
+        recap: data.recap,
+        announcer: ann,
+        avatarUrl: announcerToAvatarUrl(ann),
+        contentVersion: data.content_version,
+      });
+      oracleLastFetchedDate = getIsraelToday();
+      setShowOracle(true);
+    } catch (err) {
+      console.error("[Oracle] regenerate error:", err);
+    }
+  }
+
   async function getAuthHeaders() {
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
@@ -366,6 +388,7 @@ function App() {
             profile.onboardingComplete
               ? <AppLayout
                   onSignOut={handleSignOut}
+                  onRegenerateOracle={handleRegenerateOracle}
                   backgroundStyle={courtBackgroundStyle}
                   avatarUrl={profile.avatarUrl}
                   displayName={profile.displayName ?? user.user_metadata.full_name ?? user.email}

@@ -73,8 +73,10 @@ export default async function handler(req, res) {
       return res.status(200).json({ ready: false });
     }
 
-    // Return cached content if we already generated for today in this instance.
-    if (oracleCache.date === today && oracleCache.data) {
+    // Return cached content if we already generated for today in this instance,
+    // unless the caller explicitly requests a forced regeneration.
+    const force = req.query?.force === "true";
+    if (!force && oracleCache.date === today && oracleCache.data) {
       console.log("[Oracle] returning in-memory cached result for", today);
       return res.status(200).json(oracleCache.data);
     }

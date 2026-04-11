@@ -89,7 +89,7 @@ const dropdownItemStyle = {
   cursor: "pointer",
 };
 
-export default function AppLayout({ onSignOut, backgroundStyle, avatarUrl, displayName }) {
+export default function AppLayout({ onSignOut, onRegenerateOracle, backgroundStyle, avatarUrl, displayName }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showOracleConfirm, setShowOracleConfirm] = useState(false);
@@ -107,8 +107,8 @@ export default function AppLayout({ onSignOut, backgroundStyle, avatarUrl, displ
   }, [dropdownOpen]);
 
   function handleRegenerateOracle() {
-    try { localStorage.removeItem("oracle_data_today"); } catch (e) { void e; }
-    window.location.reload();
+    setShowOracleConfirm(false);
+    if (onRegenerateOracle) onRegenerateOracle();
   }
 
   return (
