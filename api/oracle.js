@@ -1,3 +1,5 @@
+process.removeAllListeners('warning');
+
 import { createClient } from "@supabase/supabase-js";
 import { CLAUDE_MODEL } from "./_constants.js";
 
