@@ -24,9 +24,14 @@ export default function DailyPredictions({ currentUserId, refreshKey }) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        if (!token) {
+          // Session not ready yet — skip silently, interval will retry
+          return;
+        }
 
-        const res = await fetch("/api/dailyPredictions", { headers });
+        const res = await fetch("/api/dailyPredictions", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
         setError(false);
         setPredictions(data);

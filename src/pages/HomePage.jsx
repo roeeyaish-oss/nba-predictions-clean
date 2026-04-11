@@ -143,8 +143,8 @@ function TabButton({ active, label, onClick, showDirtyDot, showAlert, accentColo
             width: "8px",
             height: "8px",
             borderRadius: "50%",
-            background: accentColor,
-            boxShadow: `0 0 10px ${accentColor}`,
+            background: "#ef4444",
+            boxShadow: "0 0 10px #ef4444",
             transition: "color 300ms ease, background 300ms ease, border-color 300ms ease",
           }}
         />

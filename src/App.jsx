@@ -201,8 +201,10 @@ function App() {
         if (oracleLastFetchedDate !== today) {
           oracleLastFetchedDate = today;
           getAuthHeaders()
-            .then((headers) => fetch("/api/oracle", { headers }))
-            .then((r) => r.json())
+            .then((headers) => {
+              if (!headers.Authorization) return Promise.resolve({ ready: false });
+              return fetch("/api/oracle", { headers }).then((r) => r.json());
+            })
             .then((data) => {
               if (!data.ready || !data.title || !data.recap || !data.content_version) {
                 return;
