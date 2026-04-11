@@ -109,7 +109,7 @@ export default function OnboardingPage({ user, supabase, avatarUrl, onComplete }
       return;
     }
 
-    onComplete(displayName.trim());
+    onComplete(displayName.trim(), selectedTeam);
     navigate("/", { replace: true });
   }
 

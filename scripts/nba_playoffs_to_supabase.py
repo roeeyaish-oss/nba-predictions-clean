@@ -7,9 +7,11 @@ from pytz import timezone, utc
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import os
+import smtplib
 import socket
 import sys
 import time
+from email.message import EmailMessage
 
 load_dotenv()
 
@@ -39,6 +41,9 @@ NBA_TIMEOUT = 60
 NBA_RETRIES = 3
 NBA_RETRY_DELAY = 5  # seconds between retries
 
+# === Issue accumulator — appended throughout the run, emailed once at the end ===
+issues: list[str] = []
+
 
 def call_with_retry(fn, *args, **kwargs):
     """Call fn(*args, **kwargs) up to NBA_RETRIES times, sleeping between attempts."""
@@ -52,6 +57,46 @@ def call_with_retry(fn, *args, **kwargs):
                 print(f"Attempt {attempt} failed ({e}). Retrying in {NBA_RETRY_DELAY}s...")
                 time.sleep(NBA_RETRY_DELAY)
     raise last_err
+
+
+def safe_int(val, default=0):
+    """Convert val to int, returning default on ValueError/TypeError (e.g. NaN)."""
+    try:
+        return int(val)
+    except (ValueError, TypeError):
+        return default
+
+
+def send_alert_email(issue_list: list[str]) -> None:
+    """Send a single summary alert email if any issues were collected during the run."""
+    gmail_user = os.getenv("GMAIL_USER", "").strip()
+    gmail_password = os.getenv("GMAIL_APP_PASSWORD", "").strip()
+    if not gmail_user or not gmail_password:
+        print("Warning: GMAIL_USER or GMAIL_APP_PASSWORD not set — skipping alert email.")
+        return
+
+    body_lines = [
+        "The following issues were detected during the Court Night pipeline run:",
+        "",
+        *[f"- {issue}" for issue in issue_list],
+        "",
+        f"Run timestamp: {datetime.now(utc).isoformat()}",
+    ]
+
+    message = EmailMessage()
+    message["Subject"] = "⚠️ Court Night pipeline issues"
+    message["From"] = gmail_user
+    message["To"] = gmail_user
+    message.set_content("\n".join(body_lines))
+
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as smtp:
+            smtp.starttls()
+            smtp.login(gmail_user, gmail_password)
+            smtp.send_message(message)
+        print(f"Alert email sent to {gmail_user} ({len(issue_list)} issue(s)).")
+    except Exception as e:
+        print(f"Warning: Failed to send alert email: {e}")
 
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL") or os.environ.get("VITE_SUPABASE_URL")
@@ -195,9 +240,21 @@ def fetch_scoreboard(game_date):
     return games_df, teams_df
 
 
-games_df_y, teams_df_y = fetch_scoreboard(yesterday_est)
-games_df_t, teams_df_t = fetch_scoreboard(today_est)
-games_df_tm, teams_df_tm = fetch_scoreboard(tomorrow_est)
+# Fix 1: Wrap each day's scoreboard fetch individually so a single failure
+# doesn't crash the entire script. Failed days are skipped and logged.
+_empty_df = pd.DataFrame()
+
+def safe_fetch_scoreboard(date_str):
+    try:
+        return fetch_scoreboard(date_str)
+    except Exception as e:
+        issues.append(f"ScoreboardV3 failed for {date_str}: {e}")
+        return _empty_df.copy(), _empty_df.copy()
+
+
+games_df_y, teams_df_y   = safe_fetch_scoreboard(yesterday_est)
+games_df_t, teams_df_t   = safe_fetch_scoreboard(today_est)
+games_df_tm, teams_df_tm = safe_fetch_scoreboard(tomorrow_est)
 
 all_games = pd.concat([games_df_y, games_df_t, games_df_tm], ignore_index=True)
 all_teams = pd.concat([teams_df_y, teams_df_t, teams_df_tm], ignore_index=True)
@@ -265,10 +322,21 @@ def get_winner(game_id, home_team_id):
         team_1 = df.iloc[0]
         team_2 = df.iloc[1]
 
-        team_1_full = team_id_to_name.get(team_1['teamId'], team_1['teamName'])
-        team_2_full = team_id_to_name.get(team_2['teamId'], team_2['teamName'])
-        team_1_pts = int(team_1['points'])
-        team_2_pts = int(team_2['points'])
+        # Fix 2: Use None fallback instead of abbreviated teamName.
+        # If a team ID is missing from the lookup, log it and skip this game
+        # so no corrupt short name (e.g. "BOS") is written as the winner.
+        team_1_full = team_id_to_name.get(team_1['teamId'])
+        team_2_full = team_id_to_name.get(team_2['teamId'])
+        if not team_1_full or not team_2_full:
+            issues.append(
+                f"Unknown team ID in game {game_id}: "
+                f"team1={team_1['teamId']}, team2={team_2['teamId']}"
+            )
+            return '', None, None
+
+        # Fix 9: Use safe_int for points to avoid ValueError on NaN boxscores.
+        team_1_pts = safe_int(team_1['points'])
+        team_2_pts = safe_int(team_2['points'])
 
         if team_1_pts > team_2_pts:
             winner = team_1_full
@@ -293,7 +361,8 @@ def get_winner(game_id, home_team_id):
 try:
     print(f"Status breakdown:\n{games['gameStatusText'].value_counts().to_string()}")
 
-    final_games = games[games['gameStatusText'] == 'Final']
+    # Fix 5: Use startswith('Final') to capture OT games ("Final/OT", "Final/2OT", etc.)
+    final_games = games[games['gameStatusText'].str.startswith('Final', na=False)]
     print(f"Found {len(final_games)} final games.")
 
     results_updated_at = datetime.now(utc).isoformat()
@@ -375,6 +444,10 @@ def fetch_playoff_series(season="2024-25"):
         print(f"Warning: Could not fetch playoff series: {e}")
         return []
 
+    # Fix 8: Sort by GAME_ID ascending so the last row processed per series
+    # is always the highest game number (most up-to-date win counts).
+    df = df.sort_values("GAME_ID", ascending=True)
+
     series_map = {}
     for _, row in df.iterrows():
         sid = str(row["SERIES_ID"])
@@ -382,9 +455,30 @@ def fetch_playoff_series(season="2024-25"):
 
         if sid not in series_map:
             info = extract_playoff_info(game_id)
-            round_num = info[0] if info else 1
-            home_team = team_id_to_name.get(int(row["HOME_TEAM_ID"]), "")
-            away_team = team_id_to_name.get(int(row["VISITOR_TEAM_ID"]), "")
+
+            # Fix 3: If round can't be parsed, log it and store NULL rather than
+            # defaulting to 1 (which would apply the wrong scoring multiplier).
+            if info:
+                round_num = info[0]
+            else:
+                issues.append(
+                    f"Could not parse round from game_id {game_id} in series {sid}"
+                )
+                round_num = None
+
+            # Fix 4: Use None fallback for unknown team IDs. An empty-string team
+            # name stored in the DB breaks every downstream name comparison.
+            home_team_id = safe_int(row["HOME_TEAM_ID"])
+            away_team_id = safe_int(row["VISITOR_TEAM_ID"])
+            home_team = team_id_to_name.get(home_team_id)
+            away_team = team_id_to_name.get(away_team_id)
+            if not home_team or not away_team:
+                issues.append(
+                    f"Unknown team ID in series {sid}: "
+                    f"home={home_team_id}, away={away_team_id}"
+                )
+                continue
+
             series_map[sid] = {
                 "id": sid,
                 "round": round_num,
@@ -395,9 +489,12 @@ def fetch_playoff_series(season="2024-25"):
                 "game_ids": [],
             }
 
-        # Always update win counts from the latest row for this series
-        series_map[sid]["home_wins"] = int(row["HOME_TEAM_WINS"])
-        series_map[sid]["away_wins"] = int(row["VISITOR_TEAM_WINS"])
+        if sid not in series_map:
+            continue
+
+        # Fix 7: Use safe_int to avoid ValueError when NBA API returns NaN win counts.
+        series_map[sid]["home_wins"] = safe_int(row["HOME_TEAM_WINS"])
+        series_map[sid]["away_wins"] = safe_int(row["VISITOR_TEAM_WINS"])
         series_map[sid]["game_ids"].append(game_id)
 
     print(f"Fetched {len(series_map)} playoff series.")
@@ -423,16 +520,24 @@ def upsert_series(series_list, game_time_map):
 
         # Find the earliest game time for this series to use as the lock time.
         # Only games in the 3-day scoreboard window are in game_time_map.
-        # If the series has already had games played (wins > 0) but no game_time was
-        # found (Game 1 was earlier than yesterday), use a sentinel past timestamp so
-        # the lock check always triggers correctly.
         first_game_time = None
         for gid in s["game_ids"]:
             t = game_time_map.get(gid)
             if t and (first_game_time is None or t < first_game_time):
                 first_game_time = t
-        if first_game_time is None and (s["home_wins"] > 0 or s["away_wins"] > 0):
-            first_game_time = "1970-01-01T00:00:00Z"  # sentinel: already started
+
+        if first_game_time is None:
+            if s["home_wins"] > 0 or s["away_wins"] > 0:
+                # Series already started but Game 1 is outside the 3-day window.
+                # Use a sentinel past timestamp so the lock always triggers.
+                first_game_time = "1970-01-01T00:00:00Z"
+            else:
+                # Fix 6: New series with no game time in the window.
+                # NULL is correct (no games scheduled yet); log it so we notice.
+                issues.append(
+                    f"No game time found for new series {s['id']} "
+                    f"({s['home_team']} vs {s['away_team']})"
+                )
 
         series_payload.append({
             "id": s["id"],
@@ -583,3 +688,12 @@ except Exception as e:
 
 
 print("Done. Games, results, series, and scores are up to date.")
+
+# === Send one summary alert email if any issues were detected ===
+if issues:
+    print(f"\n{len(issues)} issue(s) detected during this run:")
+    for issue in issues:
+        print(f"  - {issue}")
+    send_alert_email(issues)
+else:
+    print("No issues detected. Clean run.")

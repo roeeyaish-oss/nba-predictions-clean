@@ -53,6 +53,7 @@ function App() {
     championshipPick: null,
     onboardingComplete: null,
   });
+  const [profileLoadError, setProfileLoadError] = useState(false);
   const [showOracle, setShowOracle] = useState(false);
   const [oracleData, setOracleData] = useState(null);
 
@@ -95,6 +96,7 @@ function App() {
     async function handleAuthUser(authUser) {
       if (!authUser) {
         setUser(null);
+        setProfileLoadError(false);
         setProfile({
           avatarUrl: null,
           displayName: null,
@@ -151,6 +153,9 @@ function App() {
         profile = data;
       } catch (error) {
         console.error("[Avatar] Failed to fetch profile:", error);
+        setUser(authUser);
+        setProfileLoadError(true);
+        return;
       }
 
       const emailKey = authUser.email?.toLowerCase() ?? "";
@@ -325,6 +330,26 @@ function App() {
     );
   }
 
+  if (profileLoadError) {
+    return (
+      <div style={{ position: "fixed", inset: 0, overflow: "hidden" }} className="text-white">
+        <div className="absolute inset-0" style={courtBackgroundStyle} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.45) 100%)", pointerEvents: "none" }} />
+        <main style={{ position: "relative", height: "100%", overflowY: "auto", zIndex: 1 }} className="flex items-center justify-center px-6 py-10">
+          <div className="w-full max-w-md" style={authCardStyle}>
+            <h1 style={{ marginBottom: "16px", fontSize: "28px", fontWeight: 700, color: "#fff" }}>Something went wrong</h1>
+            <p style={{ marginBottom: "24px", fontSize: "13px", lineHeight: 1.6, color: "rgba(255,255,255,0.45)" }}>
+              We couldn{"'"}t load your profile. Please refresh the page.
+            </p>
+            <button onClick={() => window.location.reload()} style={signInButtonStyle}>
+              Refresh
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   if (profile.onboardingComplete === null) {
     return (
       <div
@@ -358,20 +383,21 @@ function App() {
                   user={user}
                   supabase={supabase}
                   avatarUrl={profile.avatarUrl}
-                  onComplete={(displayName) => {
+                  onComplete={(displayName, championshipPick) => {
                     setProfile((currentProfile) => ({
                       ...currentProfile,
                       displayName,
+                      championshipPick,
                       onboardingComplete: true,
                     }));
                     try {
                       if (!lsGet("welcome_shown")) {
-                        lsSet("welcome_shown", "true");
                         getAuthHeaders()
                           .then((headers) => fetch(`/api/welcome?name=${encodeURIComponent(displayName)}`, { headers }))
                           .then((r) => r.json())
                           .then((data) => {
                             if (data.title && data.recap) {
+                              lsSet("welcome_shown", "true");
                               setOracleData(data);
                               setShowOracle(true);
                             }

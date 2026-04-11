@@ -30,11 +30,23 @@ function groupBy(arr, keyFn) {
   return map;
 }
 
-/** Count wins per team across all games matching this series matchup. */
-function seriesRecord(flatResults, team1, team2) {
-  let w1 = 0;
-  let w2 = 0;
-  if (!team1 || !team2) return [w1, w2];
+/** Count wins per team across all games matching this series matchup.
+ *  Uses series table win counts (NBA API, always authoritative) as primary source.
+ *  Falls back to counting individual results rows if no series record exists. */
+function seriesRecord(flatResults, team1, team2, seriesMap) {
+  if (!team1 || !team2) return [0, 0];
+
+  // Primary: use NBA API win counts from the series table
+  const key = [team1, team2].sort().join("|");
+  const s = seriesMap?.get(key);
+  if (s) {
+    return s.home_team === team1
+      ? [s.home_wins, s.away_wins]
+      : [s.away_wins, s.home_wins];
+  }
+
+  // Fallback: count from individual results rows
+  let w1 = 0, w2 = 0;
   for (const r of flatResults) {
     const home = r.games?.home_team;
     const away = r.games?.away_team;
@@ -48,17 +60,34 @@ function seriesRecord(flatResults, team1, team2) {
   return [w1, w2];
 }
 
-function seriesWinner(flatResults, team1, team2) {
-  const [w1, w2] = seriesRecord(flatResults, team1, team2);
+function seriesWinner(flatResults, team1, team2, seriesMap) {
+  if (!team1 || !team2) return null;
+
+  // Primary: series.winner is set directly by the NBA API when a team reaches 4 wins
+  const key = [team1, team2].sort().join("|");
+  const s = seriesMap?.get(key);
+  if (s?.winner) return s.winner;
+
+  // Fallback: derive from win counts
+  const [w1, w2] = seriesRecord(flatResults, team1, team2, seriesMap);
   if (w1 >= 4) return team1;
   if (w2 >= 4) return team2;
   return null;
 }
 
-/** Build full bracket state (all rounds) from game-level results data. */
-function computeBracketState(flatResults) {
+/** Build full bracket state (all rounds) from results data, using series table
+ *  win counts as the primary source where available. */
+function computeBracketState(flatResults, seriesData) {
+  // Build lookup: "TeamA|TeamB" (sorted) → series row
+  const seriesMap = new Map();
+  for (const s of seriesData || []) {
+    if (s.home_team && s.away_team) {
+      seriesMap.set([s.home_team, s.away_team].sort().join("|"), s);
+    }
+  }
+
   function buildMatchup(team1, seed1, team2, seed2) {
-    const [w1, w2] = seriesRecord(flatResults, team1, team2);
+    const [w1, w2] = seriesRecord(flatResults, team1, team2, seriesMap);
     return { team1, seed1, team2, seed2, wins1: w1, wins2: w2 };
   }
 
@@ -66,7 +95,7 @@ function computeBracketState(flatResults) {
     const r1 = firstRound.map((m) => buildMatchup(m.team1, m.seed1, m.team2, m.seed2));
 
     const r1adv = firstRound.map((m) => {
-      const w = seriesWinner(flatResults, m.team1, m.team2);
+      const w = seriesWinner(flatResults, m.team1, m.team2, seriesMap);
       if (!w) return null;
       return { team: w, seed: w === m.team1 ? m.seed1 : m.seed2 };
     });
@@ -77,14 +106,14 @@ function computeBracketState(flatResults) {
     ];
 
     const sfAdv = sf.map((m) => {
-      const w = seriesWinner(flatResults, m.team1, m.team2);
+      const w = seriesWinner(flatResults, m.team1, m.team2, seriesMap);
       if (!w) return null;
       return { team: w, seed: w === m.team1 ? m.seed1 : m.seed2 };
     });
 
     const cf = buildMatchup(sfAdv[0]?.team, sfAdv[0]?.seed, sfAdv[1]?.team, sfAdv[1]?.seed);
     const cfAdv = (() => {
-      const w = seriesWinner(flatResults, cf.team1, cf.team2);
+      const w = seriesWinner(flatResults, cf.team1, cf.team2, seriesMap);
       if (!w) return null;
       return { team: w, seed: w === cf.team1 ? cf.seed1 : cf.seed2 };
     })();
@@ -251,8 +280,8 @@ function BracketSeriesCard({ matchup, left, top, width }) {
 
 // ─── Bracket Tree ─────────────────────────────────────────────────────────────
 
-function BracketTree({ flatResults }) {
-  const state = computeBracketState(flatResults);
+function BracketTree({ flatResults, seriesData }) {
+  const state = computeBracketState(flatResults, seriesData);
 
   const colHeaders = [
     { label: "First Round", sub: "WEST", cx: B_COL.wFR + B_FR_W / 2 },
@@ -495,6 +524,7 @@ function ResultsTable({ flatResults }) {
 export default function ResultsPage({ supabase }) {
   const hadCache = useRef(false);
   const [flatResults, setFlatResults] = useState([]);
+  const [seriesData, setSeriesData] = useState([]);
   const [ready, setReady] = useState(false);
   const [animate, setAnimate] = useState(false);
   const [error, setError] = useState(false);
@@ -502,12 +532,19 @@ export default function ResultsPage({ supabase }) {
   useEffect(() => {
     async function load() {
       try {
-        const { data, error } = await supabase
-          .from("results")
-          .select("winner, home_score, away_score, games(home_team, away_team, date, game_time)");
+        const [resultsRes, seriesRes] = await Promise.all([
+          supabase
+            .from("results")
+            .select("winner, home_score, away_score, games(home_team, away_team, date, game_time)"),
+          supabase
+            .from("series")
+            .select("home_team, away_team, home_wins, away_wins, winner"),
+        ]);
 
-        if (error) throw error;
-        setFlatResults(data || []);
+        if (resultsRes.error) throw resultsRes.error;
+        if (seriesRes.error) throw seriesRes.error;
+        setFlatResults(resultsRes.data || []);
+        setSeriesData(seriesRes.data || []);
         setError(false);
       } catch (err) {
         console.error("Failed to load results:", err);
@@ -567,7 +604,7 @@ export default function ResultsPage({ supabase }) {
         borderRadius: 16,
         padding: "16px 12px",
       }}>
-        <BracketTree flatResults={flatResults} />
+        <BracketTree flatResults={flatResults} seriesData={seriesData} />
       </div>
 
       {/* Game results table */}
