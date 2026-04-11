@@ -10,7 +10,7 @@ import OnboardingPage from "@/pages/OnboardingPage";
 import OraclePopup from "@/components/OraclePopup";
 import { supabase } from "@/lib/supabase";
 import { getIsraelToday } from "@/lib/time";
-import { lsGet, lsSet, lsGetJson } from "@/lib/storage";
+import { lsGet, lsSet } from "@/lib/storage";
 import { ANNOUNCER_URL, ANNOUNCER_HE_URL } from "@/lib/constants";
 
 const EMAIL_AVATAR_MAP = {
@@ -26,7 +26,7 @@ function announcerToAvatarUrl(announcer) {
   return announcer === "barak" ? ANNOUNCER_HE_URL : ANNOUNCER_URL;
 }
 
-// Module-level guard so the oracle only fires once per Israel date,
+// Module-level guard so the oracle only fires once per session/date,
 // even if auth state change fires multiple times.
 let oracleLastFetchedDate = null;
 
@@ -175,60 +175,29 @@ function App() {
       setUser(authUser);
 
       if (profile?.onboarding_complete) {
-        try {
-          const today = getIsraelToday();
-          const stored = lsGetJson("oracle_data_today");
-
-          if (stored?.date === today && stored.ready && stored.title && stored.recap && stored.contentVersion) {
-            const ann = stored.announcer ?? "breen";
-            setOracleData({
-              title: stored.title,
-              recap: stored.recap,
-              announcer: ann,
-              avatarUrl: announcerToAvatarUrl(ann),
-              contentVersion: stored.contentVersion,
-            });
-            if (lsGet("oracle_last_seen_version") !== stored.contentVersion) {
-              setShowOracle(true);
-            }
-          }
-
-          if ((!stored || stored.date !== today || !stored.ready || !stored.contentVersion) && oracleLastFetchedDate !== today) {
-            oracleLastFetchedDate = today;
-            getAuthHeaders()
-              .then((headers) => fetch("/api/oracle", { headers }))
-              .then((r) => r.json())
-              .then((data) => {
-                if (!data.ready || !data.title || !data.recap || !data.content_version) {
-                  try { localStorage.removeItem("oracle_data_today"); } catch (e) { void e; }
-                  return;
-                }
-
-                const ann = data.announcer ?? "breen";
-                const payload = {
-                  ready: true,
-                  title: data.title,
-                  recap: data.recap,
-                  announcer: ann,
-                  contentVersion: data.content_version,
-                };
-
-                lsSet("oracle_data_today", JSON.stringify({ date: today, ...payload }));
-                setOracleData({
-                  title: payload.title,
-                  recap: payload.recap,
-                  announcer: ann,
-                  avatarUrl: announcerToAvatarUrl(ann),
-                  contentVersion: payload.contentVersion,
-                });
-                if (lsGet("oracle_last_seen_version") !== payload.contentVersion) {
-                  setShowOracle(true);
-                }
-              })
-              .catch((err) => console.error("[Oracle] fetch error:", err));
-          }
-        } catch (err) {
-          console.error("[Oracle] error:", err);
+        const today = getIsraelToday();
+        if (oracleLastFetchedDate !== today) {
+          oracleLastFetchedDate = today;
+          getAuthHeaders()
+            .then((headers) => fetch("/api/oracle", { headers }))
+            .then((r) => r.json())
+            .then((data) => {
+              if (!data.ready || !data.title || !data.recap || !data.content_version) {
+                return;
+              }
+              const ann = data.announcer ?? "breen";
+              setOracleData({
+                title: data.title,
+                recap: data.recap,
+                announcer: ann,
+                avatarUrl: announcerToAvatarUrl(ann),
+                contentVersion: data.content_version,
+              });
+              if (lsGet("oracle_last_seen_version") !== data.content_version) {
+                setShowOracle(true);
+              }
+            })
+            .catch((err) => console.error("[Oracle] fetch error:", err));
         }
       }
     }
@@ -242,7 +211,19 @@ function App() {
       handleAuthUser(session?.user ?? null);
     });
 
-    return () => subscription.unsubscribe();
+    // When the app resumes from background on iOS PWA and the date has
+    // changed, reset the guard so the next auth trigger fetches fresh oracle.
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible" && oracleLastFetchedDate !== getIsraelToday()) {
+        oracleLastFetchedDate = null;
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   function handleProfileUpdate({ displayName, championshipPick }) {
