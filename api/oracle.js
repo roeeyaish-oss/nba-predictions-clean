@@ -6,6 +6,12 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
+// In-memory cache: stores generated oracle content for the current day.
+// Keyed by Israel date so it auto-invalidates on a new day (new serverless instance).
+// Within a warm instance lifetime, subsequent calls return the cached result
+// instead of hitting Claude again.
+let oracleCache = { date: null, data: null };
+
 async function requireAuth(req, res) {
   const authHeader = req.headers.authorization || "";
   const match = authHeader.match(/^Bearer\s+(.+)$/i);
@@ -68,12 +74,11 @@ export default async function handler(req, res) {
       return res.status(200).json({ ready: false });
     }
 
-    const latestUpdatedAt = results.reduce((latest, row) => {
-      const nextValue = row.updated_at || "";
-      return nextValue > latest ? nextValue : latest;
-    }, "");
-
-    const contentVersion = `oracle:${yesterday}:${latestUpdatedAt}`;
+    // Return cached content if we already generated for this date in this instance.
+    if (oracleCache.date === yesterday && oracleCache.data) {
+      console.log("[Oracle] returning in-memory cached result for", yesterday);
+      return res.status(200).json(oracleCache.data);
+    }
 
     const gameIds = results.map((r) => r.game_id);
 
@@ -171,14 +176,18 @@ Choose CALLED IT if someone got everything right.`,
       return res.status(200).json({ ready: false });
     }
 
-    console.log("[Oracle] recap generated successfully");
-    return res.status(200).json({
+    const contentVersion = `oracle:${yesterday}:${new Date().toISOString()}`;
+    const responseData = {
       ready: true,
       content_version: contentVersion,
       title: parsed.title,
       recap: parsed.recap,
       announcer,
-    });
+    };
+
+    oracleCache = { date: yesterday, data: responseData };
+    console.log("[Oracle] recap generated successfully, cached for", yesterday);
+    return res.status(200).json(responseData);
   } catch (err) {
     console.error("Oracle error:", err);
     return res.status(500).json({ ready: false });
