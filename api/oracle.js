@@ -44,11 +44,7 @@ function getIsraelDates() {
     month: "2-digit",
     day: "2-digit",
   });
-  const today = fmt.format(new Date());
-  const yesterdayDate = new Date();
-  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-  const yesterday = fmt.format(yesterdayDate);
-  return { today, yesterday };
+  return { today: fmt.format(new Date()) };
 }
 
 export default async function handler(req, res) {
@@ -62,23 +58,24 @@ export default async function handler(req, res) {
       return;
     }
 
-    const { yesterday } = getIsraelDates();
+    const { today } = getIsraelDates();
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
     const { data: results, error: resultsError } = await supabase
       .from("results")
       .select("game_id, winner, updated_at, games!inner(home_team, away_team, date)")
-      .eq("games.date", yesterday);
+      .gte("updated_at", since);
 
     if (resultsError) throw resultsError;
-    console.log(`[Oracle] found ${results?.length ?? 0} results for ${yesterday}`);
+    console.log(`[Oracle] found ${results?.length ?? 0} results updated in the last 24h`);
     if (!results || results.length === 0) {
-      console.log("[Oracle] skip: no results found for yesterday");
+      console.log("[Oracle] skip: no results updated in the last 24h");
       return res.status(200).json({ ready: false });
     }
 
-    // Return cached content if we already generated for this date in this instance.
-    if (oracleCache.date === yesterday && oracleCache.data) {
-      console.log("[Oracle] returning in-memory cached result for", yesterday);
+    // Return cached content if we already generated for today in this instance.
+    if (oracleCache.date === today && oracleCache.data) {
+      console.log("[Oracle] returning in-memory cached result for", today);
       return res.status(200).json(oracleCache.data);
     }
 
@@ -178,7 +175,7 @@ Choose CALLED IT if someone got everything right.`,
       return res.status(200).json({ ready: false });
     }
 
-    const contentVersion = `oracle:${yesterday}:${new Date().toISOString()}`;
+    const contentVersion = `oracle:${today}:${new Date().toISOString()}`;
     const responseData = {
       ready: true,
       content_version: contentVersion,
@@ -187,8 +184,8 @@ Choose CALLED IT if someone got everything right.`,
       announcer,
     };
 
-    oracleCache = { date: yesterday, data: responseData };
-    console.log("[Oracle] recap generated successfully, cached for", yesterday);
+    oracleCache = { date: today, data: responseData };
+    console.log("[Oracle] recap generated successfully, cached for", today);
     return res.status(200).json(responseData);
   } catch (err) {
     console.error("Oracle error:", err);

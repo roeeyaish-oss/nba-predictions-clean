@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 function getInitials(name) {
   return (name || "?").trim().split(/\s+/).filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase() || "?";
@@ -16,7 +17,7 @@ export default function AvatarModal({ avatarUrl, name, onClose }) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  return (
+  return createPortal(
     <div
       onClick={onClose}
       role="button"
@@ -29,7 +30,7 @@ export default function AvatarModal({ avatarUrl, name, onClose }) {
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 2000,
+        zIndex: 9999,
         background: "rgba(0,0,0,0.85)",
         display: "flex",
         flexDirection: "column",
@@ -77,6 +78,7 @@ export default function AvatarModal({ avatarUrl, name, onClose }) {
           {name}
         </p>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }
