@@ -7,9 +7,33 @@ from pytz import timezone, utc
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import os
+import socket
+import sys
 import time
 
 load_dotenv()
+
+# === Network connectivity check ===
+# Task Scheduler may wake the machine before the network adapter is ready.
+# Retry up to 5 times with 30-second waits before giving up.
+NET_CHECK_HOST = "google.com"
+NET_CHECK_RETRIES = 5
+NET_CHECK_DELAY = 30  # seconds between attempts
+NET_CHECK_TIMEOUT = 10  # seconds per DNS resolution attempt
+
+for attempt in range(1, NET_CHECK_RETRIES + 1):
+    try:
+        socket.setdefaulttimeout(NET_CHECK_TIMEOUT)
+        socket.getaddrinfo(NET_CHECK_HOST, 443)
+        print(f"Network ready (attempt {attempt}).")
+        break
+    except OSError:
+        if attempt < NET_CHECK_RETRIES:
+            print(f"Network not ready (attempt {attempt}/{NET_CHECK_RETRIES}). Waiting {NET_CHECK_DELAY}s...")
+            time.sleep(NET_CHECK_DELAY)
+        else:
+            print(f"Network not available after {NET_CHECK_RETRIES} attempts. Exiting.")
+            sys.exit(1)
 
 NBA_TIMEOUT = 60
 NBA_RETRIES = 3
