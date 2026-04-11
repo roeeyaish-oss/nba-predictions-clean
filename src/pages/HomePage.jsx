@@ -192,13 +192,15 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   const [seriesPredictions, setSeriesPredictions] = useState({});
   const [submittingSeries, setSubmittingSeries] = useState(false);
   const [seriesMessage, setSeriesMessage] = useState(null);
+  const [savedPicks, setSavedPicks] = useState({});
 
   const submittableGames = games.filter((game) => !isGameStarted(game.gameTimeIL, game.date));
   const hasSubmittableGames = submittableGames.length > 0;
-  const hasUnsavedGamePicks = hasAnyTruthyValue(predictions);
-  const hasSavedSeriesPicks = hasAnyTruthyValue(savedSeriesPicks);
-  const shouldShowSeriesAlert = series.length > 0 && !hasSavedSeriesPicks;
   const hasSubmittableSeriesPicks = hasAnyTruthyValue(seriesPredictions);
+
+  // Badge: red dot when there are pickable games/series the user hasn't saved picks for yet
+  const hasUnpickedGames = submittableGames.some((g) => !savedPicks[g.gameId]);
+  const hasUnpickedSeries = series.some((s) => !isSeriesLocked(s) && !savedSeriesPicks[s.id]);
   const accentColor = activeTab === "series" ? SERIES_COLOR : GAME_COLOR;
   const activeTabGradient = activeTab === "series"
     ? "linear-gradient(135deg, #a5b4fc 0%, #6366f1 48%, #4338ca 100%)"
@@ -226,6 +228,22 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   useEffect(() => {
     setTabAnimationKey((current) => current + 1);
   }, [activeTab]);
+
+  useEffect(() => {
+    if (!user?.id || games.length === 0) return;
+    const gameIds = games.map((g) => g.gameId);
+    supabase
+      .from("predictions")
+      .select("game_id, pick")
+      .eq("user_id", user.id)
+      .in("game_id", gameIds)
+      .then(({ data }) => {
+        if (!data) return;
+        const map = {};
+        for (const row of data) map[row.game_id] = row.pick;
+        setSavedPicks(map);
+      });
+  }, [games, user?.id, supabase]);
 
   function handlePrediction(gameId, team) {
     setPredictions((prev) => ({ ...prev, [gameId]: prev[gameId] === team ? undefined : team }));
@@ -325,6 +343,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
       }
 
       setMessage({ type: "success", text: "Predictions submitted successfully!" });
+      setSavedPicks((prev) => ({ ...prev, ...Object.fromEntries(output.map((o) => [o.gameId, o.pick])) }));
       setPredictions({});
       setPredictionsRefreshKey((current) => current + 1);
     } catch (err) {
@@ -415,7 +434,7 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
           active={activeTab === "game"}
           label="GAME PICKS"
           onClick={() => setActiveTab("game")}
-          showDirtyDot={hasUnsavedGamePicks}
+          showDirtyDot={hasUnpickedGames}
           showAlert={false}
           accentColor={accentColor}
           activeGradient={activeTabGradient}
@@ -424,8 +443,8 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
           active={activeTab === "series"}
           label="SERIES PICKS"
           onClick={() => setActiveTab("series")}
-          showDirtyDot={hasSubmittableSeriesPicks}
-          showAlert={shouldShowSeriesAlert}
+          showDirtyDot={hasUnpickedSeries}
+          showAlert={false}
           accentColor={accentColor}
           activeGradient={activeTabGradient}
         />
