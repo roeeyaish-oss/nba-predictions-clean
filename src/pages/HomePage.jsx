@@ -259,7 +259,13 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   function isSeriesLocked(seriesItem) {
     return (seriesItem.first_game_time && new Date() >= new Date(seriesItem.first_game_time)) ||
       seriesItem.home_wins > 0 ||
-      seriesItem.away_wins > 0;
+      seriesItem.away_wins > 0 ||
+      seriesItem.home_team === "TBD" ||
+      seriesItem.away_team === "TBD";
+  }
+
+  function isSeriesTBD(seriesItem) {
+    return seriesItem.home_team === "TBD" || seriesItem.away_team === "TBD";
   }
 
   async function handleSeriesSubmit() {
@@ -625,8 +631,8 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
 
                       {isLocked ? (
                         <div style={{ textAlign: "center" }}>
-                          <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#a5b4fc" }}>
-                            🔒 Series pick locked
+                          <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: isSeriesTBD(seriesItem) ? "rgba(255,255,255,0.4)" : "#a5b4fc" }}>
+                            {isSeriesTBD(seriesItem) ? "⏳ Awaiting play-in result" : "🔒 Series pick locked"}
                           </p>
                         </div>
                       ) : (

@@ -261,7 +261,7 @@ function BracketSeriesCard({ matchup, left, top, width }) {
         }}>
           {seed ?? ""}
         </span>
-        {team ? (
+        {teamLogo(team) ? (
           <img
             src={teamLogo(team)}
             alt={team}
@@ -273,7 +273,7 @@ function BracketSeriesCard({ matchup, left, top, width }) {
         )}
         <span style={{
           flex: 1, fontSize: 11,
-          color: isWinner ? "#C9B037" : team ? "#fff" : "rgba(255,255,255,0.3)",
+          color: isWinner ? "#C9B037" : (team && team !== "TBD") ? "#fff" : "rgba(255,255,255,0.3)",
           fontWeight: isWinner ? 700 : 500,
           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
         }}>

@@ -1,8 +1,8 @@
 # === nba_playoffs_to_supabase.py ===
 
 import pandas as pd
-from nba_api.stats.endpoints import scoreboardv3, boxscoretraditionalv3, playoffpicture
-from datetime import datetime, timedelta, date
+from nba_api.stats.endpoints import scoreboardv3, boxscoretraditionalv3, commonplayoffseries
+from datetime import datetime, timedelta
 from pytz import timezone, utc
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -12,6 +12,10 @@ import socket
 import sys
 import time
 from email.message import EmailMessage
+
+DRY_RUN = "--dry-run" in sys.argv
+if DRY_RUN:
+    print("=== DRY-RUN MODE: no data will be written to Supabase ===")
 
 load_dotenv()
 
@@ -293,6 +297,8 @@ games['Away Team Image'] = games['awayTeamId'].map(team_id_to_image).fillna('')
 
 
 # === Step 4: Build and upsert games table ===
+# Only write playoff games (IDs starting with "004").
+# Play-in ("005") and regular-season ("002") games are excluded.
 games_cleaned = pd.DataFrame({
     'id': games['gameId'].astype(str),
     'date': games['Date (IL)'],
@@ -302,6 +308,7 @@ games_cleaned = pd.DataFrame({
     'away_img': games['Away Team Image'],
     'game_time': games['Game Time (IL)'],
 })
+games_cleaned = games_cleaned[games_cleaned['id'].str.startswith('004')]
 
 try:
     games_payload = games_cleaned.to_dict(orient='records')
@@ -362,7 +369,11 @@ try:
     print(f"Status breakdown:\n{games['gameStatusText'].value_counts().to_string()}")
 
     # Fix 5: Use startswith('Final') to capture OT games ("Final/OT", "Final/2OT", etc.)
-    final_games = games[games['gameStatusText'].str.startswith('Final', na=False)]
+    # Exclude play-in games ("005") — they're not part of the prediction pool.
+    final_games = games[
+        games['gameStatusText'].str.startswith('Final', na=False) &
+        ~games['gameId'].astype(str).str.startswith('005')
+    ]
     print(f"Found {len(final_games)} final games.")
 
     results_updated_at = datetime.now(utc).isoformat()
@@ -424,107 +435,159 @@ def determine_series_winner(home_team: str, away_team: str, home_wins: int, away
     return None
 
 
-def fetch_series_from_playoff_picture(season_id="22025"):
-    """
-    Fetches active playoff series using PlayoffPicture.
-    Works before and during the playoffs (unlike CommonPlayoffSeries).
+# Round 1: series number (SERIES_ID[8]) → (conference, high_seed, low_seed)
+# Empirically verified against CommonPlayoffSeries for 2025-26:
+#   S=1 → East 2v7  (Boston vs Philadelphia)
+#   S=2 → East 3v6  (New York vs Atlanta)
+#   S=3 → East 4v5  (Cleveland vs Toronto)
+#   S=4 → East 1v8  (absent until play-in resolves)
+#   S=5 → West 2v7  (San Antonio vs Portland)
+#   S=6 → West 3v6  (Denver vs Minnesota)
+#   S=7 → West 4v5  (LA Lakers vs Houston)
+#   S=8 → West 1v8  (absent until play-in resolves)
+_R1_SERIES_TO_SEEDS = {
+    1: ("East", 2, 7),
+    2: ("East", 3, 6),
+    3: ("East", 4, 5),
+    4: ("East", 1, 8),
+    5: ("West", 2, 7),
+    6: ("West", 3, 6),
+    7: ("West", 4, 5),
+    8: ("West", 1, 8),
+}
 
-    ID format: "2026_{Conf}_{highSeed}v{lowSeed}"  e.g. "2026_East_1v8"
-    Round is inferred from matchup count per conference: 4=R1, 2=R2, 1=CF.
+
+def series_id_to_canonical(nba_series_id: str):
+    """
+    Derives our canonical series ID from the NBA API SERIES_ID string.
+
+    SERIES_ID format: 004YY0RRS where:
+      [0:3] = "004" (playoff prefix)
+      [3:5] = season year (e.g. "25" for 2025-26)
+      [5:8] = round zero-padded (e.g. "001" = Round 1)
+      [8]   = series number within round (1-8 for R1)
+
+    Returns "2026_{Conf}_{high}v{low}" for Round 1.
+    Returns None for rounds 2-4 (log-but-skip; add when needed).
+    """
+    try:
+        round_num = int(nba_series_id[5:8])
+        series_num = int(nba_series_id[8])
+    except (ValueError, IndexError):
+        return None
+
+    if round_num == 1:
+        seeds = _R1_SERIES_TO_SEEDS.get(series_num)
+        if seeds is None:
+            return None
+        conf, high, low = seeds
+        return f"2026_{conf}_{high}v{low}"
+
+    # Rounds 2-4: not yet implemented — will be added when needed
+    return None
+
+
+def fetch_series_from_common_playoff_series(season="2025-26"):
+    """
+    Fetches active playoff series using CommonPlayoffSeries.
+    Only series present in the API are upserted; absent series (E1v8, W1v8)
+    are not touched so their TBD values in the DB remain intact.
+
+    Wins are counted from the results table via each series' GAME_IDs.
 
     Returns a list of series dicts in the format expected by upsert_series():
       {id, round, home_team, away_team, home_wins, away_wins, game_ids}
     """
     try:
         endpoint = call_with_retry(
-            playoffpicture.PlayoffPicture,
-            season_id=season_id,
+            commonplayoffseries.CommonPlayoffSeries,
+            season=season,
             timeout=NBA_TIMEOUT,
         )
-        dfs = endpoint.get_data_frames()
-        east_df = dfs[0]   # East matchups
-        west_df = dfs[1]   # West matchups
+        df = endpoint.get_data_frames()[0]
     except Exception as e:
-        print(f"Warning: Could not fetch PlayoffPicture: {e}")
+        print(f"Warning: Could not fetch CommonPlayoffSeries: {e}")
         return []
 
-    if east_df.empty and west_df.empty:
-        print("No playoff matchup data returned from PlayoffPicture.")
+    if df.empty:
+        print("No data returned from CommonPlayoffSeries.")
         return []
 
-    # Build a team-pair → game_ids lookup from playoff games in the 3-day scoreboard.
-    # upsert_series() uses game_ids to derive first_game_time for pick locking.
-    team_pair_to_game_ids = {}
-    for _, row in games.iterrows():
-        gid = str(row["gameId"])
-        if not gid.startswith("004"):
-            continue
-        home = team_id_to_name.get(safe_int(row.get("homeTeamId", 0)))
-        away = team_id_to_name.get(safe_int(row.get("awayTeamId", 0)))
-        if home and away:
-            key = frozenset([home, away])
-            team_pair_to_game_ids.setdefault(key, [])
-            team_pair_to_game_ids[key].append(gid)
+    # Fetch all results once to count wins per series
+    try:
+        results_resp = supabase.table("results").select("game_id, winner").execute()
+        results_map = {r["game_id"]: r["winner"] for r in (results_resp.data or [])}
+    except Exception as e:
+        print(f"Warning: Could not fetch results for win counting: {e}")
+        results_map = {}
+
+    # Group rows by SERIES_ID (one row per game in each series)
+    series_groups: dict[str, list] = {}
+    for _, row in df.iterrows():
+        sid = str(row["SERIES_ID"]).strip()
+        series_groups.setdefault(sid, []).append(row)
 
     series_list = []
-    # 4 matchups per conference = Round 1, 2 = Round 2, 1 = Conf Finals
-    round_from_count = {4: 1, 2: 2, 1: 3}
-
-    for conf_name, df in [("East", east_df), ("West", west_df)]:
-        if df.empty:
-            continue
-        row_count = len(df)
-        round_num = round_from_count.get(row_count)
-        if round_num is None:
-            issues.append(
-                f"PlayoffPicture: unexpected {conf_name} matchup count {row_count} "
-                f"(expected 4, 2, or 1)"
-            )
-            continue
-
-        for _, row in df.iterrows():
-            high_seed    = safe_int(row["HIGH_SEED_RANK"])
-            low_seed     = safe_int(row["LOW_SEED_RANK"])
-            high_team_id = safe_int(row["HIGH_SEED_TEAM_ID"])
-            low_team_id  = safe_int(row["LOW_SEED_TEAM_ID"])
-
-            home_team = team_id_to_name.get(high_team_id)
-            away_team = team_id_to_name.get(low_team_id)
-
-            if not home_team or not away_team:
-                issues.append(
-                    f"PlayoffPicture: unknown team ID in {conf_name} — "
-                    f"high={high_team_id}, low={low_team_id}"
-                )
-                continue
-
-            # PlayoffPicture returns play-in wins before the playoffs start.
-            # Zero them out until the first playoff game date.
-            PLAYOFF_START = date(2026, 4, 18)
-            if date.today() < PLAYOFF_START:
-                home_wins = 0
-                away_wins = 0
+    for nba_series_id, rows in series_groups.items():
+        canonical_id = series_id_to_canonical(nba_series_id)
+        if not canonical_id:
+            try:
+                round_num = int(nba_series_id[5:8])
+            except (ValueError, IndexError):
+                round_num = 0
+            if round_num > 1:
+                print(f"Skipping series {nba_series_id} (round {round_num} canonical mapping not yet implemented)")
             else:
-                home_wins = safe_int(row["HIGH_SEED_SERIES_W"])
-                away_wins = safe_int(row["HIGH_SEED_SERIES_L"])
+                issues.append(
+                    f"CommonPlayoffSeries: unrecognised R1 SERIES_ID {nba_series_id!r} — skipping"
+                )
+            continue
 
-            series_id = f"2026_{conf_name}_{high_seed}v{low_seed}"
+        # Sort by GAME_ID; Game 1 determines home/away (home court = higher seed)
+        sorted_rows = sorted(rows, key=lambda r: str(r["GAME_ID"]))
+        game1 = sorted_rows[0]
+        home_team_id = safe_int(game1["HOME_TEAM_ID"])
+        away_team_id = safe_int(game1["VISITOR_TEAM_ID"])
 
-            game_ids = list(
-                team_pair_to_game_ids.get(frozenset([home_team, away_team]), [])
+        home_team = team_id_to_name.get(home_team_id)
+        away_team = team_id_to_name.get(away_team_id)
+
+        if not home_team or not away_team:
+            issues.append(
+                f"CommonPlayoffSeries: unknown team ID in {canonical_id} — "
+                f"home_id={home_team_id}, away_id={away_team_id}"
             )
+            continue
 
-            series_list.append({
-                "id": series_id,
-                "round": round_num,
-                "home_team": home_team,
-                "away_team": away_team,
-                "home_wins": home_wins,
-                "away_wins": away_wins,
-                "game_ids": game_ids,
-            })
+        game_ids = [str(r["GAME_ID"]).strip() for r in rows]
 
-    print(f"Fetched {len(series_list)} playoff series from PlayoffPicture.")
+        # Count wins from the results table
+        home_wins = 0
+        away_wins = 0
+        for gid in game_ids:
+            winner = results_map.get(gid)
+            if winner == home_team:
+                home_wins += 1
+            elif winner == away_team:
+                away_wins += 1
+
+        # Round number is encoded in SERIES_ID positions [5:8] (zero-padded, e.g. "001" = R1)
+        try:
+            round_num = int(nba_series_id[5:8])
+        except (ValueError, IndexError):
+            round_num = 1
+
+        series_list.append({
+            "id": canonical_id,
+            "round": round_num,
+            "home_team": home_team,
+            "away_team": away_team,
+            "home_wins": home_wins,
+            "away_wins": away_wins,
+            "game_ids": game_ids,
+        })
+
+    print(f"Fetched {len(series_list)} playoff series from CommonPlayoffSeries.")
     return series_list
 
 
@@ -579,22 +642,38 @@ def upsert_series(series_list, game_time_map):
             "updated_at": datetime.now(utc).isoformat(),
         })
 
-    supabase.table("series").upsert(series_payload).execute()
-    print(f"Upserted {len(series_payload)} series.")
+    if DRY_RUN:
+        print(f"[DRY-RUN] Would upsert {len(series_payload)} series:")
+        for row in series_payload:
+            print(
+                f"  {row['id']:<25}  {row['home_team']:<28} vs "
+                f"{row['away_team']:<28}  {row['home_wins']}-{row['away_wins']}  "
+                f"[{row['status']}]  first_game_time={row['first_game_time']}"
+            )
+    else:
+        supabase.table("series").upsert(series_payload).execute()
+        print(f"Upserted {len(series_payload)} series.")
 
     # Tag games with their playoff_round and series_id
     tagged = 0
     for s in series_list:
         for gid in s["game_ids"]:
-            try:
-                supabase.table("games").update({
-                    "playoff_round": s["round"],
-                    "series_id": s["id"],
-                }).eq("id", gid).execute()
+            if DRY_RUN:
+                print(f"[DRY-RUN] Would tag game {gid} -> round={s['round']}, series_id={s['id']}")
                 tagged += 1
-            except Exception as e:
-                print(f"Warning: Could not tag game {gid}: {e}")
-    print(f"Tagged {tagged} games with playoff round/series.")
+            else:
+                try:
+                    supabase.table("games").update({
+                        "playoff_round": s["round"],
+                        "series_id": s["id"],
+                    }).eq("id", gid).execute()
+                    tagged += 1
+                except Exception as e:
+                    print(f"Warning: Could not tag game {gid}: {e}")
+    if DRY_RUN:
+        print(f"[DRY-RUN] Would tag {tagged} games with playoff round/series.")
+    else:
+        print(f"Tagged {tagged} games with playoff round/series.")
 
 
 try:
@@ -607,7 +686,7 @@ try:
         if t:
             game_time_map[gid] = t
 
-    playoff_series = fetch_series_from_playoff_picture()
+    playoff_series = fetch_series_from_common_playoff_series(season="2025-26")
     upsert_series(playoff_series, game_time_map)
 except Exception as e:
     print(f"Error updating playoff series: {e}")

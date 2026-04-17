@@ -54,9 +54,11 @@ export const TEAM_SHORT = {
   "Atlanta Hawks":           "Hawks",
   "Cleveland Cavaliers":     "Cavaliers",
   "Toronto Raptors":         "Raptors",
+  "TBD":                     "TBD",
 };
 
 export function teamLogo(teamName) {
+  if (!teamName || teamName === "TBD") return null;
   const abbr = TEAM_ABBR[teamName] ?? teamName;
   return `${ESPN_LOGO_BASE}/${abbr}.png`;
 }
