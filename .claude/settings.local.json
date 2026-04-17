@@ -7,7 +7,8 @@
       "Bash(python scripts/nba_playoffs_to_supabase.py)",
       "Bash(pip install:*)",
       "Bash(pip show:*)",
-      "Bash(python -c \"from nba_api.stats.endpoints import scoreboardv3; print\\('scoreboardv3 available'\\)\")"
+      "Bash(python -c \"from nba_api.stats.endpoints import scoreboardv3; print\\('scoreboardv3 available'\\)\")",
+      "Bash(python -c ':*)"
     ]
   }
 }

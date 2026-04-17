@@ -2,7 +2,7 @@
 
 import pandas as pd
 from nba_api.stats.endpoints import scoreboardv3, boxscoretraditionalv3, playoffpicture
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from pytz import timezone, utc
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -498,8 +498,15 @@ def fetch_series_from_playoff_picture(season_id="22025"):
                 )
                 continue
 
-            home_wins = safe_int(row["HIGH_SEED_SERIES_W"])
-            away_wins = safe_int(row["HIGH_SEED_SERIES_L"])
+            # PlayoffPicture returns play-in wins before the playoffs start.
+            # Zero them out until the first playoff game date.
+            PLAYOFF_START = date(2026, 4, 18)
+            if date.today() < PLAYOFF_START:
+                home_wins = 0
+                away_wins = 0
+            else:
+                home_wins = safe_int(row["HIGH_SEED_SERIES_W"])
+                away_wins = safe_int(row["HIGH_SEED_SERIES_L"])
 
             series_id = f"2026_{conf_name}_{high_seed}v{low_seed}"
 
