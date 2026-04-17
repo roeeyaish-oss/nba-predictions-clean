@@ -288,3 +288,309 @@
     Upserted scores for 2 users.
     Done. Games, results, series, and scores are up to date.
     Email notification sent to roeeyaish@gmail.com.
+
+[2026-04-12 09:58:41] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (04/11/2026), today (04/12/2026), tomorrow (04/13/2026)
+    Saved 15 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    8:30 pm ET    8
+    6:00 pm ET    7
+    Found 0 final games.
+    No final games to update.
+    Fetching playoff series...
+    Error updating playoff series: 'HOME_TEAM_WINS'
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    
+    1 issue(s) detected during this run:
+      - Could not parse round from game_id 0042400101 in series 004240010
+    Alert email sent to roeeyaish@gmail.com (1 issue(s)).
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-04-12 15:00:02] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (04/11/2026), today (04/12/2026), tomorrow (04/13/2026)
+    Saved 15 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    8:30 pm ET    8
+    6:00 pm ET    7
+    Found 0 final games.
+    No final games to update.
+    Fetching playoff series...
+    Error updating playoff series: 'HOME_TEAM_WINS'
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    
+    1 issue(s) detected during this run:
+      - Could not parse round from game_id 0042400101 in series 004240010
+    Alert email sent to roeeyaish@gmail.com (1 issue(s)).
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-04-13 09:32:05] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (04/12/2026), today (04/13/2026), tomorrow (04/14/2026)
+    Saved 17 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final          15
+    7:30 pm ET      1
+    10:00 pm ET     1
+    Found 15 final games.
+    Game 0022501186 | Boston Celtics 113 vs Orlando Magic 108 | Winner: Boston Celtics
+    Game 0022501187 | Cleveland Cavaliers 130 vs Washington Wizards 117 | Winner: Cleveland Cavaliers
+    Game 0022501188 | Indiana Pacers 121 vs Detroit Pistons 133 | Winner: Detroit Pistons
+    Game 0022501189 | Miami Heat 143 vs Atlanta Hawks 117 | Winner: Miami Heat
+    Game 0022501190 | New York Knicks 96 vs Charlotte Hornets 110 | Winner: Charlotte Hornets
+    Game 0022501191 | Philadelphia 76ers 126 vs Milwaukee Bucks 106 | Winner: Philadelphia 76ers
+    Game 0022501192 | Toronto Raptors 136 vs Brooklyn Nets 101 | Winner: Toronto Raptors
+    Game 0022501193 | Dallas Mavericks 149 vs Chicago Bulls 128 | Winner: Dallas Mavericks
+    Game 0022501194 | Houston Rockets 132 vs Memphis Grizzlies 101 | Winner: Houston Rockets
+    Game 0022501195 | Minnesota Timberwolves 132 vs New Orleans Pelicans 126 | Winner: Minnesota Timberwolves
+    Game 0022501196 | Oklahoma City Thunder 103 vs Phoenix Suns 135 | Winner: Phoenix Suns
+    Game 0022501197 | San Antonio Spurs 118 vs Denver Nuggets 128 | Winner: Denver Nuggets
+    Game 0022501198 | Los Angeles Lakers 131 vs Utah Jazz 107 | Winner: Los Angeles Lakers
+    Game 0022501199 | LA Clippers 115 vs Golden State Warriors 110 | Winner: LA Clippers
+    Game 0022501200 | Portland Trail Blazers 122 vs Sacramento Kings 110 | Winner: Portland Trail Blazers
+    Upserted 15 results.
+    Fetching playoff series...
+    Error updating playoff series: 'HOME_TEAM_WINS'
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    
+    1 issue(s) detected during this run:
+      - Could not parse round from game_id 0042400101 in series 004240010
+    Alert email sent to roeeyaish@gmail.com (1 issue(s)).
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-04-13 15:00:03] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (04/12/2026), today (04/13/2026), tomorrow (04/14/2026)
+    Saved 17 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final          15
+    7:30 pm ET      1
+    10:00 pm ET     1
+    Found 15 final games.
+    Game 0022501186 | Boston Celtics 113 vs Orlando Magic 108 | Winner: Boston Celtics
+    Game 0022501187 | Cleveland Cavaliers 130 vs Washington Wizards 117 | Winner: Cleveland Cavaliers
+    Game 0022501188 | Indiana Pacers 121 vs Detroit Pistons 133 | Winner: Detroit Pistons
+    Game 0022501189 | Miami Heat 143 vs Atlanta Hawks 117 | Winner: Miami Heat
+    Game 0022501190 | New York Knicks 96 vs Charlotte Hornets 110 | Winner: Charlotte Hornets
+    Game 0022501191 | Philadelphia 76ers 126 vs Milwaukee Bucks 106 | Winner: Philadelphia 76ers
+    Game 0022501192 | Toronto Raptors 136 vs Brooklyn Nets 101 | Winner: Toronto Raptors
+    Game 0022501193 | Dallas Mavericks 149 vs Chicago Bulls 128 | Winner: Dallas Mavericks
+    Game 0022501194 | Houston Rockets 132 vs Memphis Grizzlies 101 | Winner: Houston Rockets
+    Game 0022501195 | Minnesota Timberwolves 132 vs New Orleans Pelicans 126 | Winner: Minnesota Timberwolves
+    Game 0022501196 | Oklahoma City Thunder 103 vs Phoenix Suns 135 | Winner: Phoenix Suns
+    Game 0022501197 | San Antonio Spurs 118 vs Denver Nuggets 128 | Winner: Denver Nuggets
+    Game 0022501198 | Los Angeles Lakers 131 vs Utah Jazz 107 | Winner: Los Angeles Lakers
+    Game 0022501199 | LA Clippers 115 vs Golden State Warriors 110 | Winner: LA Clippers
+    Game 0022501200 | Portland Trail Blazers 122 vs Sacramento Kings 110 | Winner: Portland Trail Blazers
+    Upserted 15 results.
+    Fetching playoff series...
+    Error updating playoff series: 'HOME_TEAM_WINS'
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    
+    1 issue(s) detected during this run:
+      - Could not parse round from game_id 0042400101 in series 004240010
+    Alert email sent to roeeyaish@gmail.com (1 issue(s)).
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-04-14 09:54:47] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (04/13/2026), today (04/14/2026), tomorrow (04/15/2026)
+    Saved 4 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    7:30 pm ET     2
+    10:00 pm ET    2
+    Found 0 final games.
+    No final games to update.
+    Fetching playoff series...
+    Error updating playoff series: 'HOME_TEAM_WINS'
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    
+    1 issue(s) detected during this run:
+      - Could not parse round from game_id 0042400101 in series 004240010
+    Alert email sent to roeeyaish@gmail.com (1 issue(s)).
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-04-14 15:00:03] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (04/13/2026), today (04/14/2026), tomorrow (04/15/2026)
+    Saved 4 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    7:30 pm ET     2
+    10:00 pm ET    2
+    Found 0 final games.
+    No final games to update.
+    Fetching playoff series...
+    Error updating playoff series: 'HOME_TEAM_WINS'
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    
+    1 issue(s) detected during this run:
+      - Could not parse round from game_id 0042400101 in series 004240010
+    Alert email sent to roeeyaish@gmail.com (1 issue(s)).
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-04-15 11:28:58] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (04/14/2026), today (04/15/2026), tomorrow (04/16/2026)
+    Saved 4 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final/OT       1
+    Final          1
+    7:30 pm ET     1
+    10:00 pm ET    1
+    Found 2 final games.
+    Game 0052500111 | Charlotte Hornets 127 vs Miami Heat 126 | Winner: Charlotte Hornets
+    Game 0052500121 | Phoenix Suns 110 vs Portland Trail Blazers 114 | Winner: Portland Trail Blazers
+    Upserted 2 results.
+    Fetching playoff series...
+    Error updating playoff series: 'HOME_TEAM_WINS'
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    
+    1 issue(s) detected during this run:
+      - Could not parse round from game_id 0042400101 in series 004240010
+    Alert email sent to roeeyaish@gmail.com (1 issue(s)).
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-04-15 15:34:20] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (04/14/2026), today (04/15/2026), tomorrow (04/16/2026)
+    Saved 4 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final/OT       1
+    Final          1
+    7:30 pm ET     1
+    10:00 pm ET    1
+    Found 2 final games.
+    Game 0052500111 | Charlotte Hornets 127 vs Miami Heat 126 | Winner: Charlotte Hornets
+    Game 0052500121 | Phoenix Suns 110 vs Portland Trail Blazers 114 | Winner: Portland Trail Blazers
+    Upserted 2 results.
+    Fetching playoff series...
+    Error updating playoff series: 'HOME_TEAM_WINS'
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    
+    1 issue(s) detected during this run:
+      - Could not parse round from game_id 0042400101 in series 004240010
+    Alert email sent to roeeyaish@gmail.com (1 issue(s)).
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-04-16 08:16:20] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (04/15/2026), today (04/16/2026), tomorrow (04/17/2026)
+    Saved 4 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final          2
+    7:30 pm ET     1
+    10:00 pm ET    1
+    Found 2 final games.
+    Game 0052500101 | Philadelphia 76ers 109 vs Orlando Magic 97 | Winner: Philadelphia 76ers
+    Game 0052500131 | LA Clippers 121 vs Golden State Warriors 126 | Winner: Golden State Warriors
+    Upserted 2 results.
+    Fetching playoff series...
+    Error updating playoff series: 'HOME_TEAM_WINS'
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    
+    1 issue(s) detected during this run:
+      - Could not parse round from game_id 0042400101 in series 004240010
+    Alert email sent to roeeyaish@gmail.com (1 issue(s)).
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-04-16 15:00:03] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (04/15/2026), today (04/16/2026), tomorrow (04/17/2026)
+    Saved 4 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final          2
+    7:30 pm ET     1
+    10:00 pm ET    1
+    Found 2 final games.
+    Game 0052500101 | Philadelphia 76ers 109 vs Orlando Magic 97 | Winner: Philadelphia 76ers
+    Game 0052500131 | LA Clippers 121 vs Golden State Warriors 126 | Winner: Golden State Warriors
+    Upserted 2 results.
+    Fetching playoff series...
+    Error updating playoff series: 'HOME_TEAM_WINS'
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    
+    1 issue(s) detected during this run:
+      - Could not parse round from game_id 0042400101 in series 004240010
+    Alert email sent to roeeyaish@gmail.com (1 issue(s)).
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-04-17 13:11:14] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (04/16/2026), today (04/17/2026), tomorrow (04/18/2026)
+    Saved 6 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    7:30 pm ET     1
+    10:00 pm ET    1
+    1:00 pm ET     1
+    3:30 pm ET     1
+    6:00 pm ET     1
+    8:30 pm ET     1
+    Found 0 final games.
+    No final games to update.
+    Fetching playoff series...
+    Error updating playoff series: 'HOME_TEAM_WINS'
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    
+    1 issue(s) detected during this run:
+      - Could not parse round from game_id 0042400101 in series 004240010
+    Alert email sent to roeeyaish@gmail.com (1 issue(s)).
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-04-17 15:00:02] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (04/16/2026), today (04/17/2026), tomorrow (04/18/2026)
+    Saved 6 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    7:30 pm ET     1
+    10:00 pm ET    1
+    1:00 pm ET     1
+    3:30 pm ET     1
+    6:00 pm ET     1
+    8:30 pm ET     1
+    Found 0 final games.
+    No final games to update.
+    Fetching playoff series...
+    Error updating playoff series: 'HOME_TEAM_WINS'
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    
+    1 issue(s) detected during this run:
+      - Could not parse round from game_id 0042400101 in series 004240010
+    Alert email sent to roeeyaish@gmail.com (1 issue(s)).
+    Email notification sent to roeeyaish@gmail.com.

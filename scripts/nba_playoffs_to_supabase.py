@@ -1,7 +1,7 @@
 # === nba_playoffs_to_supabase.py ===
 
 import pandas as pd
-from nba_api.stats.endpoints import scoreboardv3, boxscoretraditionalv3, commonplayoffseries
+from nba_api.stats.endpoints import scoreboardv3, boxscoretraditionalv3, playoffpicture
 from datetime import datetime, timedelta
 from pytz import timezone, utc
 from supabase import create_client, Client
@@ -424,81 +424,101 @@ def determine_series_winner(home_team: str, away_team: str, home_wins: int, away
     return None
 
 
-def fetch_playoff_series(season="2024-25"):
+def fetch_series_from_playoff_picture(season_id="22025"):
     """
-    Fetches all playoff series for the given season using CommonPlayoffSeries.
-    Returns a list of series dicts keyed by NBA series_id.
-    Each dict: {id, round, home_team, away_team, home_wins, away_wins, game_ids}
+    Fetches active playoff series using PlayoffPicture.
+    Works before and during the playoffs (unlike CommonPlayoffSeries).
+
+    ID format: "2026_{Conf}_{highSeed}v{lowSeed}"  e.g. "2026_East_1v8"
+    Round is inferred from matchup count per conference: 4=R1, 2=R2, 1=CF.
+
+    Returns a list of series dicts in the format expected by upsert_series():
+      {id, round, home_team, away_team, home_wins, away_wins, game_ids}
     """
     try:
         endpoint = call_with_retry(
-            commonplayoffseries.CommonPlayoffSeries,
-            season=season,
+            playoffpicture.PlayoffPicture,
+            season_id=season_id,
             timeout=NBA_TIMEOUT,
         )
-        df = endpoint.get_data_frames()[0]
-        if df.empty:
-            print("No playoff series data returned.")
-            return []
+        dfs = endpoint.get_data_frames()
+        east_df = dfs[0]   # East matchups
+        west_df = dfs[1]   # West matchups
     except Exception as e:
-        print(f"Warning: Could not fetch playoff series: {e}")
+        print(f"Warning: Could not fetch PlayoffPicture: {e}")
         return []
 
-    # Fix 8: Sort by GAME_ID ascending so the last row processed per series
-    # is always the highest game number (most up-to-date win counts).
-    df = df.sort_values("GAME_ID", ascending=True)
+    if east_df.empty and west_df.empty:
+        print("No playoff matchup data returned from PlayoffPicture.")
+        return []
 
-    series_map = {}
-    for _, row in df.iterrows():
-        sid = str(row["SERIES_ID"])
-        game_id = str(row["GAME_ID"])
+    # Build a team-pair → game_ids lookup from playoff games in the 3-day scoreboard.
+    # upsert_series() uses game_ids to derive first_game_time for pick locking.
+    team_pair_to_game_ids = {}
+    for _, row in games.iterrows():
+        gid = str(row["gameId"])
+        if not gid.startswith("004"):
+            continue
+        home = team_id_to_name.get(safe_int(row.get("homeTeamId", 0)))
+        away = team_id_to_name.get(safe_int(row.get("awayTeamId", 0)))
+        if home and away:
+            key = frozenset([home, away])
+            team_pair_to_game_ids.setdefault(key, [])
+            team_pair_to_game_ids[key].append(gid)
 
-        if sid not in series_map:
-            info = extract_playoff_info(game_id)
+    series_list = []
+    # 4 matchups per conference = Round 1, 2 = Round 2, 1 = Conf Finals
+    round_from_count = {4: 1, 2: 2, 1: 3}
 
-            # Fix 3: If round can't be parsed, log it and store NULL rather than
-            # defaulting to 1 (which would apply the wrong scoring multiplier).
-            if info:
-                round_num = info[0]
-            else:
-                issues.append(
-                    f"Could not parse round from game_id {game_id} in series {sid}"
-                )
-                round_num = None
+    for conf_name, df in [("East", east_df), ("West", west_df)]:
+        if df.empty:
+            continue
+        row_count = len(df)
+        round_num = round_from_count.get(row_count)
+        if round_num is None:
+            issues.append(
+                f"PlayoffPicture: unexpected {conf_name} matchup count {row_count} "
+                f"(expected 4, 2, or 1)"
+            )
+            continue
 
-            # Fix 4: Use None fallback for unknown team IDs. An empty-string team
-            # name stored in the DB breaks every downstream name comparison.
-            home_team_id = safe_int(row["HOME_TEAM_ID"])
-            away_team_id = safe_int(row["VISITOR_TEAM_ID"])
-            home_team = team_id_to_name.get(home_team_id)
-            away_team = team_id_to_name.get(away_team_id)
+        for _, row in df.iterrows():
+            high_seed    = safe_int(row["HIGH_SEED_RANK"])
+            low_seed     = safe_int(row["LOW_SEED_RANK"])
+            high_team_id = safe_int(row["HIGH_SEED_TEAM_ID"])
+            low_team_id  = safe_int(row["LOW_SEED_TEAM_ID"])
+
+            home_team = team_id_to_name.get(high_team_id)
+            away_team = team_id_to_name.get(low_team_id)
+
             if not home_team or not away_team:
                 issues.append(
-                    f"Unknown team ID in series {sid}: "
-                    f"home={home_team_id}, away={away_team_id}"
+                    f"PlayoffPicture: unknown team ID in {conf_name} — "
+                    f"high={high_team_id}, low={low_team_id}"
                 )
                 continue
 
-            series_map[sid] = {
-                "id": sid,
+            home_wins = safe_int(row["HIGH_SEED_SERIES_W"])
+            away_wins = safe_int(row["HIGH_SEED_SERIES_L"])
+
+            series_id = f"2026_{conf_name}_{high_seed}v{low_seed}"
+
+            game_ids = list(
+                team_pair_to_game_ids.get(frozenset([home_team, away_team]), [])
+            )
+
+            series_list.append({
+                "id": series_id,
                 "round": round_num,
                 "home_team": home_team,
                 "away_team": away_team,
-                "home_wins": 0,
-                "away_wins": 0,
-                "game_ids": [],
-            }
+                "home_wins": home_wins,
+                "away_wins": away_wins,
+                "game_ids": game_ids,
+            })
 
-        if sid not in series_map:
-            continue
-
-        # Fix 7: Use safe_int to avoid ValueError when NBA API returns NaN win counts.
-        series_map[sid]["home_wins"] = safe_int(row["HOME_TEAM_WINS"])
-        series_map[sid]["away_wins"] = safe_int(row["VISITOR_TEAM_WINS"])
-        series_map[sid]["game_ids"].append(game_id)
-
-    print(f"Fetched {len(series_map)} playoff series.")
-    return list(series_map.values())
+    print(f"Fetched {len(series_list)} playoff series from PlayoffPicture.")
+    return series_list
 
 
 def upsert_series(series_list, game_time_map):
@@ -580,7 +600,7 @@ try:
         if t:
             game_time_map[gid] = t
 
-    playoff_series = fetch_playoff_series(season="2024-25")
+    playoff_series = fetch_series_from_playoff_picture()
     upsert_series(playoff_series, game_time_map)
 except Exception as e:
     print(f"Error updating playoff series: {e}")

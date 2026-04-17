@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import SkeletonBlock from "@/components/SkeletonBlock";
 import NBA_TEAMS from "@/lib/nbaTeams";
-import { FIRST_ROUND, TEAM_SHORT, teamLogo } from "@/lib/playoffBracket";
+import { TEAM_SHORT, teamLogo } from "@/lib/playoffBracket";
 
 // ─── Team logo lookup (by full name) ────────────────────────────────────────
 const TEAM_LOGO_MAP = Object.fromEntries(NBA_TEAMS.map((t) => [t.name, t.logo]));
@@ -75,6 +75,48 @@ function seriesWinner(flatResults, team1, team2, seriesMap) {
   return null;
 }
 
+// ─── Dynamic R1 derivation ───────────────────────────────────────────────────
+
+/** Parse the conference and high-seed from a series ID like "2026_East_1v8". */
+function parseSeriesId(id) {
+  if (!id) return null;
+  const parts = id.split("_");
+  if (parts.length < 3) return null;
+  const conf = parts[1]; // "East" or "West"
+  const seeds = parts[2].split("v").map(Number);
+  if (seeds.length !== 2 || isNaN(seeds[0]) || isNaN(seeds[1])) return null;
+  return { conf, highSeed: seeds[0], lowSeed: seeds[1] };
+}
+
+// Standard NBA bracket top-to-bottom slot order by high seed: 1, 4, 3, 2
+const R1_SLOT_ORDER = [1, 4, 3, 2];
+
+/** Build the R1 matchup array for one conference from DB series rows.
+ *  Missing slots are padded with null-team entries so later rounds still render. */
+function deriveR1FromDB(seriesData, conf) {
+  const r1 = (seriesData || [])
+    .filter(s => s.round === 1)
+    .map(s => {
+      const parsed = parseSeriesId(s.id);
+      if (!parsed || parsed.conf !== conf) return null;
+      return {
+        seed1: parsed.highSeed,
+        team1: s.home_team,
+        seed2: parsed.lowSeed,
+        team2: s.away_team,
+      };
+    })
+    .filter(Boolean);
+
+  r1.sort((a, b) => R1_SLOT_ORDER.indexOf(a.seed1) - R1_SLOT_ORDER.indexOf(b.seed1));
+
+  // Pad to 4 slots — BracketSeriesCard already handles null teams (shows "TBD")
+  while (r1.length < 4) {
+    r1.push({ seed1: null, team1: null, seed2: null, team2: null });
+  }
+  return r1;
+}
+
 /** Build full bracket state (all rounds) from results data, using series table
  *  win counts as the primary source where available. */
 function computeBracketState(flatResults, seriesData) {
@@ -121,8 +163,8 @@ function computeBracketState(flatResults, seriesData) {
     return { r1, sf, cf, confWinner: cfAdv };
   }
 
-  const west = buildConference(FIRST_ROUND.west);
-  const east = buildConference(FIRST_ROUND.east);
+  const west = buildConference(deriveR1FromDB(seriesData, "West"));
+  const east = buildConference(deriveR1FromDB(seriesData, "East"));
   const finals = buildMatchup(
     west.confWinner?.team, west.confWinner?.seed,
     east.confWinner?.team, east.confWinner?.seed
@@ -538,7 +580,7 @@ export default function ResultsPage({ supabase }) {
             .select("winner, home_score, away_score, games(home_team, away_team, date, game_time)"),
           supabase
             .from("series")
-            .select("home_team, away_team, home_wins, away_wins, winner"),
+            .select("id, round, home_team, away_team, home_wins, away_wins, winner"),
         ]);
 
         if (resultsRes.error) throw resultsRes.error;
