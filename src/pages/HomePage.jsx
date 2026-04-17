@@ -105,10 +105,6 @@ const ROUND_LABELS = { 1: "ROUND 1", 2: "ROUND 2", 3: "CONF FINALS", 4: "NBA FIN
 
 const teamLogoMap = new Map(NBA_TEAMS.map((team) => [team.name, team.logo]));
 
-function hasAnyTruthyValue(values) {
-  return Object.values(values).some(Boolean);
-}
-
 function TabButton({ active, label, onClick, showDirtyDot, showAlert, accentColor, activeGradient }) {
   return (
     <button
@@ -196,7 +192,9 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
 
   const submittableGames = games.filter((game) => !isGameStarted(game.gameTimeIL, game.date));
   const hasSubmittableGames = submittableGames.length > 0;
-  const hasSubmittableSeriesPicks = hasAnyTruthyValue(seriesPredictions);
+  const hasSubmittableSeriesPicks = series.some(
+    (s) => !isSeriesLocked(s) && seriesPredictions[s.id]
+  );
 
   // Badge: red dot when there are pickable games/series the user hasn't saved picks for yet
   const hasUnpickedGames = submittableGames.some((g) => !savedPicks[g.gameId]);
@@ -250,6 +248,8 @@ export default function HomePage({ user, supabase, oracleData, onReopenOracle })
   }
 
   function handleSeriesPrediction(seriesId, team) {
+    const seriesItem = series.find((s) => s.id === seriesId);
+    if (!seriesItem || isSeriesLocked(seriesItem)) return;
     setSeriesPredictions((prev) => ({
       ...prev,
       [seriesId]: prev[seriesId] === team ? undefined : team,

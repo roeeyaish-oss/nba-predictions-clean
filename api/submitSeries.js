@@ -39,10 +39,10 @@ export default async function handler(req, res) {
       return res.status(400).send("No valid series IDs provided");
     }
 
-    // Fetch the series records to validate existence and lock status
+    // Fetch the series records to validate existence, lock status, and TBD teams
     const { data: seriesData, error: seriesError } = await supabase
       .from("series")
-      .select("id, round, home_wins, away_wins, first_game_time, status")
+      .select("id, round, home_team, away_team, home_wins, away_wins, first_game_time, status")
       .in("id", seriesIds);
 
     if (seriesError) {
@@ -68,6 +68,12 @@ export default async function handler(req, res) {
 
       if (series.status === "completed") {
         skipped.push(`${seriesId}: series already completed`);
+        continue;
+      }
+
+      // Reject picks for series where the matchup isn't fully determined yet
+      if (series.home_team === "TBD" || series.away_team === "TBD") {
+        skipped.push(`${seriesId}: series matchup not yet determined (TBD)`);
         continue;
       }
 
