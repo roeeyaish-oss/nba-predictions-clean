@@ -253,7 +253,7 @@ The Python script is the **sole data-ingestion pipeline**. Vercel serverless fun
 
 **Playoff game ID format**: `0042YYRRSGG`
 - `004` = playoff prefix
-- `YY` = season year (e.g. `25` for 2024-25)
+- `YY` = season year (e.g. `25` for 2025-26)
 - `RR` = round number (e.g. `01` = Round 1)
 - `S` = series number within round
 - `GG` = game number within series
@@ -408,7 +408,7 @@ nba-predictions/
 │   ├── lib/
 │   │   ├── constants.js          # URLs, model name, lock date constants
 │   │   ├── nbaTeams.js           # All 30 NBA teams with ESPN logo URLs
-│   │   ├── playoffBracket.js     # Bracket layout, team abbreviations, 2024-25 matchups
+│   │   ├── playoffBracket.js     # Bracket layout, team abbreviations, 2025-26 matchups
 │   │   ├── storage.js            # Safe localStorage helpers (lsGet, lsSet, lsGetJson)
 │   │   ├── supabase.js           # Supabase client singleton
 │   │   ├── time.js               # Israel timezone helpers, isGameStarted()
@@ -507,7 +507,7 @@ nba-predictions/
 - `results` table joined to `games` for scores and dates
 
 **Bracket layout** (`src/lib/playoffBracket.js`):
-- Hardcoded 2024-25 first-round matchups (8 series, West + East)
+- Hardcoded 2025-26 first-round matchups (8 series, West + East)
 - SVG-described bracket: 1051px × 390px body
 - West: OKC/MEM, DEN/LAC, LAL/MIN, HOU/GSW
 - East: CLE/MIA, IND/MIL, NYK/DET, BOS/ORL
@@ -1039,7 +1039,7 @@ Upserts to `results`: `{ game_id, winner, home_score, away_score, updated_at }`.
 ```python
 from nba_api.stats.endpoints import commonplayoffseries
 
-endpoint = commonplayoffseries.CommonPlayoffSeries(season="2024-25")
+endpoint = commonplayoffseries.CommonPlayoffSeries(season="2025-26")
 df = endpoint.get_data_frames()[0]
 ```
 

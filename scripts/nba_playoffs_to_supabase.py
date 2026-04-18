@@ -407,7 +407,7 @@ def extract_playoff_info(game_id: str):
     Returns (round_num, series_num, game_num) if game_id is a playoff game, else None.
     NBA playoff game ID format: 0042YYRRSGG
       [0:3]  = '004' (playoff prefix)
-      [3:5]  = season year (e.g. '25' for 2024-25)
+      [3:5]  = season year (e.g. '25' for 2025-26)
       [5:7]  = round (e.g. '01' = Round 1)
       [7]    = series number within round
       [8:]   = game number within series
