@@ -435,25 +435,37 @@ def determine_series_winner(home_team: str, away_team: str, home_wins: int, away
     return None
 
 
-# Round 1: series number (SERIES_ID[8]) → (conference, high_seed, low_seed)
-# Empirically verified against CommonPlayoffSeries for 2025-26:
-#   S=1 → East 2v7  (Boston vs Philadelphia)
-#   S=2 → East 3v6  (New York vs Atlanta)
-#   S=3 → East 4v5  (Cleveland vs Toronto)
-#   S=4 → East 1v8  (absent until play-in resolves)
-#   S=5 → West 2v7  (San Antonio vs Portland)
-#   S=6 → West 3v6  (Denver vs Minnesota)
-#   S=7 → West 4v5  (LA Lakers vs Houston)
-#   S=8 → West 1v8  (absent until play-in resolves)
+SEASON_LABEL = "2026"
+
+# Round 1: series_num (SERIES_ID[8], 0-indexed) → (conference, high_seed, low_seed)
+# Empirically verified against CommonPlayoffSeries across 2022-23, 2023-24, 2024-25, 2025-26.
+# API returns series_num 0-7 (not 1-8 as previously assumed).
+# s=0-3 are East; s=4-7 are West. Within each conf: 0/4=1v8, 1/5=2v7, 2/6=3v6, 3/7=4v5.
+#   s=0 → East 1v8  (2025-26: Detroit vs Orlando)
+#   s=1 → East 2v7  (2025-26: Boston vs Philadelphia)
+#   s=2 → East 3v6  (2025-26: New York vs Atlanta)
+#   s=3 → East 4v5  (2025-26: Cleveland vs Toronto)
+#   s=4 → West 1v8  (2025-26: Oklahoma City vs Phoenix)
+#   s=5 → West 2v7  (2025-26: San Antonio vs Portland)
+#   s=6 → West 3v6  (2025-26: Denver vs Minnesota)
+#   s=7 → West 4v5  (2025-26: LA Lakers vs Houston)
 _R1_SERIES_TO_SEEDS = {
+    0: ("East", 1, 8),
     1: ("East", 2, 7),
     2: ("East", 3, 6),
     3: ("East", 4, 5),
-    4: ("East", 1, 8),
+    4: ("West", 1, 8),
     5: ("West", 2, 7),
     6: ("West", 3, 6),
     7: ("West", 4, 5),
-    8: ("West", 1, 8),
+}
+
+# Round 2: s=0,1 East; s=2,3 West. Verified across 2022-23, 2023-24, 2024-25.
+_R2_SERIES_TO_CANONICAL = {
+    0: f"{SEASON_LABEL}_East_R2_1",
+    1: f"{SEASON_LABEL}_East_R2_2",
+    2: f"{SEASON_LABEL}_West_R2_1",
+    3: f"{SEASON_LABEL}_West_R2_2",
 }
 
 
@@ -465,10 +477,7 @@ def series_id_to_canonical(nba_series_id: str):
       [0:3] = "004" (playoff prefix)
       [3:5] = season year (e.g. "25" for 2025-26)
       [5:8] = round zero-padded (e.g. "001" = Round 1)
-      [8]   = series number within round (1-8 for R1)
-
-    Returns "2026_{Conf}_{high}v{low}" for Round 1.
-    Returns None for rounds 2-4 (log-but-skip; add when needed).
+      [8]   = series number within round (0-indexed)
     """
     try:
         round_num = int(nba_series_id[5:8])
@@ -481,9 +490,21 @@ def series_id_to_canonical(nba_series_id: str):
         if seeds is None:
             return None
         conf, high, low = seeds
-        return f"2026_{conf}_{high}v{low}"
+        return f"{SEASON_LABEL}_{conf}_{high}v{low}"
 
-    # Rounds 2-4: not yet implemented — will be added when needed
+    if round_num == 2:
+        return _R2_SERIES_TO_CANONICAL.get(series_num)
+
+    if round_num == 3:
+        if series_num == 0:
+            return f"{SEASON_LABEL}_East_CF"
+        if series_num == 1:
+            return f"{SEASON_LABEL}_West_CF"
+        return None
+
+    if round_num == 4 and series_num == 0:
+        return f"{SEASON_LABEL}_Finals"
+
     return None
 
 
