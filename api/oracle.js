@@ -14,6 +14,44 @@ const supabase = createClient(
 // instead of hitting Claude again.
 let oracleCache = { date: null, data: null };
 
+async function getDailyAnnouncer(today) {
+  try {
+    const { data: todayRow, error: todayErr } = await supabase
+      .from("oracle_daily")
+      .select("announcer")
+      .eq("date", today)
+      .maybeSingle();
+
+    if (todayErr) throw todayErr;
+    if (todayRow) return todayRow.announcer;
+
+    const { data: lastRow, error: lastErr } = await supabase
+      .from("oracle_daily")
+      .select("announcer")
+      .order("date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (lastErr) throw lastErr;
+
+    const pick = lastRow?.announcer === "breen" ? "barak"
+               : lastRow?.announcer === "barak"  ? "breen"
+               : "breen";
+
+    const { error: insertErr } = await supabase
+      .from("oracle_daily")
+      .insert({ date: today, announcer: pick });
+
+    if (insertErr) {
+      console.warn("[Oracle] failed to persist daily announcer:", insertErr.message);
+    }
+    return pick;
+  } catch (err) {
+    console.warn("[Oracle] getDailyAnnouncer error, defaulting to breen:", err.message);
+    return "breen";
+  }
+}
+
 async function requireAuth(req, res) {
   const authHeader = req.headers.authorization || "";
   const match = authHeader.match(/^Bearer\s+(.+)$/i);
@@ -107,7 +145,7 @@ export default async function handler(req, res) {
 
     const context = lines.join("\n\n");
 
-    const announcer = req.query?.announcer === "barak" ? "barak" : "breen";
+    const announcer = await getDailyAnnouncer(today);
 
     const breenPrompt = `You are Mike Breen, the legendary NBA play-by-play announcer. Give a nightly recap of these prediction results. You MUST write in English only. Never use Hebrew or any other language under any circumstances.
 
