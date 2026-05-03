@@ -10,7 +10,8 @@
       "Bash(python -c \"from nba_api.stats.endpoints import scoreboardv3; print\\('scoreboardv3 available'\\)\")",
       "Bash(python -c ':*)",
       "Bash(schtasks /query /fo CSV /v)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(.venv/Scripts/python scripts/nba_playoffs_to_supabase.py)"
     ]
   }
 }

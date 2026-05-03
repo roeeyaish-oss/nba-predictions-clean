@@ -39,16 +39,30 @@ export default function useTodayGames(supabase) {
       }
 
       try {
-        const { data, error } = await supabase
-          .from("games")
-          .select("id, date, home_team, away_team, home_img, away_img, game_time")
-          .in("date", [todayKey, tomorrowKey])
-          .order("date", { ascending: true })
-          .order("game_time", { ascending: true });
+        const [gamesResult, seriesResult] = await Promise.all([
+          supabase
+            .from("games")
+            .select("id, date, home_team, away_team, home_img, away_img, game_time, series_id")
+            .in("date", [todayKey, tomorrowKey])
+            .order("date", { ascending: true })
+            .order("game_time", { ascending: true }),
+          supabase
+            .from("series")
+            .select("id")
+            .eq("status", "completed"),
+        ]);
 
-        if (error) throw error;
+        if (gamesResult.error) throw gamesResult.error;
 
-        const formatted = formatGames(data);
+        const completedSeriesIds = new Set(
+          (seriesResult.data || []).map((s) => s.id)
+        );
+
+        const activeGames = (gamesResult.data || []).filter(
+          (game) => !game.series_id || !completedSeriesIds.has(game.series_id)
+        );
+
+        const formatted = formatGames(activeGames);
         gamesCache = {
           key: todayKey,
           data: formatted,
