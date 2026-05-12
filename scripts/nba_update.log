@@ -1416,3 +1416,454 @@
       - No game time found for new series 2026_West_R2_2 (San Antonio Spurs vs Minnesota Timberwolves)
     Alert email sent to roeeyaish@gmail.com (2 issue(s)).
     Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-03 15:00:02] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/02/2026), today (05/03/2026), tomorrow (05/04/2026)
+    Saved 5 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final         1
+    3:30 pm ET    1
+    7:30 pm ET    1
+    8:00 pm ET    1
+    9:30 pm ET    1
+    Found 1 final games.
+    Game 0042500117 | Boston Celtics 100 vs Philadelphia 76ers 109 | Winner: Philadelphia 76ers
+    Upserted 1 results.
+    Fetching playoff series...
+    Fetched 11 playoff series from CommonPlayoffSeries.
+    Upserted 11 series.
+    Tagged 69 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    
+    1 issue(s) detected during this run:
+      - No game time found for new series 2026_West_R2_1 (Oklahoma City Thunder vs Los Angeles Lakers)
+    Alert email sent to roeeyaish@gmail.com (1 issue(s)).
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-04 08:00:02] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/03/2026), today (05/04/2026), tomorrow (05/05/2026)
+    Saved 4 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final         2
+    8:00 pm ET    1
+    9:30 pm ET    1
+    Found 2 final games.
+    Game 0042500107 | Detroit Pistons 116 vs Orlando Magic 94 | Winner: Detroit Pistons
+    Game 0042500137 | Cleveland Cavaliers 114 vs Toronto Raptors 102 | Winner: Cleveland Cavaliers
+    Upserted 2 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 76 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    
+    2 issue(s) detected during this run:
+      - No game time found for new series 2026_East_R2_1 (Detroit Pistons vs Cleveland Cavaliers)
+      - No game time found for new series 2026_West_R2_1 (Oklahoma City Thunder vs Los Angeles Lakers)
+    Alert email sent to roeeyaish@gmail.com (2 issue(s)).
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-04 15:17:34] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/03/2026), today (05/04/2026), tomorrow (05/05/2026)
+    Saved 6 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final         2
+    8:00 pm ET    1
+    9:30 pm ET    1
+    7:00 pm ET    1
+    8:30 pm ET    1
+    Found 2 final games.
+    Game 0042500107 | Detroit Pistons 116 vs Orlando Magic 94 | Winner: Detroit Pistons
+    Game 0042500137 | Cleveland Cavaliers 114 vs Toronto Raptors 102 | Winner: Cleveland Cavaliers
+    Upserted 2 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 76 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-05 09:48:57] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/04/2026), today (05/05/2026), tomorrow (05/06/2026)
+    Saved 6 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final         2
+    7:00 pm ET    2
+    8:30 pm ET    1
+    9:30 pm ET    1
+    Found 2 final games.
+    Game 0042500211 | New York Knicks 137 vs Philadelphia 76ers 98 | Winner: New York Knicks
+    Game 0042500231 | San Antonio Spurs 102 vs Minnesota Timberwolves 104 | Winner: Minnesota Timberwolves
+    Upserted 2 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 76 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-05 15:00:07] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/04/2026), today (05/05/2026), tomorrow (05/06/2026)
+    Saved 6 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final         2
+    7:00 pm ET    2
+    8:30 pm ET    1
+    9:30 pm ET    1
+    Found 2 final games.
+    Game 0042500211 | New York Knicks 137 vs Philadelphia 76ers 98 | Winner: New York Knicks
+    Game 0042500231 | San Antonio Spurs 102 vs Minnesota Timberwolves 104 | Winner: Minnesota Timberwolves
+    Upserted 2 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 76 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-06 09:39:28] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/05/2026), today (05/06/2026), tomorrow (05/07/2026)
+    Saved 6 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final         2
+    7:00 pm ET    2
+    9:30 pm ET    2
+    Found 2 final games.
+    Game 0042500201 | Detroit Pistons 111 vs Cleveland Cavaliers 101 | Winner: Detroit Pistons
+    Game 0042500221 | Oklahoma City Thunder 108 vs Los Angeles Lakers 90 | Winner: Oklahoma City Thunder
+    Upserted 2 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 76 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-06 15:00:03] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/05/2026), today (05/06/2026), tomorrow (05/07/2026)
+    Saved 6 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final         2
+    7:00 pm ET    2
+    9:30 pm ET    2
+    Found 2 final games.
+    Game 0042500201 | Detroit Pistons 111 vs Cleveland Cavaliers 101 | Winner: Detroit Pistons
+    Game 0042500221 | Oklahoma City Thunder 108 vs Los Angeles Lakers 90 | Winner: Oklahoma City Thunder
+    Upserted 2 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 76 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-07 08:34:06] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/06/2026), today (05/07/2026), tomorrow (05/08/2026)
+    Saved 6 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final         2
+    7:00 pm ET    2
+    9:30 pm ET    2
+    Found 2 final games.
+    Game 0042500212 | New York Knicks 108 vs Philadelphia 76ers 102 | Winner: New York Knicks
+    Game 0042500232 | San Antonio Spurs 133 vs Minnesota Timberwolves 95 | Winner: San Antonio Spurs
+    Upserted 2 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 76 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-07 15:00:03] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/06/2026), today (05/07/2026), tomorrow (05/08/2026)
+    Saved 6 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final         2
+    7:00 pm ET    2
+    9:30 pm ET    2
+    Found 2 final games.
+    Game 0042500212 | New York Knicks 108 vs Philadelphia 76ers 102 | Winner: New York Knicks
+    Game 0042500232 | San Antonio Spurs 133 vs Minnesota Timberwolves 95 | Winner: San Antonio Spurs
+    Upserted 2 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 76 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-08 08:14:24] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/07/2026), today (05/08/2026), tomorrow (05/09/2026)
+    Saved 2 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    7:00 pm ET    1
+    9:30 pm ET    1
+    Found 0 final games.
+    No final games to update.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 76 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-08 20:48:17] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/07/2026), today (05/08/2026), tomorrow (05/09/2026)
+    Saved 6 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final         2
+    7:00 pm ET    1
+    9:30 pm ET    1
+    3:00 pm ET    1
+    8:30 pm ET    1
+    Found 2 final games.
+    Game 0042500202 | Detroit Pistons 107 vs Cleveland Cavaliers 97 | Winner: Detroit Pistons
+    Game 0042500222 | Oklahoma City Thunder 125 vs Los Angeles Lakers 107 | Winner: Oklahoma City Thunder
+    Upserted 2 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 76 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-09 13:04:13] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/08/2026), today (05/09/2026), tomorrow (05/10/2026)
+    Error saving games: [WinError 10051] A socket operation was attempted to an unreachable network
+    Status breakdown:
+    gameStatusText
+    Final         2
+    3:30 pm ET    1
+    7:30 pm ET    1
+    Found 2 final games.
+    Attempt 1 failed (('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))). Retrying in 5s...
+    Attempt 2 failed (('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))). Retrying in 5s...
+    Warning: Failed to get winner for game 0042500213: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=60)
+    Attempt 1 failed (HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/boxscoretraditionalv3?EndPeriod=0&EndRange=0&GameID=0042500233&RangeType=0&StartPeriod=0&StartRange=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 11001] getaddrinfo failed)"))). Retrying in 5s...
+    Game 0042500233 | Minnesota Timberwolves 108 vs San Antonio Spurs 115 | Winner: San Antonio Spurs
+    Error updating results: [Errno 11001] getaddrinfo failed
+    Fetching playoff series...
+    Attempt 1 failed (HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/commonplayoffseries?LeagueID=00&Season=2025-26&SeriesID= (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:2427)')))). Retrying in 5s...
+    Attempt 2 failed (HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/commonplayoffseries?LeagueID=00&Season=2025-26&SeriesID= (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 11001] getaddrinfo failed)"))). Retrying in 5s...
+    Warning: Could not fetch CommonPlayoffSeries: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/commonplayoffseries?LeagueID=00&Season=2025-26&SeriesID= (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 11001] getaddrinfo failed)"))
+    No series to upsert.
+    Calculating scores...
+    Error calculating scores: [Errno 11001] getaddrinfo failed
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-09 15:26:48] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/08/2026), today (05/09/2026), tomorrow (05/10/2026)
+    Saved 6 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final         2
+    3:00 pm ET    1
+    8:30 pm ET    1
+    3:30 pm ET    1
+    7:30 pm ET    1
+    Found 2 final games.
+    Game 0042500213 | Philadelphia 76ers 94 vs New York Knicks 108 | Winner: New York Knicks
+    Game 0042500233 | Minnesota Timberwolves 108 vs San Antonio Spurs 115 | Winner: San Antonio Spurs
+    Upserted 2 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 76 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-10 08:12:50] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/09/2026), today (05/10/2026), tomorrow (05/11/2026)
+    Saved 6 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final          2
+    3:30 pm ET     1
+    7:30 pm ET     1
+    8:00 pm ET     1
+    10:30 pm ET    1
+    Found 2 final games.
+    Game 0042500203 | Cleveland Cavaliers 116 vs Detroit Pistons 109 | Winner: Cleveland Cavaliers
+    Game 0042500223 | Los Angeles Lakers 108 vs Oklahoma City Thunder 131 | Winner: Oklahoma City Thunder
+    Upserted 2 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 76 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-10 15:00:02] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/09/2026), today (05/10/2026), tomorrow (05/11/2026)
+    Saved 4 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final          2
+    8:00 pm ET     1
+    10:30 pm ET    1
+    Found 2 final games.
+    Game 0042500203 | Cleveland Cavaliers 116 vs Detroit Pistons 109 | Winner: Cleveland Cavaliers
+    Game 0042500223 | Los Angeles Lakers 108 vs Oklahoma City Thunder 131 | Winner: Oklahoma City Thunder
+    Upserted 2 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 76 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-11 08:15:09] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/10/2026), today (05/11/2026), tomorrow (05/12/2026)
+    Saved 3 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final         2
+    8:00 pm ET    1
+    Found 2 final games.
+    Game 0042500214 | Philadelphia 76ers 114 vs New York Knicks 144 | Winner: New York Knicks
+    Game 0042500234 | Minnesota Timberwolves 114 vs San Antonio Spurs 109 | Winner: Minnesota Timberwolves
+    Upserted 2 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 73 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-11 15:00:03] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/10/2026), today (05/11/2026), tomorrow (05/12/2026)
+    Saved 5 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final          2
+    8:00 pm ET     2
+    10:30 pm ET    1
+    Found 2 final games.
+    Game 0042500214 | Philadelphia 76ers 114 vs New York Knicks 144 | Winner: New York Knicks
+    Game 0042500234 | Minnesota Timberwolves 114 vs San Antonio Spurs 109 | Winner: Minnesota Timberwolves
+    Upserted 2 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 73 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-12 08:00:02] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/11/2026), today (05/12/2026), tomorrow (05/13/2026)
+    Saved 5 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    TBD                     2
+    Final                   1
+    1st Qtr                 1
+    8:00 pm ET              1
+    Found 1 final games.
+    Game 0042500204 | Cleveland Cavaliers 112 vs Detroit Pistons 103 | Winner: Cleveland Cavaliers
+    Upserted 1 results.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 73 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-12 15:00:03] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/11/2026), today (05/12/2026), tomorrow (05/13/2026)
+    Saved 2 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    8:00 pm ET    2
+    Found 0 final games.
+    No final games to update.
+    Fetching playoff series...
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 70 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.

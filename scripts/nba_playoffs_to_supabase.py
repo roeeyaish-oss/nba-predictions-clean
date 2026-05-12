@@ -534,6 +534,10 @@ def fetch_series_from_common_playoff_series(season="2025-26"):
         print("No data returned from CommonPlayoffSeries.")
         return []
 
+    # === DIAGNOSTIC: dump raw CommonPlayoffSeries columns and rows ===
+    print("\n[DIAG] CommonPlayoffSeries columns:", df.columns.tolist())
+    print(f"[DIAG] CommonPlayoffSeries returned {len(df)} rows.")
+
     # Fetch all results once to count wins per series
     try:
         results_resp = supabase.table("results").select("game_id, winner").execute()
@@ -542,11 +546,30 @@ def fetch_series_from_common_playoff_series(season="2025-26"):
         print(f"Warning: Could not fetch results for win counting: {e}")
         results_map = {}
 
+    print(f"[DIAG] results table has {len(results_map)} rows loaded for win counting.")
+
     # Group rows by SERIES_ID (one row per game in each series)
     series_groups: dict[str, list] = {}
     for _, row in df.iterrows():
         sid = str(row["SERIES_ID"]).strip()
         series_groups.setdefault(sid, []).append(row)
+
+    # === DIAGNOSTIC: print raw rows per SERIES_ID ===
+    print("\n[DIAG] Raw CommonPlayoffSeries rows grouped by SERIES_ID:")
+    for sid, rows in series_groups.items():
+        print(f"  SERIES_ID={sid}  ({len(rows)} game rows)")
+        for r in sorted(rows, key=lambda x: str(x["GAME_ID"])):
+            fields = {k: r[k] for k in r.index}
+            home_wins_field = fields.get("HOME_TEAM_WINS", "<column not in API>")
+            visitor_wins_field = fields.get("VISITOR_TEAM_WINS", "<column not in API>")
+            print(
+                f"    GAME_ID={fields.get('GAME_ID')}  "
+                f"HOME_TEAM_ID={fields.get('HOME_TEAM_ID')}  "
+                f"VISITOR_TEAM_ID={fields.get('VISITOR_TEAM_ID')}  "
+                f"HOME_TEAM_WINS={home_wins_field}  "
+                f"VISITOR_TEAM_WINS={visitor_wins_field}"
+            )
+            print(f"    full row: {fields}")
 
     series_list = []
     for nba_series_id, rows in series_groups.items():
@@ -585,18 +608,50 @@ def fetch_series_from_common_playoff_series(season="2025-26"):
         # Count wins from the results table
         home_wins = 0
         away_wins = 0
+        found_in_results = []
+        missing_from_results = []
         for gid in game_ids:
             winner = results_map.get(gid)
-            if winner == home_team:
-                home_wins += 1
-            elif winner == away_team:
-                away_wins += 1
+            if winner is None:
+                missing_from_results.append(gid)
+            else:
+                found_in_results.append((gid, winner))
+                if winner == home_team:
+                    home_wins += 1
+                elif winner == away_team:
+                    away_wins += 1
+
+        # === DIAGNOSTIC: per-series results_map lookup ===
+        print(
+            f"\n[DIAG] results_map lookup for {canonical_id} "
+            f"({home_team} vs {away_team}):"
+        )
+        print(f"  game_ids from API: {game_ids}")
+        if found_in_results:
+            print("  found in results table (game_id -> winner):")
+            for gid, winner in found_in_results:
+                print(f"    {gid} -> {winner}")
+        else:
+            print("  found in results table: <none>")
+        if missing_from_results:
+            print(f"  MISSING from results table: {missing_from_results}")
+        else:
+            print("  MISSING from results table: <none>")
 
         # Round number is encoded in SERIES_ID positions [5:8] (zero-padded, e.g. "001" = R1)
         try:
             round_num = int(nba_series_id[5:8])
         except (ValueError, IndexError):
             round_num = 1
+
+        # === DIAGNOSTIC: final computed wins before upsert ===
+        computed_winner = determine_series_winner(home_team, away_team, home_wins, away_wins)
+        print(
+            f"[DIAG] FINAL computed for {canonical_id}: "
+            f"home={home_team} away={away_team} "
+            f"home_wins={home_wins} away_wins={away_wins} "
+            f"winner={computed_winner}"
+        )
 
         series_list.append({
             "id": canonical_id,
