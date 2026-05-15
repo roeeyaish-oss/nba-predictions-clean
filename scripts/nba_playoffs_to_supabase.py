@@ -508,6 +508,34 @@ def series_id_to_canonical(nba_series_id: str):
     return None
 
 
+def derive_round_and_canonical_from_game_id(game_id: str):
+    """
+    Derives (round_num, canonical_series_id) from a playoff GAME_ID without
+    needing CommonPlayoffSeries data.
+
+    NBA playoff GAME_ID format (10 chars): 004YY00RSG where
+      [0:3] = "004" (playoff prefix)
+      [3:5] = season year
+      [5:8] = round zero-padded
+      [8]   = series number within round (0-indexed)
+      [9]   = game number within series (1-indexed)
+
+    The first 9 characters of a GAME_ID equal the SERIES_ID for that game.
+    Returns (None, None) when the ID is not a recognised playoff game.
+    """
+    s = str(game_id).strip()
+    if not s.startswith("004") or len(s) < 10:
+        return None, None
+    try:
+        round_num = int(s[5:8])
+    except (ValueError, IndexError):
+        return None, None
+    if round_num < 1 or round_num > 4:
+        return None, None
+    canonical = series_id_to_canonical(s[:9])
+    return round_num, canonical
+
+
 def fetch_series_from_common_playoff_series(season="2025-26"):
     """
     Fetches active playoff series using CommonPlayoffSeries.
@@ -752,6 +780,130 @@ def upsert_series(series_list, game_time_map):
         print(f"Tagged {tagged} games with playoff round/series.")
 
 
+def pattern_tag_untagged_playoff_games():
+    """
+    For any game in the games table where series_id is NULL and the game_id
+    pattern-matches a known series in the series table, set its playoff_round
+    and series_id. Catches games written from the scoreboard fetch that
+    CommonPlayoffSeries didn't include (e.g. ghost games pre-scheduled
+    before a series ended early).
+    """
+    try:
+        series_resp = supabase.table("series").select("id").execute()
+        known_series_ids = {s["id"] for s in (series_resp.data or [])}
+    except Exception as e:
+        print(f"Warning: Could not fetch series IDs for pattern-tagging: {e}")
+        return
+
+    if not known_series_ids:
+        return
+
+    try:
+        games_resp = (
+            supabase.table("games")
+            .select("id")
+            .like("id", "004%")
+            .is_("series_id", "null")
+            .execute()
+        )
+        untagged = games_resp.data or []
+    except Exception as e:
+        print(f"Warning: Could not fetch untagged games for pattern-tagging: {e}")
+        return
+
+    if not untagged:
+        return
+
+    tagged = 0
+    for g in untagged:
+        gid = g["id"]
+        round_num, canonical = derive_round_and_canonical_from_game_id(gid)
+        if not canonical or canonical not in known_series_ids:
+            continue
+        if DRY_RUN:
+            print(f"[DRY-RUN] Would pattern-tag {gid} -> round={round_num}, series_id={canonical}")
+            tagged += 1
+            continue
+        try:
+            supabase.table("games").update({
+                "playoff_round": round_num,
+                "series_id": canonical,
+            }).eq("id", gid).execute()
+            tagged += 1
+        except Exception as e:
+            print(f"Warning: Could not pattern-tag game {gid}: {e}")
+
+    if tagged:
+        print(f"Pattern-tagged {tagged} previously untagged playoff game(s).")
+
+
+def cleanup_completed_series_ghost_games(today_il_date):
+    """
+    For every series with status='completed', delete games from the games table
+    that:
+      - have a game_id whose embedded series-id maps to that completed series,
+      - AND have date > today_il_date (future games),
+      - AND have no entry in the results table (never played).
+
+    These are "ghost" games pre-scheduled for potential later games of a series
+    that ended early (e.g. Game 5, 6, 7 of a series that ended 4-0). CommonPlayoffSeries
+    drops them once the series is decided, so they linger in the games table
+    with series_id = NULL and surface in the Game Picks tab.
+    """
+    try:
+        series_resp = (
+            supabase.table("series").select("id").eq("status", "completed").execute()
+        )
+        completed_ids = {s["id"] for s in (series_resp.data or [])}
+    except Exception as e:
+        print(f"Warning: Could not fetch completed series for ghost-game cleanup: {e}")
+        return
+
+    if not completed_ids:
+        return
+
+    try:
+        games_resp = (
+            supabase.table("games").select("id, date").gt("date", today_il_date).execute()
+        )
+        future_games = games_resp.data or []
+    except Exception as e:
+        print(f"Warning: Could not fetch future games for ghost-game cleanup: {e}")
+        return
+
+    candidates = []
+    for g in future_games:
+        _, canonical = derive_round_and_canonical_from_game_id(g["id"])
+        if canonical and canonical in completed_ids:
+            candidates.append(g["id"])
+
+    if not candidates:
+        return
+
+    try:
+        results_resp = (
+            supabase.table("results").select("game_id").in_("game_id", candidates).execute()
+        )
+        played_ids = {r["game_id"] for r in (results_resp.data or [])}
+    except Exception as e:
+        print(f"Warning: Could not fetch results for ghost-game cleanup: {e}")
+        return
+
+    to_delete = [gid for gid in candidates if gid not in played_ids]
+    if not to_delete:
+        return
+
+    if DRY_RUN:
+        print(f"[DRY-RUN] Would delete {len(to_delete)} ghost game(s) from completed series: {to_delete}")
+        return
+
+    try:
+        supabase.table("games").delete().in_("id", to_delete).execute()
+        print(f"Deleted {len(to_delete)} ghost game(s) from completed series: {to_delete}")
+    except Exception as e:
+        print(f"Warning: Could not delete ghost games: {e}")
+
+
 try:
     print("Fetching playoff series...")
     # Build a game_id -> UTC time map from the scoreboards we already fetched
@@ -764,6 +916,10 @@ try:
 
     playoff_series = fetch_series_from_common_playoff_series(season="2025-26")
     upsert_series(playoff_series, game_time_map)
+
+    today_il_date = datetime.now(il).strftime('%Y-%m-%d')
+    pattern_tag_untagged_playoff_games()
+    cleanup_completed_series_ghost_games(today_il_date)
 except Exception as e:
     print(f"Error updating playoff series: {e}")
 

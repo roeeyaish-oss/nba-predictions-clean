@@ -1867,3 +1867,635 @@
     Done. Games, results, series, and scores are up to date.
     No issues detected. Clean run.
     Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-13 08:16:06] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/12/2026), today (05/13/2026), tomorrow (05/14/2026)
+    Saved 2 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final         1
+    8:00 pm ET    1
+    Found 1 final games.
+    Game 0042500235 | San Antonio Spurs 126 vs Minnesota Timberwolves 97 | Winner: San Antonio Spurs
+    Upserted 1 results.
+    Fetching playoff series...
+    
+    [DIAG] CommonPlayoffSeries columns: ['GAME_ID', 'HOME_TEAM_ID', 'VISITOR_TEAM_ID', 'SERIES_ID', 'GAME_NUM']
+    [DIAG] CommonPlayoffSeries returned 70 rows.
+    [DIAG] results table has 65 rows loaded for win counting.
+    
+    [DIAG] Raw CommonPlayoffSeries rows grouped by SERIES_ID:
+      SERIES_ID=004250010  (7 game rows)
+        GAME_ID=0042500101  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612753  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500101', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612753, 'SERIES_ID': '004250010', 'GAME_NUM': 1}
+        GAME_ID=0042500102  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612753  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500102', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612753, 'SERIES_ID': '004250010', 'GAME_NUM': 2}
+        GAME_ID=0042500103  HOME_TEAM_ID=1610612753  VISITOR_TEAM_ID=1610612765  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500103', 'HOME_TEAM_ID': 1610612753, 'VISITOR_TEAM_ID': 1610612765, 'SERIES_ID': '004250010', 'GAME_NUM': 3}
+        GAME_ID=0042500104  HOME_TEAM_ID=1610612753  VISITOR_TEAM_ID=1610612765  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500104', 'HOME_TEAM_ID': 1610612753, 'VISITOR_TEAM_ID': 1610612765, 'SERIES_ID': '004250010', 'GAME_NUM': 4}
+        GAME_ID=0042500105  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612753  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500105', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612753, 'SERIES_ID': '004250010', 'GAME_NUM': 5}
+        GAME_ID=0042500106  HOME_TEAM_ID=1610612753  VISITOR_TEAM_ID=1610612765  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500106', 'HOME_TEAM_ID': 1610612753, 'VISITOR_TEAM_ID': 1610612765, 'SERIES_ID': '004250010', 'GAME_NUM': 6}
+        GAME_ID=0042500107  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612753  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500107', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612753, 'SERIES_ID': '004250010', 'GAME_NUM': 7}
+      SERIES_ID=004250011  (7 game rows)
+        GAME_ID=0042500111  HOME_TEAM_ID=1610612738  VISITOR_TEAM_ID=1610612755  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500111', 'HOME_TEAM_ID': 1610612738, 'VISITOR_TEAM_ID': 1610612755, 'SERIES_ID': '004250011', 'GAME_NUM': 1}
+        GAME_ID=0042500112  HOME_TEAM_ID=1610612738  VISITOR_TEAM_ID=1610612755  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500112', 'HOME_TEAM_ID': 1610612738, 'VISITOR_TEAM_ID': 1610612755, 'SERIES_ID': '004250011', 'GAME_NUM': 2}
+        GAME_ID=0042500113  HOME_TEAM_ID=1610612755  VISITOR_TEAM_ID=1610612738  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500113', 'HOME_TEAM_ID': 1610612755, 'VISITOR_TEAM_ID': 1610612738, 'SERIES_ID': '004250011', 'GAME_NUM': 3}
+        GAME_ID=0042500114  HOME_TEAM_ID=1610612755  VISITOR_TEAM_ID=1610612738  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500114', 'HOME_TEAM_ID': 1610612755, 'VISITOR_TEAM_ID': 1610612738, 'SERIES_ID': '004250011', 'GAME_NUM': 4}
+        GAME_ID=0042500115  HOME_TEAM_ID=1610612738  VISITOR_TEAM_ID=1610612755  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500115', 'HOME_TEAM_ID': 1610612738, 'VISITOR_TEAM_ID': 1610612755, 'SERIES_ID': '004250011', 'GAME_NUM': 5}
+        GAME_ID=0042500116  HOME_TEAM_ID=1610612755  VISITOR_TEAM_ID=1610612738  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500116', 'HOME_TEAM_ID': 1610612755, 'VISITOR_TEAM_ID': 1610612738, 'SERIES_ID': '004250011', 'GAME_NUM': 6}
+        GAME_ID=0042500117  HOME_TEAM_ID=1610612738  VISITOR_TEAM_ID=1610612755  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500117', 'HOME_TEAM_ID': 1610612738, 'VISITOR_TEAM_ID': 1610612755, 'SERIES_ID': '004250011', 'GAME_NUM': 7}
+      SERIES_ID=004250012  (6 game rows)
+        GAME_ID=0042500121  HOME_TEAM_ID=1610612752  VISITOR_TEAM_ID=1610612737  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500121', 'HOME_TEAM_ID': 1610612752, 'VISITOR_TEAM_ID': 1610612737, 'SERIES_ID': '004250012', 'GAME_NUM': 1}
+        GAME_ID=0042500122  HOME_TEAM_ID=1610612752  VISITOR_TEAM_ID=1610612737  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500122', 'HOME_TEAM_ID': 1610612752, 'VISITOR_TEAM_ID': 1610612737, 'SERIES_ID': '004250012', 'GAME_NUM': 2}
+        GAME_ID=0042500123  HOME_TEAM_ID=1610612737  VISITOR_TEAM_ID=1610612752  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500123', 'HOME_TEAM_ID': 1610612737, 'VISITOR_TEAM_ID': 1610612752, 'SERIES_ID': '004250012', 'GAME_NUM': 3}
+        GAME_ID=0042500124  HOME_TEAM_ID=1610612737  VISITOR_TEAM_ID=1610612752  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500124', 'HOME_TEAM_ID': 1610612737, 'VISITOR_TEAM_ID': 1610612752, 'SERIES_ID': '004250012', 'GAME_NUM': 4}
+        GAME_ID=0042500125  HOME_TEAM_ID=1610612752  VISITOR_TEAM_ID=1610612737  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500125', 'HOME_TEAM_ID': 1610612752, 'VISITOR_TEAM_ID': 1610612737, 'SERIES_ID': '004250012', 'GAME_NUM': 5}
+        GAME_ID=0042500126  HOME_TEAM_ID=1610612737  VISITOR_TEAM_ID=1610612752  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500126', 'HOME_TEAM_ID': 1610612737, 'VISITOR_TEAM_ID': 1610612752, 'SERIES_ID': '004250012', 'GAME_NUM': 6}
+      SERIES_ID=004250013  (7 game rows)
+        GAME_ID=0042500131  HOME_TEAM_ID=1610612739  VISITOR_TEAM_ID=1610612761  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500131', 'HOME_TEAM_ID': 1610612739, 'VISITOR_TEAM_ID': 1610612761, 'SERIES_ID': '004250013', 'GAME_NUM': 1}
+        GAME_ID=0042500132  HOME_TEAM_ID=1610612739  VISITOR_TEAM_ID=1610612761  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500132', 'HOME_TEAM_ID': 1610612739, 'VISITOR_TEAM_ID': 1610612761, 'SERIES_ID': '004250013', 'GAME_NUM': 2}
+        GAME_ID=0042500133  HOME_TEAM_ID=1610612761  VISITOR_TEAM_ID=1610612739  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500133', 'HOME_TEAM_ID': 1610612761, 'VISITOR_TEAM_ID': 1610612739, 'SERIES_ID': '004250013', 'GAME_NUM': 3}
+        GAME_ID=0042500134  HOME_TEAM_ID=1610612761  VISITOR_TEAM_ID=1610612739  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500134', 'HOME_TEAM_ID': 1610612761, 'VISITOR_TEAM_ID': 1610612739, 'SERIES_ID': '004250013', 'GAME_NUM': 4}
+        GAME_ID=0042500135  HOME_TEAM_ID=1610612739  VISITOR_TEAM_ID=1610612761  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500135', 'HOME_TEAM_ID': 1610612739, 'VISITOR_TEAM_ID': 1610612761, 'SERIES_ID': '004250013', 'GAME_NUM': 5}
+        GAME_ID=0042500136  HOME_TEAM_ID=1610612761  VISITOR_TEAM_ID=1610612739  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500136', 'HOME_TEAM_ID': 1610612761, 'VISITOR_TEAM_ID': 1610612739, 'SERIES_ID': '004250013', 'GAME_NUM': 6}
+        GAME_ID=0042500137  HOME_TEAM_ID=1610612739  VISITOR_TEAM_ID=1610612761  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500137', 'HOME_TEAM_ID': 1610612739, 'VISITOR_TEAM_ID': 1610612761, 'SERIES_ID': '004250013', 'GAME_NUM': 7}
+      SERIES_ID=004250014  (4 game rows)
+        GAME_ID=0042500141  HOME_TEAM_ID=1610612760  VISITOR_TEAM_ID=1610612756  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500141', 'HOME_TEAM_ID': 1610612760, 'VISITOR_TEAM_ID': 1610612756, 'SERIES_ID': '004250014', 'GAME_NUM': 1}
+        GAME_ID=0042500142  HOME_TEAM_ID=1610612760  VISITOR_TEAM_ID=1610612756  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500142', 'HOME_TEAM_ID': 1610612760, 'VISITOR_TEAM_ID': 1610612756, 'SERIES_ID': '004250014', 'GAME_NUM': 2}
+        GAME_ID=0042500143  HOME_TEAM_ID=1610612756  VISITOR_TEAM_ID=1610612760  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500143', 'HOME_TEAM_ID': 1610612756, 'VISITOR_TEAM_ID': 1610612760, 'SERIES_ID': '004250014', 'GAME_NUM': 3}
+        GAME_ID=0042500144  HOME_TEAM_ID=1610612756  VISITOR_TEAM_ID=1610612760  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500144', 'HOME_TEAM_ID': 1610612756, 'VISITOR_TEAM_ID': 1610612760, 'SERIES_ID': '004250014', 'GAME_NUM': 4}
+      SERIES_ID=004250015  (5 game rows)
+        GAME_ID=0042500151  HOME_TEAM_ID=1610612759  VISITOR_TEAM_ID=1610612757  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500151', 'HOME_TEAM_ID': 1610612759, 'VISITOR_TEAM_ID': 1610612757, 'SERIES_ID': '004250015', 'GAME_NUM': 1}
+        GAME_ID=0042500152  HOME_TEAM_ID=1610612759  VISITOR_TEAM_ID=1610612757  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500152', 'HOME_TEAM_ID': 1610612759, 'VISITOR_TEAM_ID': 1610612757, 'SERIES_ID': '004250015', 'GAME_NUM': 2}
+        GAME_ID=0042500153  HOME_TEAM_ID=1610612757  VISITOR_TEAM_ID=1610612759  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500153', 'HOME_TEAM_ID': 1610612757, 'VISITOR_TEAM_ID': 1610612759, 'SERIES_ID': '004250015', 'GAME_NUM': 3}
+        GAME_ID=0042500154  HOME_TEAM_ID=1610612757  VISITOR_TEAM_ID=1610612759  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500154', 'HOME_TEAM_ID': 1610612757, 'VISITOR_TEAM_ID': 1610612759, 'SERIES_ID': '004250015', 'GAME_NUM': 4}
+        GAME_ID=0042500155  HOME_TEAM_ID=1610612759  VISITOR_TEAM_ID=1610612757  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500155', 'HOME_TEAM_ID': 1610612759, 'VISITOR_TEAM_ID': 1610612757, 'SERIES_ID': '004250015', 'GAME_NUM': 5}
+      SERIES_ID=004250016  (6 game rows)
+        GAME_ID=0042500161  HOME_TEAM_ID=1610612743  VISITOR_TEAM_ID=1610612750  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500161', 'HOME_TEAM_ID': 1610612743, 'VISITOR_TEAM_ID': 1610612750, 'SERIES_ID': '004250016', 'GAME_NUM': 1}
+        GAME_ID=0042500162  HOME_TEAM_ID=1610612743  VISITOR_TEAM_ID=1610612750  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500162', 'HOME_TEAM_ID': 1610612743, 'VISITOR_TEAM_ID': 1610612750, 'SERIES_ID': '004250016', 'GAME_NUM': 2}
+        GAME_ID=0042500163  HOME_TEAM_ID=1610612750  VISITOR_TEAM_ID=1610612743  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500163', 'HOME_TEAM_ID': 1610612750, 'VISITOR_TEAM_ID': 1610612743, 'SERIES_ID': '004250016', 'GAME_NUM': 3}
+        GAME_ID=0042500164  HOME_TEAM_ID=1610612750  VISITOR_TEAM_ID=1610612743  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500164', 'HOME_TEAM_ID': 1610612750, 'VISITOR_TEAM_ID': 1610612743, 'SERIES_ID': '004250016', 'GAME_NUM': 4}
+        GAME_ID=0042500165  HOME_TEAM_ID=1610612743  VISITOR_TEAM_ID=1610612750  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500165', 'HOME_TEAM_ID': 1610612743, 'VISITOR_TEAM_ID': 1610612750, 'SERIES_ID': '004250016', 'GAME_NUM': 5}
+        GAME_ID=0042500166  HOME_TEAM_ID=1610612750  VISITOR_TEAM_ID=1610612743  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500166', 'HOME_TEAM_ID': 1610612750, 'VISITOR_TEAM_ID': 1610612743, 'SERIES_ID': '004250016', 'GAME_NUM': 6}
+      SERIES_ID=004250017  (6 game rows)
+        GAME_ID=0042500171  HOME_TEAM_ID=1610612747  VISITOR_TEAM_ID=1610612745  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500171', 'HOME_TEAM_ID': 1610612747, 'VISITOR_TEAM_ID': 1610612745, 'SERIES_ID': '004250017', 'GAME_NUM': 1}
+        GAME_ID=0042500172  HOME_TEAM_ID=1610612747  VISITOR_TEAM_ID=1610612745  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500172', 'HOME_TEAM_ID': 1610612747, 'VISITOR_TEAM_ID': 1610612745, 'SERIES_ID': '004250017', 'GAME_NUM': 2}
+        GAME_ID=0042500173  HOME_TEAM_ID=1610612745  VISITOR_TEAM_ID=1610612747  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500173', 'HOME_TEAM_ID': 1610612745, 'VISITOR_TEAM_ID': 1610612747, 'SERIES_ID': '004250017', 'GAME_NUM': 3}
+        GAME_ID=0042500174  HOME_TEAM_ID=1610612745  VISITOR_TEAM_ID=1610612747  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500174', 'HOME_TEAM_ID': 1610612745, 'VISITOR_TEAM_ID': 1610612747, 'SERIES_ID': '004250017', 'GAME_NUM': 4}
+        GAME_ID=0042500175  HOME_TEAM_ID=1610612747  VISITOR_TEAM_ID=1610612745  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500175', 'HOME_TEAM_ID': 1610612747, 'VISITOR_TEAM_ID': 1610612745, 'SERIES_ID': '004250017', 'GAME_NUM': 5}
+        GAME_ID=0042500176  HOME_TEAM_ID=1610612745  VISITOR_TEAM_ID=1610612747  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500176', 'HOME_TEAM_ID': 1610612745, 'VISITOR_TEAM_ID': 1610612747, 'SERIES_ID': '004250017', 'GAME_NUM': 6}
+      SERIES_ID=004250020  (7 game rows)
+        GAME_ID=0042500201  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612739  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500201', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612739, 'SERIES_ID': '004250020', 'GAME_NUM': 1}
+        GAME_ID=0042500202  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612739  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500202', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612739, 'SERIES_ID': '004250020', 'GAME_NUM': 2}
+        GAME_ID=0042500203  HOME_TEAM_ID=1610612739  VISITOR_TEAM_ID=1610612765  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500203', 'HOME_TEAM_ID': 1610612739, 'VISITOR_TEAM_ID': 1610612765, 'SERIES_ID': '004250020', 'GAME_NUM': 3}
+        GAME_ID=0042500204  HOME_TEAM_ID=1610612739  VISITOR_TEAM_ID=1610612765  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500204', 'HOME_TEAM_ID': 1610612739, 'VISITOR_TEAM_ID': 1610612765, 'SERIES_ID': '004250020', 'GAME_NUM': 4}
+        GAME_ID=0042500205  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612739  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500205', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612739, 'SERIES_ID': '004250020', 'GAME_NUM': 5}
+        GAME_ID=0042500206  HOME_TEAM_ID=1610612739  VISITOR_TEAM_ID=1610612765  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500206', 'HOME_TEAM_ID': 1610612739, 'VISITOR_TEAM_ID': 1610612765, 'SERIES_ID': '004250020', 'GAME_NUM': 6}
+        GAME_ID=0042500207  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612739  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500207', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612739, 'SERIES_ID': '004250020', 'GAME_NUM': 7}
+      SERIES_ID=004250021  (4 game rows)
+        GAME_ID=0042500211  HOME_TEAM_ID=1610612752  VISITOR_TEAM_ID=1610612755  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500211', 'HOME_TEAM_ID': 1610612752, 'VISITOR_TEAM_ID': 1610612755, 'SERIES_ID': '004250021', 'GAME_NUM': 1}
+        GAME_ID=0042500212  HOME_TEAM_ID=1610612752  VISITOR_TEAM_ID=1610612755  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500212', 'HOME_TEAM_ID': 1610612752, 'VISITOR_TEAM_ID': 1610612755, 'SERIES_ID': '004250021', 'GAME_NUM': 2}
+        GAME_ID=0042500213  HOME_TEAM_ID=1610612755  VISITOR_TEAM_ID=1610612752  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500213', 'HOME_TEAM_ID': 1610612755, 'VISITOR_TEAM_ID': 1610612752, 'SERIES_ID': '004250021', 'GAME_NUM': 3}
+        GAME_ID=0042500214  HOME_TEAM_ID=1610612755  VISITOR_TEAM_ID=1610612752  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500214', 'HOME_TEAM_ID': 1610612755, 'VISITOR_TEAM_ID': 1610612752, 'SERIES_ID': '004250021', 'GAME_NUM': 4}
+      SERIES_ID=004250022  (4 game rows)
+        GAME_ID=0042500221  HOME_TEAM_ID=1610612760  VISITOR_TEAM_ID=1610612747  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500221', 'HOME_TEAM_ID': 1610612760, 'VISITOR_TEAM_ID': 1610612747, 'SERIES_ID': '004250022', 'GAME_NUM': 1}
+        GAME_ID=0042500222  HOME_TEAM_ID=1610612760  VISITOR_TEAM_ID=1610612747  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500222', 'HOME_TEAM_ID': 1610612760, 'VISITOR_TEAM_ID': 1610612747, 'SERIES_ID': '004250022', 'GAME_NUM': 2}
+        GAME_ID=0042500223  HOME_TEAM_ID=1610612747  VISITOR_TEAM_ID=1610612760  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500223', 'HOME_TEAM_ID': 1610612747, 'VISITOR_TEAM_ID': 1610612760, 'SERIES_ID': '004250022', 'GAME_NUM': 3}
+        GAME_ID=0042500224  HOME_TEAM_ID=1610612747  VISITOR_TEAM_ID=1610612760  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500224', 'HOME_TEAM_ID': 1610612747, 'VISITOR_TEAM_ID': 1610612760, 'SERIES_ID': '004250022', 'GAME_NUM': 4}
+      SERIES_ID=004250023  (7 game rows)
+        GAME_ID=0042500231  HOME_TEAM_ID=1610612759  VISITOR_TEAM_ID=1610612750  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500231', 'HOME_TEAM_ID': 1610612759, 'VISITOR_TEAM_ID': 1610612750, 'SERIES_ID': '004250023', 'GAME_NUM': 1}
+        GAME_ID=0042500232  HOME_TEAM_ID=1610612759  VISITOR_TEAM_ID=1610612750  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500232', 'HOME_TEAM_ID': 1610612759, 'VISITOR_TEAM_ID': 1610612750, 'SERIES_ID': '004250023', 'GAME_NUM': 2}
+        GAME_ID=0042500233  HOME_TEAM_ID=1610612750  VISITOR_TEAM_ID=1610612759  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500233', 'HOME_TEAM_ID': 1610612750, 'VISITOR_TEAM_ID': 1610612759, 'SERIES_ID': '004250023', 'GAME_NUM': 3}
+        GAME_ID=0042500234  HOME_TEAM_ID=1610612750  VISITOR_TEAM_ID=1610612759  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500234', 'HOME_TEAM_ID': 1610612750, 'VISITOR_TEAM_ID': 1610612759, 'SERIES_ID': '004250023', 'GAME_NUM': 4}
+        GAME_ID=0042500235  HOME_TEAM_ID=1610612759  VISITOR_TEAM_ID=1610612750  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500235', 'HOME_TEAM_ID': 1610612759, 'VISITOR_TEAM_ID': 1610612750, 'SERIES_ID': '004250023', 'GAME_NUM': 5}
+        GAME_ID=0042500236  HOME_TEAM_ID=1610612750  VISITOR_TEAM_ID=1610612759  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500236', 'HOME_TEAM_ID': 1610612750, 'VISITOR_TEAM_ID': 1610612759, 'SERIES_ID': '004250023', 'GAME_NUM': 6}
+        GAME_ID=0042500237  HOME_TEAM_ID=1610612759  VISITOR_TEAM_ID=1610612750  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500237', 'HOME_TEAM_ID': 1610612759, 'VISITOR_TEAM_ID': 1610612750, 'SERIES_ID': '004250023', 'GAME_NUM': 7}
+    
+    [DIAG] results_map lookup for 2026_East_1v8 (Detroit Pistons vs Orlando Magic):
+      game_ids from API: ['0042500101', '0042500102', '0042500103', '0042500104', '0042500105', '0042500106', '0042500107']
+      found in results table (game_id -> winner):
+        0042500101 -> Orlando Magic
+        0042500102 -> Detroit Pistons
+        0042500103 -> Orlando Magic
+        0042500104 -> Orlando Magic
+        0042500105 -> Detroit Pistons
+        0042500106 -> Detroit Pistons
+        0042500107 -> Detroit Pistons
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_East_1v8: home=Detroit Pistons away=Orlando Magic home_wins=4 away_wins=3 winner=Detroit Pistons
+    
+    [DIAG] results_map lookup for 2026_East_2v7 (Boston Celtics vs Philadelphia 76ers):
+      game_ids from API: ['0042500111', '0042500112', '0042500113', '0042500114', '0042500115', '0042500116', '0042500117']
+      found in results table (game_id -> winner):
+        0042500111 -> Boston Celtics
+        0042500112 -> Philadelphia 76ers
+        0042500113 -> Boston Celtics
+        0042500114 -> Boston Celtics
+        0042500115 -> Philadelphia 76ers
+        0042500116 -> Philadelphia 76ers
+        0042500117 -> Philadelphia 76ers
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_East_2v7: home=Boston Celtics away=Philadelphia 76ers home_wins=3 away_wins=4 winner=Philadelphia 76ers
+    
+    [DIAG] results_map lookup for 2026_East_3v6 (New York Knicks vs Atlanta Hawks):
+      game_ids from API: ['0042500121', '0042500122', '0042500123', '0042500124', '0042500125', '0042500126']
+      found in results table (game_id -> winner):
+        0042500121 -> New York Knicks
+        0042500122 -> Atlanta Hawks
+        0042500123 -> Atlanta Hawks
+        0042500124 -> New York Knicks
+        0042500125 -> New York Knicks
+        0042500126 -> New York Knicks
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_East_3v6: home=New York Knicks away=Atlanta Hawks home_wins=4 away_wins=2 winner=New York Knicks
+    
+    [DIAG] results_map lookup for 2026_East_4v5 (Cleveland Cavaliers vs Toronto Raptors):
+      game_ids from API: ['0042500131', '0042500132', '0042500133', '0042500134', '0042500135', '0042500136', '0042500137']
+      found in results table (game_id -> winner):
+        0042500131 -> Cleveland Cavaliers
+        0042500132 -> Cleveland Cavaliers
+        0042500133 -> Toronto Raptors
+        0042500134 -> Toronto Raptors
+        0042500135 -> Cleveland Cavaliers
+        0042500136 -> Toronto Raptors
+        0042500137 -> Cleveland Cavaliers
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_East_4v5: home=Cleveland Cavaliers away=Toronto Raptors home_wins=4 away_wins=3 winner=Cleveland Cavaliers
+    
+    [DIAG] results_map lookup for 2026_West_1v8 (Oklahoma City Thunder vs Phoenix Suns):
+      game_ids from API: ['0042500141', '0042500142', '0042500143', '0042500144']
+      found in results table (game_id -> winner):
+        0042500141 -> Oklahoma City Thunder
+        0042500142 -> Oklahoma City Thunder
+        0042500143 -> Oklahoma City Thunder
+        0042500144 -> Oklahoma City Thunder
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_West_1v8: home=Oklahoma City Thunder away=Phoenix Suns home_wins=4 away_wins=0 winner=Oklahoma City Thunder
+    
+    [DIAG] results_map lookup for 2026_West_2v7 (San Antonio Spurs vs Portland Trail Blazers):
+      game_ids from API: ['0042500151', '0042500152', '0042500153', '0042500154', '0042500155']
+      found in results table (game_id -> winner):
+        0042500151 -> San Antonio Spurs
+        0042500152 -> Portland Trail Blazers
+        0042500153 -> San Antonio Spurs
+        0042500154 -> San Antonio Spurs
+        0042500155 -> San Antonio Spurs
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_West_2v7: home=San Antonio Spurs away=Portland Trail Blazers home_wins=4 away_wins=1 winner=San Antonio Spurs
+    
+    [DIAG] results_map lookup for 2026_West_3v6 (Denver Nuggets vs Minnesota Timberwolves):
+      game_ids from API: ['0042500161', '0042500162', '0042500163', '0042500164', '0042500165', '0042500166']
+      found in results table (game_id -> winner):
+        0042500161 -> Denver Nuggets
+        0042500162 -> Minnesota Timberwolves
+        0042500163 -> Minnesota Timberwolves
+        0042500164 -> Minnesota Timberwolves
+        0042500165 -> Denver Nuggets
+        0042500166 -> Minnesota Timberwolves
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_West_3v6: home=Denver Nuggets away=Minnesota Timberwolves home_wins=2 away_wins=4 winner=Minnesota Timberwolves
+    
+    [DIAG] results_map lookup for 2026_West_4v5 (Los Angeles Lakers vs Houston Rockets):
+      game_ids from API: ['0042500171', '0042500172', '0042500173', '0042500174', '0042500175', '0042500176']
+      found in results table (game_id -> winner):
+        0042500171 -> Los Angeles Lakers
+        0042500172 -> Los Angeles Lakers
+        0042500173 -> Los Angeles Lakers
+        0042500174 -> Houston Rockets
+        0042500175 -> Houston Rockets
+        0042500176 -> Los Angeles Lakers
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_West_4v5: home=Los Angeles Lakers away=Houston Rockets home_wins=4 away_wins=2 winner=Los Angeles Lakers
+    
+    [DIAG] results_map lookup for 2026_East_R2_1 (Detroit Pistons vs Cleveland Cavaliers):
+      game_ids from API: ['0042500201', '0042500202', '0042500203', '0042500204', '0042500205', '0042500206', '0042500207']
+      found in results table (game_id -> winner):
+        0042500201 -> Detroit Pistons
+        0042500202 -> Detroit Pistons
+        0042500203 -> Cleveland Cavaliers
+        0042500204 -> Cleveland Cavaliers
+      MISSING from results table: ['0042500205', '0042500206', '0042500207']
+    [DIAG] FINAL computed for 2026_East_R2_1: home=Detroit Pistons away=Cleveland Cavaliers home_wins=2 away_wins=2 winner=None
+    
+    [DIAG] results_map lookup for 2026_East_R2_2 (New York Knicks vs Philadelphia 76ers):
+      game_ids from API: ['0042500211', '0042500212', '0042500213', '0042500214']
+      found in results table (game_id -> winner):
+        0042500211 -> New York Knicks
+        0042500212 -> New York Knicks
+        0042500213 -> New York Knicks
+        0042500214 -> New York Knicks
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_East_R2_2: home=New York Knicks away=Philadelphia 76ers home_wins=4 away_wins=0 winner=New York Knicks
+    
+    [DIAG] results_map lookup for 2026_West_R2_1 (Oklahoma City Thunder vs Los Angeles Lakers):
+      game_ids from API: ['0042500221', '0042500222', '0042500223', '0042500224']
+      found in results table (game_id -> winner):
+        0042500221 -> Oklahoma City Thunder
+        0042500222 -> Oklahoma City Thunder
+        0042500223 -> Oklahoma City Thunder
+        0042500224 -> Oklahoma City Thunder
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_West_R2_1: home=Oklahoma City Thunder away=Los Angeles Lakers home_wins=4 away_wins=0 winner=Oklahoma City Thunder
+    
+    [DIAG] results_map lookup for 2026_West_R2_2 (San Antonio Spurs vs Minnesota Timberwolves):
+      game_ids from API: ['0042500231', '0042500232', '0042500233', '0042500234', '0042500235', '0042500236', '0042500237']
+      found in results table (game_id -> winner):
+        0042500231 -> Minnesota Timberwolves
+        0042500232 -> San Antonio Spurs
+        0042500233 -> San Antonio Spurs
+        0042500234 -> Minnesota Timberwolves
+        0042500235 -> San Antonio Spurs
+      MISSING from results table: ['0042500236', '0042500237']
+    [DIAG] FINAL computed for 2026_West_R2_2: home=San Antonio Spurs away=Minnesota Timberwolves home_wins=3 away_wins=2 winner=None
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 70 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
+
+[2026-05-13 15:00:03] SUCCESS
+    Network ready (attempt 1).
+    Fetching games for yesterday (05/12/2026), today (05/13/2026), tomorrow (05/14/2026)
+    Saved 2 games to Supabase.
+    Status breakdown:
+    gameStatusText
+    Final         1
+    8:00 pm ET    1
+    Found 1 final games.
+    Game 0042500235 | San Antonio Spurs 126 vs Minnesota Timberwolves 97 | Winner: San Antonio Spurs
+    Upserted 1 results.
+    Fetching playoff series...
+    
+    [DIAG] CommonPlayoffSeries columns: ['GAME_ID', 'HOME_TEAM_ID', 'VISITOR_TEAM_ID', 'SERIES_ID', 'GAME_NUM']
+    [DIAG] CommonPlayoffSeries returned 70 rows.
+    [DIAG] results table has 65 rows loaded for win counting.
+    
+    [DIAG] Raw CommonPlayoffSeries rows grouped by SERIES_ID:
+      SERIES_ID=004250010  (7 game rows)
+        GAME_ID=0042500101  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612753  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500101', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612753, 'SERIES_ID': '004250010', 'GAME_NUM': 1}
+        GAME_ID=0042500102  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612753  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500102', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612753, 'SERIES_ID': '004250010', 'GAME_NUM': 2}
+        GAME_ID=0042500103  HOME_TEAM_ID=1610612753  VISITOR_TEAM_ID=1610612765  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500103', 'HOME_TEAM_ID': 1610612753, 'VISITOR_TEAM_ID': 1610612765, 'SERIES_ID': '004250010', 'GAME_NUM': 3}
+        GAME_ID=0042500104  HOME_TEAM_ID=1610612753  VISITOR_TEAM_ID=1610612765  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500104', 'HOME_TEAM_ID': 1610612753, 'VISITOR_TEAM_ID': 1610612765, 'SERIES_ID': '004250010', 'GAME_NUM': 4}
+        GAME_ID=0042500105  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612753  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500105', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612753, 'SERIES_ID': '004250010', 'GAME_NUM': 5}
+        GAME_ID=0042500106  HOME_TEAM_ID=1610612753  VISITOR_TEAM_ID=1610612765  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500106', 'HOME_TEAM_ID': 1610612753, 'VISITOR_TEAM_ID': 1610612765, 'SERIES_ID': '004250010', 'GAME_NUM': 6}
+        GAME_ID=0042500107  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612753  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500107', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612753, 'SERIES_ID': '004250010', 'GAME_NUM': 7}
+      SERIES_ID=004250011  (7 game rows)
+        GAME_ID=0042500111  HOME_TEAM_ID=1610612738  VISITOR_TEAM_ID=1610612755  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500111', 'HOME_TEAM_ID': 1610612738, 'VISITOR_TEAM_ID': 1610612755, 'SERIES_ID': '004250011', 'GAME_NUM': 1}
+        GAME_ID=0042500112  HOME_TEAM_ID=1610612738  VISITOR_TEAM_ID=1610612755  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500112', 'HOME_TEAM_ID': 1610612738, 'VISITOR_TEAM_ID': 1610612755, 'SERIES_ID': '004250011', 'GAME_NUM': 2}
+        GAME_ID=0042500113  HOME_TEAM_ID=1610612755  VISITOR_TEAM_ID=1610612738  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500113', 'HOME_TEAM_ID': 1610612755, 'VISITOR_TEAM_ID': 1610612738, 'SERIES_ID': '004250011', 'GAME_NUM': 3}
+        GAME_ID=0042500114  HOME_TEAM_ID=1610612755  VISITOR_TEAM_ID=1610612738  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500114', 'HOME_TEAM_ID': 1610612755, 'VISITOR_TEAM_ID': 1610612738, 'SERIES_ID': '004250011', 'GAME_NUM': 4}
+        GAME_ID=0042500115  HOME_TEAM_ID=1610612738  VISITOR_TEAM_ID=1610612755  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500115', 'HOME_TEAM_ID': 1610612738, 'VISITOR_TEAM_ID': 1610612755, 'SERIES_ID': '004250011', 'GAME_NUM': 5}
+        GAME_ID=0042500116  HOME_TEAM_ID=1610612755  VISITOR_TEAM_ID=1610612738  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500116', 'HOME_TEAM_ID': 1610612755, 'VISITOR_TEAM_ID': 1610612738, 'SERIES_ID': '004250011', 'GAME_NUM': 6}
+        GAME_ID=0042500117  HOME_TEAM_ID=1610612738  VISITOR_TEAM_ID=1610612755  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500117', 'HOME_TEAM_ID': 1610612738, 'VISITOR_TEAM_ID': 1610612755, 'SERIES_ID': '004250011', 'GAME_NUM': 7}
+      SERIES_ID=004250012  (6 game rows)
+        GAME_ID=0042500121  HOME_TEAM_ID=1610612752  VISITOR_TEAM_ID=1610612737  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500121', 'HOME_TEAM_ID': 1610612752, 'VISITOR_TEAM_ID': 1610612737, 'SERIES_ID': '004250012', 'GAME_NUM': 1}
+        GAME_ID=0042500122  HOME_TEAM_ID=1610612752  VISITOR_TEAM_ID=1610612737  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500122', 'HOME_TEAM_ID': 1610612752, 'VISITOR_TEAM_ID': 1610612737, 'SERIES_ID': '004250012', 'GAME_NUM': 2}
+        GAME_ID=0042500123  HOME_TEAM_ID=1610612737  VISITOR_TEAM_ID=1610612752  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500123', 'HOME_TEAM_ID': 1610612737, 'VISITOR_TEAM_ID': 1610612752, 'SERIES_ID': '004250012', 'GAME_NUM': 3}
+        GAME_ID=0042500124  HOME_TEAM_ID=1610612737  VISITOR_TEAM_ID=1610612752  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500124', 'HOME_TEAM_ID': 1610612737, 'VISITOR_TEAM_ID': 1610612752, 'SERIES_ID': '004250012', 'GAME_NUM': 4}
+        GAME_ID=0042500125  HOME_TEAM_ID=1610612752  VISITOR_TEAM_ID=1610612737  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500125', 'HOME_TEAM_ID': 1610612752, 'VISITOR_TEAM_ID': 1610612737, 'SERIES_ID': '004250012', 'GAME_NUM': 5}
+        GAME_ID=0042500126  HOME_TEAM_ID=1610612737  VISITOR_TEAM_ID=1610612752  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500126', 'HOME_TEAM_ID': 1610612737, 'VISITOR_TEAM_ID': 1610612752, 'SERIES_ID': '004250012', 'GAME_NUM': 6}
+      SERIES_ID=004250013  (7 game rows)
+        GAME_ID=0042500131  HOME_TEAM_ID=1610612739  VISITOR_TEAM_ID=1610612761  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500131', 'HOME_TEAM_ID': 1610612739, 'VISITOR_TEAM_ID': 1610612761, 'SERIES_ID': '004250013', 'GAME_NUM': 1}
+        GAME_ID=0042500132  HOME_TEAM_ID=1610612739  VISITOR_TEAM_ID=1610612761  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500132', 'HOME_TEAM_ID': 1610612739, 'VISITOR_TEAM_ID': 1610612761, 'SERIES_ID': '004250013', 'GAME_NUM': 2}
+        GAME_ID=0042500133  HOME_TEAM_ID=1610612761  VISITOR_TEAM_ID=1610612739  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500133', 'HOME_TEAM_ID': 1610612761, 'VISITOR_TEAM_ID': 1610612739, 'SERIES_ID': '004250013', 'GAME_NUM': 3}
+        GAME_ID=0042500134  HOME_TEAM_ID=1610612761  VISITOR_TEAM_ID=1610612739  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500134', 'HOME_TEAM_ID': 1610612761, 'VISITOR_TEAM_ID': 1610612739, 'SERIES_ID': '004250013', 'GAME_NUM': 4}
+        GAME_ID=0042500135  HOME_TEAM_ID=1610612739  VISITOR_TEAM_ID=1610612761  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500135', 'HOME_TEAM_ID': 1610612739, 'VISITOR_TEAM_ID': 1610612761, 'SERIES_ID': '004250013', 'GAME_NUM': 5}
+        GAME_ID=0042500136  HOME_TEAM_ID=1610612761  VISITOR_TEAM_ID=1610612739  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500136', 'HOME_TEAM_ID': 1610612761, 'VISITOR_TEAM_ID': 1610612739, 'SERIES_ID': '004250013', 'GAME_NUM': 6}
+        GAME_ID=0042500137  HOME_TEAM_ID=1610612739  VISITOR_TEAM_ID=1610612761  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500137', 'HOME_TEAM_ID': 1610612739, 'VISITOR_TEAM_ID': 1610612761, 'SERIES_ID': '004250013', 'GAME_NUM': 7}
+      SERIES_ID=004250014  (4 game rows)
+        GAME_ID=0042500141  HOME_TEAM_ID=1610612760  VISITOR_TEAM_ID=1610612756  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500141', 'HOME_TEAM_ID': 1610612760, 'VISITOR_TEAM_ID': 1610612756, 'SERIES_ID': '004250014', 'GAME_NUM': 1}
+        GAME_ID=0042500142  HOME_TEAM_ID=1610612760  VISITOR_TEAM_ID=1610612756  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500142', 'HOME_TEAM_ID': 1610612760, 'VISITOR_TEAM_ID': 1610612756, 'SERIES_ID': '004250014', 'GAME_NUM': 2}
+        GAME_ID=0042500143  HOME_TEAM_ID=1610612756  VISITOR_TEAM_ID=1610612760  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500143', 'HOME_TEAM_ID': 1610612756, 'VISITOR_TEAM_ID': 1610612760, 'SERIES_ID': '004250014', 'GAME_NUM': 3}
+        GAME_ID=0042500144  HOME_TEAM_ID=1610612756  VISITOR_TEAM_ID=1610612760  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500144', 'HOME_TEAM_ID': 1610612756, 'VISITOR_TEAM_ID': 1610612760, 'SERIES_ID': '004250014', 'GAME_NUM': 4}
+      SERIES_ID=004250015  (5 game rows)
+        GAME_ID=0042500151  HOME_TEAM_ID=1610612759  VISITOR_TEAM_ID=1610612757  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500151', 'HOME_TEAM_ID': 1610612759, 'VISITOR_TEAM_ID': 1610612757, 'SERIES_ID': '004250015', 'GAME_NUM': 1}
+        GAME_ID=0042500152  HOME_TEAM_ID=1610612759  VISITOR_TEAM_ID=1610612757  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500152', 'HOME_TEAM_ID': 1610612759, 'VISITOR_TEAM_ID': 1610612757, 'SERIES_ID': '004250015', 'GAME_NUM': 2}
+        GAME_ID=0042500153  HOME_TEAM_ID=1610612757  VISITOR_TEAM_ID=1610612759  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500153', 'HOME_TEAM_ID': 1610612757, 'VISITOR_TEAM_ID': 1610612759, 'SERIES_ID': '004250015', 'GAME_NUM': 3}
+        GAME_ID=0042500154  HOME_TEAM_ID=1610612757  VISITOR_TEAM_ID=1610612759  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500154', 'HOME_TEAM_ID': 1610612757, 'VISITOR_TEAM_ID': 1610612759, 'SERIES_ID': '004250015', 'GAME_NUM': 4}
+        GAME_ID=0042500155  HOME_TEAM_ID=1610612759  VISITOR_TEAM_ID=1610612757  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500155', 'HOME_TEAM_ID': 1610612759, 'VISITOR_TEAM_ID': 1610612757, 'SERIES_ID': '004250015', 'GAME_NUM': 5}
+      SERIES_ID=004250016  (6 game rows)
+        GAME_ID=0042500161  HOME_TEAM_ID=1610612743  VISITOR_TEAM_ID=1610612750  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500161', 'HOME_TEAM_ID': 1610612743, 'VISITOR_TEAM_ID': 1610612750, 'SERIES_ID': '004250016', 'GAME_NUM': 1}
+        GAME_ID=0042500162  HOME_TEAM_ID=1610612743  VISITOR_TEAM_ID=1610612750  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500162', 'HOME_TEAM_ID': 1610612743, 'VISITOR_TEAM_ID': 1610612750, 'SERIES_ID': '004250016', 'GAME_NUM': 2}
+        GAME_ID=0042500163  HOME_TEAM_ID=1610612750  VISITOR_TEAM_ID=1610612743  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500163', 'HOME_TEAM_ID': 1610612750, 'VISITOR_TEAM_ID': 1610612743, 'SERIES_ID': '004250016', 'GAME_NUM': 3}
+        GAME_ID=0042500164  HOME_TEAM_ID=1610612750  VISITOR_TEAM_ID=1610612743  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500164', 'HOME_TEAM_ID': 1610612750, 'VISITOR_TEAM_ID': 1610612743, 'SERIES_ID': '004250016', 'GAME_NUM': 4}
+        GAME_ID=0042500165  HOME_TEAM_ID=1610612743  VISITOR_TEAM_ID=1610612750  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500165', 'HOME_TEAM_ID': 1610612743, 'VISITOR_TEAM_ID': 1610612750, 'SERIES_ID': '004250016', 'GAME_NUM': 5}
+        GAME_ID=0042500166  HOME_TEAM_ID=1610612750  VISITOR_TEAM_ID=1610612743  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500166', 'HOME_TEAM_ID': 1610612750, 'VISITOR_TEAM_ID': 1610612743, 'SERIES_ID': '004250016', 'GAME_NUM': 6}
+      SERIES_ID=004250017  (6 game rows)
+        GAME_ID=0042500171  HOME_TEAM_ID=1610612747  VISITOR_TEAM_ID=1610612745  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500171', 'HOME_TEAM_ID': 1610612747, 'VISITOR_TEAM_ID': 1610612745, 'SERIES_ID': '004250017', 'GAME_NUM': 1}
+        GAME_ID=0042500172  HOME_TEAM_ID=1610612747  VISITOR_TEAM_ID=1610612745  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500172', 'HOME_TEAM_ID': 1610612747, 'VISITOR_TEAM_ID': 1610612745, 'SERIES_ID': '004250017', 'GAME_NUM': 2}
+        GAME_ID=0042500173  HOME_TEAM_ID=1610612745  VISITOR_TEAM_ID=1610612747  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500173', 'HOME_TEAM_ID': 1610612745, 'VISITOR_TEAM_ID': 1610612747, 'SERIES_ID': '004250017', 'GAME_NUM': 3}
+        GAME_ID=0042500174  HOME_TEAM_ID=1610612745  VISITOR_TEAM_ID=1610612747  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500174', 'HOME_TEAM_ID': 1610612745, 'VISITOR_TEAM_ID': 1610612747, 'SERIES_ID': '004250017', 'GAME_NUM': 4}
+        GAME_ID=0042500175  HOME_TEAM_ID=1610612747  VISITOR_TEAM_ID=1610612745  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500175', 'HOME_TEAM_ID': 1610612747, 'VISITOR_TEAM_ID': 1610612745, 'SERIES_ID': '004250017', 'GAME_NUM': 5}
+        GAME_ID=0042500176  HOME_TEAM_ID=1610612745  VISITOR_TEAM_ID=1610612747  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500176', 'HOME_TEAM_ID': 1610612745, 'VISITOR_TEAM_ID': 1610612747, 'SERIES_ID': '004250017', 'GAME_NUM': 6}
+      SERIES_ID=004250020  (7 game rows)
+        GAME_ID=0042500201  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612739  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500201', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612739, 'SERIES_ID': '004250020', 'GAME_NUM': 1}
+        GAME_ID=0042500202  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612739  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500202', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612739, 'SERIES_ID': '004250020', 'GAME_NUM': 2}
+        GAME_ID=0042500203  HOME_TEAM_ID=1610612739  VISITOR_TEAM_ID=1610612765  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500203', 'HOME_TEAM_ID': 1610612739, 'VISITOR_TEAM_ID': 1610612765, 'SERIES_ID': '004250020', 'GAME_NUM': 3}
+        GAME_ID=0042500204  HOME_TEAM_ID=1610612739  VISITOR_TEAM_ID=1610612765  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500204', 'HOME_TEAM_ID': 1610612739, 'VISITOR_TEAM_ID': 1610612765, 'SERIES_ID': '004250020', 'GAME_NUM': 4}
+        GAME_ID=0042500205  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612739  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500205', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612739, 'SERIES_ID': '004250020', 'GAME_NUM': 5}
+        GAME_ID=0042500206  HOME_TEAM_ID=1610612739  VISITOR_TEAM_ID=1610612765  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500206', 'HOME_TEAM_ID': 1610612739, 'VISITOR_TEAM_ID': 1610612765, 'SERIES_ID': '004250020', 'GAME_NUM': 6}
+        GAME_ID=0042500207  HOME_TEAM_ID=1610612765  VISITOR_TEAM_ID=1610612739  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500207', 'HOME_TEAM_ID': 1610612765, 'VISITOR_TEAM_ID': 1610612739, 'SERIES_ID': '004250020', 'GAME_NUM': 7}
+      SERIES_ID=004250021  (4 game rows)
+        GAME_ID=0042500211  HOME_TEAM_ID=1610612752  VISITOR_TEAM_ID=1610612755  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500211', 'HOME_TEAM_ID': 1610612752, 'VISITOR_TEAM_ID': 1610612755, 'SERIES_ID': '004250021', 'GAME_NUM': 1}
+        GAME_ID=0042500212  HOME_TEAM_ID=1610612752  VISITOR_TEAM_ID=1610612755  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500212', 'HOME_TEAM_ID': 1610612752, 'VISITOR_TEAM_ID': 1610612755, 'SERIES_ID': '004250021', 'GAME_NUM': 2}
+        GAME_ID=0042500213  HOME_TEAM_ID=1610612755  VISITOR_TEAM_ID=1610612752  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500213', 'HOME_TEAM_ID': 1610612755, 'VISITOR_TEAM_ID': 1610612752, 'SERIES_ID': '004250021', 'GAME_NUM': 3}
+        GAME_ID=0042500214  HOME_TEAM_ID=1610612755  VISITOR_TEAM_ID=1610612752  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500214', 'HOME_TEAM_ID': 1610612755, 'VISITOR_TEAM_ID': 1610612752, 'SERIES_ID': '004250021', 'GAME_NUM': 4}
+      SERIES_ID=004250022  (4 game rows)
+        GAME_ID=0042500221  HOME_TEAM_ID=1610612760  VISITOR_TEAM_ID=1610612747  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500221', 'HOME_TEAM_ID': 1610612760, 'VISITOR_TEAM_ID': 1610612747, 'SERIES_ID': '004250022', 'GAME_NUM': 1}
+        GAME_ID=0042500222  HOME_TEAM_ID=1610612760  VISITOR_TEAM_ID=1610612747  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500222', 'HOME_TEAM_ID': 1610612760, 'VISITOR_TEAM_ID': 1610612747, 'SERIES_ID': '004250022', 'GAME_NUM': 2}
+        GAME_ID=0042500223  HOME_TEAM_ID=1610612747  VISITOR_TEAM_ID=1610612760  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500223', 'HOME_TEAM_ID': 1610612747, 'VISITOR_TEAM_ID': 1610612760, 'SERIES_ID': '004250022', 'GAME_NUM': 3}
+        GAME_ID=0042500224  HOME_TEAM_ID=1610612747  VISITOR_TEAM_ID=1610612760  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500224', 'HOME_TEAM_ID': 1610612747, 'VISITOR_TEAM_ID': 1610612760, 'SERIES_ID': '004250022', 'GAME_NUM': 4}
+      SERIES_ID=004250023  (7 game rows)
+        GAME_ID=0042500231  HOME_TEAM_ID=1610612759  VISITOR_TEAM_ID=1610612750  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500231', 'HOME_TEAM_ID': 1610612759, 'VISITOR_TEAM_ID': 1610612750, 'SERIES_ID': '004250023', 'GAME_NUM': 1}
+        GAME_ID=0042500232  HOME_TEAM_ID=1610612759  VISITOR_TEAM_ID=1610612750  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500232', 'HOME_TEAM_ID': 1610612759, 'VISITOR_TEAM_ID': 1610612750, 'SERIES_ID': '004250023', 'GAME_NUM': 2}
+        GAME_ID=0042500233  HOME_TEAM_ID=1610612750  VISITOR_TEAM_ID=1610612759  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500233', 'HOME_TEAM_ID': 1610612750, 'VISITOR_TEAM_ID': 1610612759, 'SERIES_ID': '004250023', 'GAME_NUM': 3}
+        GAME_ID=0042500234  HOME_TEAM_ID=1610612750  VISITOR_TEAM_ID=1610612759  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500234', 'HOME_TEAM_ID': 1610612750, 'VISITOR_TEAM_ID': 1610612759, 'SERIES_ID': '004250023', 'GAME_NUM': 4}
+        GAME_ID=0042500235  HOME_TEAM_ID=1610612759  VISITOR_TEAM_ID=1610612750  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500235', 'HOME_TEAM_ID': 1610612759, 'VISITOR_TEAM_ID': 1610612750, 'SERIES_ID': '004250023', 'GAME_NUM': 5}
+        GAME_ID=0042500236  HOME_TEAM_ID=1610612750  VISITOR_TEAM_ID=1610612759  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500236', 'HOME_TEAM_ID': 1610612750, 'VISITOR_TEAM_ID': 1610612759, 'SERIES_ID': '004250023', 'GAME_NUM': 6}
+        GAME_ID=0042500237  HOME_TEAM_ID=1610612759  VISITOR_TEAM_ID=1610612750  HOME_TEAM_WINS=<column not in API>  VISITOR_TEAM_WINS=<column not in API>
+        full row: {'GAME_ID': '0042500237', 'HOME_TEAM_ID': 1610612759, 'VISITOR_TEAM_ID': 1610612750, 'SERIES_ID': '004250023', 'GAME_NUM': 7}
+    
+    [DIAG] results_map lookup for 2026_East_1v8 (Detroit Pistons vs Orlando Magic):
+      game_ids from API: ['0042500101', '0042500102', '0042500103', '0042500104', '0042500105', '0042500106', '0042500107']
+      found in results table (game_id -> winner):
+        0042500101 -> Orlando Magic
+        0042500102 -> Detroit Pistons
+        0042500103 -> Orlando Magic
+        0042500104 -> Orlando Magic
+        0042500105 -> Detroit Pistons
+        0042500106 -> Detroit Pistons
+        0042500107 -> Detroit Pistons
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_East_1v8: home=Detroit Pistons away=Orlando Magic home_wins=4 away_wins=3 winner=Detroit Pistons
+    
+    [DIAG] results_map lookup for 2026_East_2v7 (Boston Celtics vs Philadelphia 76ers):
+      game_ids from API: ['0042500111', '0042500112', '0042500113', '0042500114', '0042500115', '0042500116', '0042500117']
+      found in results table (game_id -> winner):
+        0042500111 -> Boston Celtics
+        0042500112 -> Philadelphia 76ers
+        0042500113 -> Boston Celtics
+        0042500114 -> Boston Celtics
+        0042500115 -> Philadelphia 76ers
+        0042500116 -> Philadelphia 76ers
+        0042500117 -> Philadelphia 76ers
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_East_2v7: home=Boston Celtics away=Philadelphia 76ers home_wins=3 away_wins=4 winner=Philadelphia 76ers
+    
+    [DIAG] results_map lookup for 2026_East_3v6 (New York Knicks vs Atlanta Hawks):
+      game_ids from API: ['0042500121', '0042500122', '0042500123', '0042500124', '0042500125', '0042500126']
+      found in results table (game_id -> winner):
+        0042500121 -> New York Knicks
+        0042500122 -> Atlanta Hawks
+        0042500123 -> Atlanta Hawks
+        0042500124 -> New York Knicks
+        0042500125 -> New York Knicks
+        0042500126 -> New York Knicks
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_East_3v6: home=New York Knicks away=Atlanta Hawks home_wins=4 away_wins=2 winner=New York Knicks
+    
+    [DIAG] results_map lookup for 2026_East_4v5 (Cleveland Cavaliers vs Toronto Raptors):
+      game_ids from API: ['0042500131', '0042500132', '0042500133', '0042500134', '0042500135', '0042500136', '0042500137']
+      found in results table (game_id -> winner):
+        0042500131 -> Cleveland Cavaliers
+        0042500132 -> Cleveland Cavaliers
+        0042500133 -> Toronto Raptors
+        0042500134 -> Toronto Raptors
+        0042500135 -> Cleveland Cavaliers
+        0042500136 -> Toronto Raptors
+        0042500137 -> Cleveland Cavaliers
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_East_4v5: home=Cleveland Cavaliers away=Toronto Raptors home_wins=4 away_wins=3 winner=Cleveland Cavaliers
+    
+    [DIAG] results_map lookup for 2026_West_1v8 (Oklahoma City Thunder vs Phoenix Suns):
+      game_ids from API: ['0042500141', '0042500142', '0042500143', '0042500144']
+      found in results table (game_id -> winner):
+        0042500141 -> Oklahoma City Thunder
+        0042500142 -> Oklahoma City Thunder
+        0042500143 -> Oklahoma City Thunder
+        0042500144 -> Oklahoma City Thunder
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_West_1v8: home=Oklahoma City Thunder away=Phoenix Suns home_wins=4 away_wins=0 winner=Oklahoma City Thunder
+    
+    [DIAG] results_map lookup for 2026_West_2v7 (San Antonio Spurs vs Portland Trail Blazers):
+      game_ids from API: ['0042500151', '0042500152', '0042500153', '0042500154', '0042500155']
+      found in results table (game_id -> winner):
+        0042500151 -> San Antonio Spurs
+        0042500152 -> Portland Trail Blazers
+        0042500153 -> San Antonio Spurs
+        0042500154 -> San Antonio Spurs
+        0042500155 -> San Antonio Spurs
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_West_2v7: home=San Antonio Spurs away=Portland Trail Blazers home_wins=4 away_wins=1 winner=San Antonio Spurs
+    
+    [DIAG] results_map lookup for 2026_West_3v6 (Denver Nuggets vs Minnesota Timberwolves):
+      game_ids from API: ['0042500161', '0042500162', '0042500163', '0042500164', '0042500165', '0042500166']
+      found in results table (game_id -> winner):
+        0042500161 -> Denver Nuggets
+        0042500162 -> Minnesota Timberwolves
+        0042500163 -> Minnesota Timberwolves
+        0042500164 -> Minnesota Timberwolves
+        0042500165 -> Denver Nuggets
+        0042500166 -> Minnesota Timberwolves
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_West_3v6: home=Denver Nuggets away=Minnesota Timberwolves home_wins=2 away_wins=4 winner=Minnesota Timberwolves
+    
+    [DIAG] results_map lookup for 2026_West_4v5 (Los Angeles Lakers vs Houston Rockets):
+      game_ids from API: ['0042500171', '0042500172', '0042500173', '0042500174', '0042500175', '0042500176']
+      found in results table (game_id -> winner):
+        0042500171 -> Los Angeles Lakers
+        0042500172 -> Los Angeles Lakers
+        0042500173 -> Los Angeles Lakers
+        0042500174 -> Houston Rockets
+        0042500175 -> Houston Rockets
+        0042500176 -> Los Angeles Lakers
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_West_4v5: home=Los Angeles Lakers away=Houston Rockets home_wins=4 away_wins=2 winner=Los Angeles Lakers
+    
+    [DIAG] results_map lookup for 2026_East_R2_1 (Detroit Pistons vs Cleveland Cavaliers):
+      game_ids from API: ['0042500201', '0042500202', '0042500203', '0042500204', '0042500205', '0042500206', '0042500207']
+      found in results table (game_id -> winner):
+        0042500201 -> Detroit Pistons
+        0042500202 -> Detroit Pistons
+        0042500203 -> Cleveland Cavaliers
+        0042500204 -> Cleveland Cavaliers
+      MISSING from results table: ['0042500205', '0042500206', '0042500207']
+    [DIAG] FINAL computed for 2026_East_R2_1: home=Detroit Pistons away=Cleveland Cavaliers home_wins=2 away_wins=2 winner=None
+    
+    [DIAG] results_map lookup for 2026_East_R2_2 (New York Knicks vs Philadelphia 76ers):
+      game_ids from API: ['0042500211', '0042500212', '0042500213', '0042500214']
+      found in results table (game_id -> winner):
+        0042500211 -> New York Knicks
+        0042500212 -> New York Knicks
+        0042500213 -> New York Knicks
+        0042500214 -> New York Knicks
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_East_R2_2: home=New York Knicks away=Philadelphia 76ers home_wins=4 away_wins=0 winner=New York Knicks
+    
+    [DIAG] results_map lookup for 2026_West_R2_1 (Oklahoma City Thunder vs Los Angeles Lakers):
+      game_ids from API: ['0042500221', '0042500222', '0042500223', '0042500224']
+      found in results table (game_id -> winner):
+        0042500221 -> Oklahoma City Thunder
+        0042500222 -> Oklahoma City Thunder
+        0042500223 -> Oklahoma City Thunder
+        0042500224 -> Oklahoma City Thunder
+      MISSING from results table: <none>
+    [DIAG] FINAL computed for 2026_West_R2_1: home=Oklahoma City Thunder away=Los Angeles Lakers home_wins=4 away_wins=0 winner=Oklahoma City Thunder
+    
+    [DIAG] results_map lookup for 2026_West_R2_2 (San Antonio Spurs vs Minnesota Timberwolves):
+      game_ids from API: ['0042500231', '0042500232', '0042500233', '0042500234', '0042500235', '0042500236', '0042500237']
+      found in results table (game_id -> winner):
+        0042500231 -> Minnesota Timberwolves
+        0042500232 -> San Antonio Spurs
+        0042500233 -> San Antonio Spurs
+        0042500234 -> Minnesota Timberwolves
+        0042500235 -> San Antonio Spurs
+      MISSING from results table: ['0042500236', '0042500237']
+    [DIAG] FINAL computed for 2026_West_R2_2: home=San Antonio Spurs away=Minnesota Timberwolves home_wins=3 away_wins=2 winner=None
+    Fetched 12 playoff series from CommonPlayoffSeries.
+    Upserted 12 series.
+    Tagged 70 games with playoff round/series.
+    Calculating scores...
+    Upserted scores for 4 users.
+    Done. Games, results, series, and scores are up to date.
+    No issues detected. Clean run.
+    Email notification sent to roeeyaish@gmail.com.
